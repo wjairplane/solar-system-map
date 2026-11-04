@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>True-Scale Solar System</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -279,7 +284,9 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
         </div>
         <details class="group fold" id="placesFold" hidden><summary><h2>Places <span class="count" id="placesCount"></span></h2></summary><div class="chips" id="placesChips"></div></details>
         <details class="group fold" id="astFold"><summary><h2>Asteroids and dwarf planets <span class="count" id="astCount"></span></h2></summary><div class="chips" id="astChips"></div></details>
-        <details class="group fold" id="craftFold"><summary><h2>Spacecraft <span class="count" id="craftCount"></span></h2></summary><div class="chips" id="craftChips"></div></details>
+        <details class="group fold" id="craftFold"><summary><h2>Spacecraft <span class="count" id="craftCount"></span></h2></summary><div class="chips" id="craftChips"></div><p class="hint">Double-click a spacecraft twice to see a model of it at true size.</p></details>
+        <details class="group fold" id="satFold"><summary><h2>Earth satellites <span class="count" id="satCount"></span></h2></summary><div class="chips" id="satChips"></div><p class="hint">Their orbits are real; where each one is along its orbit is illustrative, not live tracking. The dots around Earth show Starlink, OneWeb, GPS, GLONASS, Galileo, BeiDou and the geostationary belt.</p></details>
+        <details class="group fold" id="starFold"><summary><h2>Stars <span class="count" id="starCount"></span></h2></summary><div class="sublabel">Brightest in the sky</div><div class="chips" id="starChips"></div><div class="sublabel" style="margin-top:8px">Nearest to the Sun</div><div class="chips" id="nearChips"></div><p class="hint">In the sky view, click any named star. In 3D, zoom far out to see the nearest stars at their real distances.</p></details>
       </section>
 
       <section class="panel" role="tabpanel" id="p-view" aria-labelledby="tab-view" hidden>
@@ -299,6 +306,15 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
           <div class="check"><input id="shCL" type="checkbox" checked><label for="shCL">Constellation lines</label></div>
           <div class="check"><input id="shCN" type="checkbox" checked><label for="shCN">Constellation names</label></div>
           <div class="check"><input id="shDSO" type="checkbox" checked><label for="shDSO">Messier objects (galaxies, clusters, nebulae)</label></div>
+          <div class="check"><input id="shAGrid" type="checkbox"><label for="shAGrid">Altitude and azimuth grid</label></div>
+          <div class="check"><input id="shEGrid" type="checkbox"><label for="shEGrid">Right ascension and declination grid</label></div>
+          <div class="check"><input id="shEcl" type="checkbox"><label for="shEcl">Ecliptic, the Sun's yearly path</label></div>
+          <div class="check"><input id="shMer" type="checkbox"><label for="shMer">Meridian</label></div>
+          <div class="check"><input id="shGround" type="checkbox" checked><label for="shGround">Ground (turn off to see the sky below the horizon)</label></div>
+          <div class="check"><input id="shRefr" type="checkbox" checked><label for="shRefr">Atmospheric refraction (lifts things near the horizon)</label></div>
+          <label for="bortle" class="line" style="margin-top:8px"><span>Light pollution</span><span id="bortleOut"></span></label>
+          <input id="bortle" type="range" min="1" max="9" step="1" value="3" aria-describedby="bortleHint">
+          <p class="hint" id="bortleHint">Bortle scale: 1 is a remote desert, 9 a city centre. City glow hides faint stars and the Milky Way.</p>
           <p class="hint">Positions are as seen from this spot, so eclipses and the Moon's phase look just as they would outside. Use the speed buttons to watch the sky turn.</p>
         </div>
         <div class="group">
@@ -307,7 +323,23 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
           <div class="check"><input id="shBelt" type="checkbox" checked><label for="shBelt">Asteroid belt, Trojans and Kuiper belt</label></div>
           <div class="check"><input id="shCraft" type="checkbox" checked><label for="shCraft">Spacecraft, with the path of the one selected</label></div>
           <div class="check"><input id="shStars" type="checkbox" checked><label for="shStars">Real stars and the Milky Way</label></div>
-          <div class="check"><input id="shPlaces" type="checkbox" checked><label for="shPlaces">Place names on Earth, the Moon, Mars and Mercury (when zoomed in)</label></div>
+          <div class="check"><input id="shOort" type="checkbox" checked><label for="shOort">Oort cloud (zoom far out)</label></div>
+          <div class="check"><input id="shSats" type="checkbox" checked><label for="shSats">Earth satellites</label></div>
+          <div class="check"><input id="shPlaces" type="checkbox" checked><label for="shPlaces">Place names on Earth, the Moon, Mars, Venus and other worlds (when zoomed in)</label></div>
+          <div class="field" style="margin-top:10px"><label for="bandSel">Sky imagery</label><select id="bandSel">
+            <option value="visible">Visible light (Milky Way photo)</option><option value="radio">Radio, 408 MHz</option><option value="microwave">Microwave: the cosmic background</option>
+            <option value="infrared">Infrared, 100 µm</option><option value="halpha">Hydrogen-alpha (glowing gas)</option><option value="xray">X-ray (ROSAT)</option><option value="gamma">Gamma rays (Fermi)</option></select></div>
+          <p class="hint" id="bandHint"></p>
+        </div>
+        <div class="group" id="grpLayers">
+          <h2>Overlays in 3D</h2>
+          <div class="check"><input id="shWind" type="checkbox"><label for="shWind">Solar wind and the heliosphere</label></div>
+          <div class="check"><input id="shAur" type="checkbox" checked><label for="shAur">Auroras (Earth in visible light; Jupiter and Saturn in ultraviolet colours)</label></div>
+          <div class="check"><input id="shLagr" type="checkbox"><label for="shLagr">Lagrange points of the selected planet or the Moon</label></div>
+          <div class="check"><input id="shRoche" type="checkbox"><label for="shRoche">Roche limit and Hill sphere of the selected planet</label></div>
+          <div class="check"><input id="shEclPath" type="checkbox" checked><label for="shEclPath">Solar eclipse paths on Earth</label></div>
+          <div class="check"><input id="shTerm" type="checkbox"><label for="shTerm">Day and night line</label></div>
+          <div class="check"><input id="shLanding" type="checkbox" checked><label for="shLanding">Landing sites</label></div>
         </div>
         <div class="group" id="grpGo">
           <h2>Go to</h2>
@@ -405,12 +437,13 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
             <button class="btn" id="eNext" type="button">Next ›</button>
           </div>
           <p class="result" id="eOut" aria-live="polite"></p>
-          <div class="seg" id="eView" style="margin-top:6px" hidden><button class="btn" id="eSee" type="button">Watch it from Earth</button></div>
+          <div class="seg" id="eView" style="margin-top:6px" hidden><button class="btn" id="eSee" type="button">Watch it from Earth</button><button class="btn" id="eTrack" type="button">Show its path in 3D</button></div>
         </div>
       </section>
     </div>
 
     <details class="more about"><summary>About this model</summary>
+      <p class="fine">Stars: HYG database v4.1 (Hipparcos, Yale, Gliese; CC BY-SA 4.0). Radii are estimates from brightness and colour. Satellites: real orbit sizes and tilts with the drift of each orbit plane; positions along the orbits are illustrative. The Oort cloud is drawn as theory describes it; none of its bodies has been seen there. Sky maps: Haslam 408 MHz (Remazeilles 2015), WMAP 9-year ILC, IRAS/IRIS 100 µm, Finkbeiner 2003 H-alpha (all via NASA LAMBDA), ROSAT All-Sky Survey (Snowden 1997) and Fermi LAT (both via NASA SkyView).</p>
       <p class="fine">Years run from −3000 to 3000. Year 0 is 1 BC, and −43 is 44 BC. Dates use the Gregorian calendar and UT. Positions are most exact from 1800 to 2050.</p>
       <p class="fine">Planet positions use the VSOP87 theory (about 0.1 arcsecond for the planets across the whole date range), and the Moon uses the full main series of lunar theory. The 46 moons use JPL mean orbital elements. Eclipses come from the shadow cones of the Sun, Moon and Earth. Planet maps are real imagery. Zoom close in 3D and Earth, the Moon, Mars and Mercury load sharper map tiles for the area in view: NASA Blue Marble and Black Marble for Earth (to about 0.6 km per pixel), the NASA LRO camera mosaic with LOLA terrain for the Moon, the USGS Viking color mosaic for Mars and the MESSENGER mosaic for Mercury. The Sun and the other planets use maps from Solar System Scope (NASA and USGS data, CC BY 4.0), with Pluto from New Horizons. Saturn's rings are drawn from their measured structure. Moon maps for the larger moons come from the Stellarium project. Spacecraft paths are NASA JPL Horizons state vectors, and the dark spots on Jupiter are the real shadows of its moons. Constellation lines, names and Messier objects come from the d3-celestial data set (Olaf Frohn, BSD-3), and the place names are placed by hand from the IAU and USGS gazetteers. Stars are the HYG catalogue (Hipparcos, Yale and Gliese), about 83,000 down to magnitude 9, with their real colours; the Milky Way is NASA's all-sky star map. The Galilean moons use USGS Voyager and Galileo mosaics. In 3D each planet turns at its real rate on its real tilt, and Earth shows the correct day and night for the date. Dwarf planets and large asteroids use JPL Small-Body Database elements advanced as two-body orbits, so they are most exact within a few centuries of today. Small moons without a measured size are not drawn.</p>
     </details>
@@ -533,6 +566,9 @@ const PLACES = {
     ['Seoul', 37.57, 126.98, 2, 'k'], ['Tokyo', 35.68, 139.69, 2, 'k'], ['Beijing', 39.9, 116.4, 2, 'k'], ['Mumbai', 19.08, 72.88, 2, 'k'], ['Cairo', 30.04, 31.24, 2, 'k'], ['Moscow', 55.76, 37.62, 3, 'k'], ['Istanbul', 41.01, 28.98, 3, 'k'], ['London', 51.51, -0.13, 2, 'k'], ['Paris', 48.86, 2.35, 3, 'k'],
     ['Lagos', 6.52, 3.38, 3, 'k'], ['São Paulo', -23.55, -46.63, 3, 'k'], ['Rio de Janeiro', -22.91, -43.17, 3, 'k'], ['Mexico City', 19.43, -99.13, 3, 'k'], ['New York', 40.71, -74.0, 2, 'k'], ['Los Angeles', 34.05, -118.24, 3, 'k'], ['Sydney', -33.87, 151.21, 3, 'k'], ['Singapore', 1.35, 103.82, 3, 'k']
   ]
+  , venus: [['Venera 7', -5, -9, 2, 's'], ['Venera 8', -10.7, -24.75, 2, 's'], ['Venera 9', 31.01, -68.36, 1, 's'], ['Venera 10', 15.42, -68.49, 2, 's'], ['Venera 11', -14, -61, 3, 's'], ['Venera 12', -7, -66, 3, 's'], ['Venera 13', -7.55, -56.31, 1, 's'], ['Venera 14', -13.05, -49.81, 2, 's'], ['Vega 1', 8.1, 176.7, 2, 's'], ['Vega 2', -7.14, 177.67, 2, 's'],
+    ['Maxwell Montes', 65.2, 3.3, 1, 't'], ['Ishtar Terra', 70, 27.5, 1, 'r'], ['Aphrodite Terra', -5.8, 104.8, 1, 'r'], ['Beta Regio', 25.3, -77, 2, 'r'], ['Lakshmi Planum', 68.6, -20.1, 2, 'm']]
+  , titan: [['Huygens probe', -10.25, 167.7, 1, 's'], ['Dragonfly target (Selk)', 7, 161, 2, 's'], ['Kraken Mare', 68, 50, 1, 'm'], ['Ligeia Mare', 79, 112, 1, 'm'], ['Xanadu', -10, -100, 1, 'r'], ['Shangri-La', -10, -165, 2, 'r']]
   , io: [['Pele', -18.7, 104.7, 1, 'v'], ['Loki Patera', 13.4, 51.2, 1, 'v'], ['Prometheus', -1.5, -153.9, 1, 'v'], ['Tvashtar', 62.3, -122.4, 1, 'v'], ['Amirani', 24.5, -114.7, 2, 'v'], ['Culann Patera', 19.9, -161.2, 2, 'v'], ['Masubi', -49.7, -56.0, 2, 'v'], ['Pillan Patera', -12.4, 116.7, 2, 'v'], ['Surt', 45.2, 22.4, 2, 'v'], ['Ra Patera', -8.3, 34.8, 2, 'v'], ['Marduk', -27.5, 150.4, 2, 'v'], ['Apis Tholus', -10.9, 12.1, 3, 't'], ['Inachus Tholus', -16.2, 12.2, 3, 't'], ['Tsui Goab Tholus', -0.1, -163.0, 3, 't']]
   , europa: [['Tyre', 33.6, -146.6, 1, 'c'], ['Conamara Chaos', 9.7, 87.3, 1, 't'], ['Thera Macula', -46.7, 178.8, 2, 't'], ['Thrace Macula', -45.9, -172.1, 2, 't'], ['Castalia Macula', -1.6, 134.3, 2, 't'], ['Tara Regio', -10, -75, 1, 't'], ['Annwn Regio', 20, 40, 2, 't'], ['Falga Regio', 30, 150, 2, 't'], ['Powys Regio', 0, -145, 2, 't'], ['Pwyll', -26, 89, 1, 'c']]
   , ganymede: [['Galileo Regio', 45, -127, 1, 't'], ['Marius Regio', 2.5, 172.3, 1, 't'], ['Barnard Regio', -6.8, -11.6, 2, 't'], ['Nicholson Regio', -33.1, -6.4, 2, 't'], ['Perrine Regio', 34, -28, 2, 't'], ['Melotte Regio', -12, 115, 2, 't'], ['Uruk Sulcus', 0.8, -160.3, 1, 't'], ['Arbela Sulcus', -21.1, 10.2, 2, 't'], ['Harpagia Sulcus', -11.7, 41.3, 2, 't']]
@@ -1111,10 +1147,11 @@ const Ext = (function () {
   }
 
   /* ---------- spacecraft: JPL Horizons state vectors, cubic Hermite between samples ---------- */
+  const CRAFT_SIZE = { voyager1: 13, voyager2: 13, pioneer10: 7, pioneer11: 7, newhorizons: 3, lucy: 15, psyche: 22, clipper: 30.5, jwst: 21, bepicolombo: 30 }; // widest span, m
   const CRAFT = Object.keys(CRAFT_DATA).map(key => {
     const c = CRAFT_DATA[key], n = c.mjd.length, jd = new Float64Array(n);
     for (let i = 0; i < n; i++) jd[i] = c.mjd[i] + 2400000.5;
-    return { id: 'sc-' + key, key, name: c.name, kind: 'craft', color: c.color, blurb: c.blurb, radius: 0.005, jd, p: c.p, n, t0: jd[0], t1: jd[n - 1] };
+    return { id: 'sc-' + key, key, name: c.name, kind: 'craft', color: c.color, blurb: c.blurb, radius: (CRAFT_SIZE[key] || 10) / 2000, jd, p: c.p, n, t0: jd[0], t1: jd[n - 1] };
   });
   const craftLive = (b, jd) => jd >= b.t0 && jd <= b.t1;
   function craftState(b, jd, out) { // heliocentric position (km) into out[0..2], velocity (km/s) into out[3..5]
@@ -1139,8 +1176,106 @@ const Ext = (function () {
     return pts;
   }
 
+  /* ---------- stars: the brightest named stars and every catalogued system within about 17 light years (HYG database v4.1, CC BY-SA 4.0) ----------
+     [name, RA deg, Dec deg, apparent mag, distance ly, spectral type, constellation, absolute mag, luminosity (Sun = 1, visual), designation, within 17 ly] */
+  const LY = 9.4607304725808e12;
+  const STARCAT = [["Sirius",101.287,-16.716,-1.44,8.6,"A0m...","CMa",1.45,23,"α CMa",1],["Canopus",95.988,-52.696,-0.62,309.2,"F0Ib","Car",-5.5,13855,"α Car",0],["Arcturus",213.915,19.182,-0.05,36.7,"K2IIIp","Boo",-0.31,116,"α Boo",0],["Rigil Kentaurus",219.911,-60.834,-0.01,4.32,"G2V","Cen",4.38,1.5431,"α¹ Cen",1],["Vega",279.235,38.784,0.03,25.04,"A0Vvar","Lyr",0.6,50,"α Lyr",0],["Capella",79.172,45.998,0.08,42.8,"M1: comp","Aur",-0.51,139,"α Aur",0],["Rigel",78.634,-8.202,0.18,862.8,"B8Ia","Ori",-6.93,51665,"β Ori",0],["Procyon",114.825,5.225,0.4,11.46,"F5IV-V","CMi",2.67,7.4405,"α CMi",1],["Achernar",24.428,-57.237,0.45,139.4,"B3Vp","Eri",-2.71,1052,"α Eri",0],["Betelgeuse",88.793,7.407,0.45,497.9,"M2Ib","Ori",-5.47,13415,"α Ori",0],["Hadar",210.956,-60.373,0.61,392.0,"B1III","Cen",-4.79,7171,"β Cen",0],["Altair",297.696,8.868,0.76,16.73,"A7IV-V","Aql",2.21,11,"α Aql",1],["Acrux",186.65,-63.099,0.77,322.0,"B0.5IV","Cru",-4.2,4176,"α¹ Cru",0],["Aldebaran",68.98,16.509,0.87,66.6,"K5III","Tau",-0.68,163,"α Tau",0],["Spica",201.298,-11.161,0.98,249.7,"B1V","Vir",-3.44,2070,"α Vir",0],["Antares",247.352,-26.432,1.06,553.7,"M1Ib + B2.5V","Sco",-5.09,9454,"α Sco",0],["Pollux",116.329,28.026,1.16,33.8,"K0IIIvar","Gem",1.08,32,"β Gem",0],["Fomalhaut",344.413,-29.622,1.17,25.13,"A3V","PsA",1.74,18,"α PsA",0],["Mimosa",191.93,-59.689,1.25,278.5,"B0.5III","Cru",-3.41,2008,"β Cru",0],["Deneb",310.358,45.28,1.25,1411.9,"A2Ia","Cyg",-6.93,51618,"α Cyg",0],["Toliman",219.905,-60.838,1.35,4.32,"K1V","Cen",5.74,0.441,"α² Cen",1],["Regulus",152.093,11.967,1.36,79.3,"B7V","Leo",-0.57,147,"α Leo",0],["Adhara",104.656,-28.972,1.5,405.2,"B2II","CMa",-3.97,3376,"ε CMa",0],["Castor",113.65,31.888,1.58,50.9,"A2Vm","Gem",0.61,49,"α Gem",0],["Gacrux",187.791,-57.113,1.59,88.6,"M4III","Cru",-0.58,148,"γ Cru",0],["Shaula",263.402,-37.104,1.62,571.2,"B1.5IV+...","Sco",-4.6,6009,"λ Sco",0],["Bellatrix",81.283,6.35,1.64,252.4,"B2III","Ori",-2.8,1152,"γ Ori",0],["Elnath",81.573,28.607,1.65,133.9,"B7III","Tau",-1.42,321,"β Tau",0],["Miaplacidus",138.301,-69.717,1.67,113.2,"A2IV","Car",-1.03,225,"β Car",0],["Alnilam",84.053,-1.202,1.69,1976.7,"B0Ia","Ori",-7.22,67484,"ε Ori",0],["Alnair",332.058,-46.961,1.73,101.0,"B7IV","Gru",-0.72,170,"α Gru",0],["Alnitak",85.19,-1.943,1.74,736.2,"O9.5Ib SB","Ori",-5.03,8937,"ζ Ori",0],["Alioth",193.507,55.96,1.76,82.6,"A0p","UMa",-0.26,110,"ε UMa",0],["Mirfak",51.081,49.861,1.79,506.5,"F5Ib","Per",-4.17,4040,"α Per",0],["Kaus Australis",276.043,-34.385,1.79,143.3,"B9.5III","Sgr",-1.42,323,"ε Sgr",0],["Dubhe",165.932,61.751,1.81,122.9,"F7V comp","UMa",-1.07,233,"α UMa",0],["Wezen",107.098,-26.393,1.83,1606.7,"F8Ia","CMa",-6.63,39192,"δ CMa",0],["Alkaid",206.885,49.313,1.85,103.9,"B3V SB","UMa",-0.67,161,"η UMa",0],["Avior",125.629,-59.509,1.86,605.1,"K3III+B2V","Car",-4.48,5405,"ε Car",0],["Sargas",264.33,-42.998,1.86,300.3,"F1II","Sco",-2.96,1332,"θ Sco",0],["Menkalinan",89.882,44.947,1.9,81.1,"A2V","Aur",-0.08,94,"β Aur",0],["Atria",252.166,-69.028,1.91,390.6,"K2IIb-IIIa","TrA",-3.48,2152,"α TrA",0],["Alhena",99.428,16.399,1.93,109.3,"A0IV","Gem",-0.7,165,"γ Gem",0],["Alsephina",131.176,-54.709,1.93,80.6,"A1V","Vel",-0.03,90,"δ Vel",0],["Peacock",306.412,-56.735,1.94,178.8,"B2IV","Pav",-1.75,439,"α Pav",0],["Polaris",37.946,89.264,1.97,432.6,"F7:Ib-IIv SB","UMi",-3.64,2496,"α UMi",0],["Mirzam",95.675,-17.956,1.98,492.7,"B1II/III","CMa",-3.92,3209,"β CMa",0],["Alphard",141.897,-8.659,1.99,180.3,"K3III","Hya",-1.72,426,"α Hya",0],["Hamal",31.793,23.462,2.01,65.8,"K2III","Ari",0.49,56,"α Ari",0],["Algieba",154.993,19.841,2.01,130.1,"K0III","Leo",-0.99,218,"γ¹ Leo",0],["Diphda",10.897,-17.987,2.04,96.3,"K0III","Cet",-0.31,116,"β Cet",0],["Nunki",283.816,-26.297,2.05,227.8,"B2.5V","Sgr",-2.17,643,"σ Sgr",0],["Menkent",211.671,-36.37,2.06,58.8,"K0IIIb","Cen",0.78,42,"θ Cen",0],["Alpheratz",2.097,29.09,2.07,97.0,"B9p","And",-0.3,114,"α And",0],["Mirach",17.433,35.621,2.07,197.4,"M0IIIvar","And",-1.84,474,"β And",0],["Saiph",86.939,-9.67,2.07,647.1,"B0.5Iavar","Ori",-4.42,5096,"κ Ori",0],["Kochab",222.677,74.156,2.07,130.9,"K4IIIvar","UMi",-0.95,209,"β UMi",0],["Tiaki",340.667,-46.885,2.07,177.0,"M5III","Gru",-1.6,381,"β Gru",0],["Rasalhague",263.734,12.56,2.08,48.6,"A5III","Oph",1.22,28,"α Oph",0],["Algol",47.042,40.956,2.09,89.9,"B8V","Per",-0.11,97,"β Per",0],["Almach",30.975,42.33,2.1,393.0,"B8V","And",-3.31,1828,"γ¹ And",0],["Denebola",177.265,14.572,2.14,35.9,"A3Vvar","Leo",1.93,15,"β Leo",0],["Cih",14.177,60.717,2.15,549.1,"B0IV:evar","Cas",-3.98,3407,"γ Cas",0],["Naos",120.896,-40.003,2.21,1083.6,"O5IAf","Pup",-5.4,12555,"ζ Pup",0],["Aspidiske",139.273,-59.275,2.21,765.6,"A8Ib","Car",-4.64,6269,"ι Car",0],["Alphecca",233.672,26.715,2.22,75.0,"A0V","CrB",0.41,60,"α CrB",0],["Suhail",136.999,-43.433,2.23,544.5,"K4Ib-II","Vel",-3.88,3113,"λ Vel",0],["Mizar",200.981,54.925,2.23,85.8,"A2V","UMa",0.13,77,"ζ UMa",0],["Sadr",305.557,40.257,2.23,1832.3,"F8Ib","Cyg",-6.52,35253,"γ Cyg",0],["Schedar",10.127,56.537,2.24,228.2,"K0II-IIIvar","Cas",-1.99,542,"α Cas",0],["Eltanin",269.152,51.489,2.24,154.3,"K5III","Dra",-1.13,248,"γ Dra",0],["Mintaka",83.002,-0.299,2.25,692.5,"O9.5II","Ori",-4.38,4943,"δ Ori",0],["Caph",2.293,59.15,2.28,54.7,"F2III-IV","Cas",1.16,30,"β Cas",0],["Dschubba",240.083,-22.622,2.29,491.2,"B0.2IV","Sco",-3.6,2397,"δ Sco",0],["Larawag",252.541,-34.293,2.29,63.7,"K2IIIb","Sco",0.84,40,"ε Sco",0],["Merak",165.46,56.382,2.34,79.7,"A1V","UMa",0.4,60,"β UMa",0],["Izar",221.247,27.074,2.35,202.6,"A0","Boo",-1.62,386,"ε Boo",0],["Enif",326.046,9.875,2.38,689.5,"K2Ibvar","Peg",-4.25,4349,"ε Peg",0],["Ankaa",6.571,-42.306,2.4,84.7,"K0III...","Phe",0.33,64,"α Phe",0],["Phecda",178.458,53.695,2.41,83.2,"A0V SB","UMa",0.38,62,"γ UMa",0],["Sabik",257.595,-15.725,2.43,88.4,"A2.5Va","Oph",0.27,68,"η Oph",0],["Scheat",345.944,28.083,2.44,196.0,"M2II-IIIvar","Peg",-1.45,332,"β Peg",0],["Aludra",111.024,-29.303,2.45,1988.8,"B5Ia","CMa",-6.48,33916,"η CMa",0],["Alderamin",319.644,62.586,2.45,49.0,"A7IV-V","Cep",1.56,21,"α Cep",0],["Markeb",140.528,-55.011,2.47,572.2,"B2IV","Vel",-3.75,2757,"κ Vel",0],["Aljanah",311.553,33.97,2.48,72.7,"K0III","Cyg",0.74,44,"ε Cyg",0],["Markab",346.19,15.205,2.49,133.3,"B9.5III","Peg",-0.57,147,"α Peg",0],["Menkar",45.57,4.09,2.54,249.2,"M2III","Cet",-1.88,490,"α Cet",0],["Zosma",168.527,20.524,2.56,58.4,"A4V","Leo",1.29,26,"δ Leo",0],["Acrab",241.359,-19.805,2.56,404.2,"B0.5V","Sco",-2.91,1266,"β¹ Sco",0],["Arneb",83.183,-17.822,2.58,2218.7,"F0Ib","Lep",-6.58,37428,"α Lep",0],["Gienah",183.952,-17.542,2.58,153.6,"B8III","Crv",-0.79,179,"γ Crv",0],["Ascella",285.653,-29.88,2.6,88.2,"A3IV","Sgr",0.44,58,"ζ Sgr",0],["Zubeneschamali",229.252,-9.383,2.61,185.1,"B8V","Lib",-1.16,254,"β Lib",0],["Unukalhai",236.067,6.426,2.63,74.0,"K2III","Ser",0.85,40,"α Ser",0],["Sheratan",28.66,20.808,2.64,58.7,"A5V...","Ari",1.36,25,"β Ari",0],["Phact",84.912,-34.074,2.65,261.3,"B7IV","Col",-1.87,487,"α Col",0],["Mahasim",89.93,37.213,2.65,165.6,"A0p Si","Aur",-0.88,196,"θ Aur",0],["Kraz",188.597,-23.397,2.65,145.7,"G5II","Crv",-0.6,151,"β Crv",0],["Ruchbah",21.453,60.235,2.66,99.4,"A5Vv SB","Cas",0.24,70,"δ Cas",0],["Muphrid",208.671,18.398,2.68,37.2,"G0IV","Boo",2.4,9.5852,"η Boo",0],["Hassaleh",74.248,33.166,2.69,493.4,"K3IIvar","Aur",-3.21,1673,"ι Aur",0],["Lesath",262.691,-37.296,2.7,576.2,"B2IV","Sco",-3.54,2262,"υ Sco",0],["Kaus Media",275.249,-29.828,2.72,347.7,"K3III","Sgr",-2.42,808,"δ Sgr",0],["Tarazed",296.565,10.613,2.72,394.9,"K3II","Aql",-2.69,1042,"γ Aql",0],["Yed Prior",243.586,-3.694,2.73,171.1,"M1III","Oph",-0.87,194,"δ Oph",0],["Athebyne",245.998,61.514,2.73,92.1,"G8III","Dra",0.48,56,"η Dra",0],["Porrima",190.415,-1.449,2.74,38.1,"F0V+...","Vir",2.4,9.5324,"γ Vir",0],["Hatysa",83.858,-5.91,2.75,2329.7,"O9III","Ori",-6.52,35286,"ι Ori",0],["Zubenelgenubi",222.72,-16.042,2.75,75.8,"A3IV","Lib",0.92,37,"α² Lib",0],["Cebalrai",265.868,4.567,2.76,81.8,"K2III","Oph",0.76,43,"β Oph",0],["Cursa",76.962,-5.086,2.78,89.4,"A3IIIvar","Eri",0.59,51,"β Eri",0],["Kornephoros",247.555,21.49,2.78,139.1,"G8III","Her",-0.37,122,"β Her",0],["Rasalgethi",258.662,14.39,2.78,359.6,"M5IIvar","Her",-2.43,818,"α¹ Her",0],["Imai",183.786,-58.749,2.79,345.1,"B2IV","Cru",-2.33,747,"δ Cru",0],["Rastaban",262.608,52.301,2.79,380.1,"G2II","Dra",-2.54,906,"β Dra",0],["Nihal",82.061,-20.759,2.81,160.4,"G5II","Lep",-0.65,158,"β Lep",0],["Paikauhale",248.971,-28.216,2.82,474.1,"B0V","Sco",-2.99,1370,"τ Sco",0],["Kaus Borealis",276.993,-25.422,2.82,78.2,"K1IIIb","Sgr",0.92,37,"λ Sgr",0],["Algenib",3.309,15.184,2.83,391.5,"B2IV","Peg",-2.57,926,"γ Peg",0],["Tureis",121.886,-24.304,2.83,63.5,"F2mF5IIp","Pup",1.38,24,"ρ Pup",0],["Alcyone",56.871,24.105,2.85,403.2,"B7III","Tau",-2.61,964,"η Tau",0],["Vindemiatrix",195.544,10.959,2.85,109.6,"G8IIIvar","Vir",0.22,71,"ε Vir",0],["Deneb Algedi",326.76,-16.127,2.85,38.7,"A5mF2 (IV)","Cap",2.48,8.8879,"δ Cap",0],["Castor B",113.652,31.891,2.85,51.5,"A m","Gem",1.86,16,"α Gem",0],["Fawaris",296.244,45.131,2.86,165.0,"B9.5III","Cyg",-0.66,160,"δ Cyg",0],["Tejat",95.74,22.514,2.87,231.6,"M3IIIvar","Gem",-1.39,312,"μ Gem",0],["Acamar",44.565,-40.305,2.88,161.2,"A4III+...","Eri",-0.59,150,"θ¹ Eri",0],["Albaldah",287.441,-21.024,2.88,509.6,"F2II/III","Sgr",-3.09,1498,"π Sgr",0],["Gomeisa",111.788,8.289,2.89,161.7,"B8Vvar","CMi",-0.59,149,"β CMi",0],["Cor Caroli",194.007,38.318,2.89,114.8,"A0spe...","CVn",0.16,75,"α² CVn",0],["Fang",239.713,-26.114,2.89,585.6,"B1V + B2V","Sco",-3.38,1961,"π Sco",0],["Alniyat",245.297,-25.593,2.9,696.9,"B1III","Sco",-3.75,2752,"σ Sco",0],["Sadalsuud",322.89,-5.571,2.9,537.3,"G0Ib","Aqr",-3.18,1635,"β Aqr",0],["Matar",340.751,30.221,2.93,214.3,"G2II-III..","Peg",-1.16,253,"η Peg",0],["Algorab",187.466,-16.515,2.94,86.9,"B9.5V","Crv",0.81,41,"δ Crv",0],["Sadalmelik",331.446,-0.32,2.95,523.5,"G2Ib","Aqr",-3.08,1483,"α Aqr",0],["Zaurak",59.507,-13.509,2.97,203.3,"M1IIIb Ca-1","Eri",-1.0,220,"γ Eri",0],["Tianguan",84.411,21.143,2.97,445.0,"B4IIIp","Tau",-2.7,1051,"ζ Tau",0],["Ras Elased Australis",146.463,23.774,2.97,246.7,"G0II","Leo",-1.42,323,"ε Leo",0],["Alnasl",271.452,-30.424,2.98,96.9,"K0III","Sgr",0.62,49,"γ² Sgr",0],["Okab",286.353,13.863,2.99,83.0,"A0Vn","Aql",0.96,36,"ζ Aql",0],["Pherkad",230.182,71.834,3.0,486.8,"A3II-III","UMi",-2.87,1225,"γ UMi",0],["Xamidimura",252.968,-38.047,3.0,501.0,"B1.5IV + B","Sco",-2.93,1297,"μ¹ Sco",0],["Aldhanab",328.482,-37.365,3.0,211.1,"B8III","Gru",-1.05,230,"γ Gru",0],["Furud",95.078,-30.063,3.02,362.4,"B2.5V","CMa",-2.21,666,"ζ CMa",0],["Almaaz",75.492,43.823,3.03,2131.7,"F0Ia","Aur",-6.05,22845,"ε Aur",0],["Seginus",218.02,38.308,3.04,86.8,"A7IIIvar","Boo",0.92,37,"γ Boo",0],["Albireo",292.68,27.96,3.05,434.3,"K3II+...","Cyg",-2.57,931,"β¹ Cyg",0],["Dabih",305.253,-14.781,3.05,326.8,"A5:n","Cap",-1.95,527,"β Cap",0],["Mebsuta",100.983,25.131,3.06,845.0,"A3mA6-A9","Gem",-4.01,3490,"ε Gem",0],["Tania Australis",155.582,41.5,3.06,230.3,"M0III SB","UMa",-1.19,259,"μ UMa",0],["Altais",288.138,67.662,3.07,97.4,"G9III","Dra",0.69,46,"δ Dra",0],["Wazn",87.74,-35.768,3.12,87.2,"K1.5III","Col",0.98,35,"β Col",0],["Talitha",134.802,48.042,3.12,47.3,"A7IV","UMa",2.31,10,"ι UMa",0],["Sarin",258.758,24.839,3.12,75.1,"A3IVv SB","Her",1.31,26,"δ Her",0],["Aldhibah",257.197,65.715,3.17,328.5,"B6III","Dra",-1.84,476,"ζ Dra",0],["Haedus",76.629,41.234,3.18,243.4,"B3V","Aur",-1.18,259,"η Aur",0],["Tabit",72.46,6.961,3.19,26.32,"F6V","Ori",3.66,3.0033,"π³ Ori",0],["Fuyue",267.464,-37.043,3.19,125.8,"K0/K1III","Sco",0.26,69,"",0],["Errai",354.837,77.632,3.21,46.0,"K1IV","Cep",2.46,9.0033,"γ Cep",0],["Yed Posterior",244.58,-4.693,3.23,106.4,"G8III","Oph",0.66,47,"ε Oph",0],["Alfirk",322.165,70.561,3.23,685.2,"B2IIIv SB","Cep",-3.38,1962,"β Cep",0],["Brachium",226.018,-25.282,3.25,288.4,"M3/M4III","Lib",-1.48,341,"σ Lib",0],["Sulafat",284.736,32.69,3.25,620.1,"B9III","Lyr",-3.15,1578,"γ Lyr",0],["Skat",343.663,-15.821,3.27,160.6,"A3V","Aqr",-0.19,104,"δ Aqr",0],["Edasich",231.232,58.966,3.29,101.2,"K2III","Dra",0.83,41,"ι Dra",0],["Propus",93.719,22.507,3.31,384.6,"M3III","Gem",-2.05,574,"η Gem",0],["Megrez",183.856,57.033,3.32,80.5,"A3Vvar","UMa",1.36,25,"δ UMa",0],["Chertan",168.56,15.43,3.33,165.1,"A2V","Leo",-0.19,104,"θ Leo",0],["Azmidi",117.324,-24.86,3.34,1199.1,"G6Ia","Pup",-4.49,5430,"ξ Pup",0],["Segin",28.599,63.67,3.35,411.8,"B2pvar","Cas",-2.16,634,"ε Cas",0],["Alzirr",101.322,12.896,3.35,58.7,"F5IV","Gem",2.07,13,"ξ Gem",0],["Muscida",127.566,60.718,3.35,179.1,"G4II-III","UMa",-0.35,120,"ο UMa",0],["Ashlesha",131.694,6.419,3.38,129.3,"G0III-IV","Hya",0.39,61,"ε Hya",0],["Heze",203.673,-0.596,3.38,74.1,"A3V","Vir",1.6,20,"ζ Vir",0],["Meissa",83.784,9.934,3.39,1098.2,"O...","Ori",-4.25,4349,"λ Ori",0],["Minelauva",193.901,3.397,3.39,198.4,"M3III","Vir",-0.53,142,"δ Vir",0],["Chamukuy",67.166,15.871,3.4,150.4,"A7III","Tau",0.08,81,"θ² Tau",0],["Homam",340.365,10.831,3.41,204.4,"B8.5V","Peg",-0.57,148,"ζ Peg",0],["Mothallah",28.27,29.579,3.42,63.3,"F6IV","Tri",1.98,14,"α Tri",0],["Adhafera",154.173,23.417,3.43,274.1,"F0III","Leo",-1.19,261,"ζ Leo",0],["Tania Borealis",154.274,42.914,3.45,137.5,"A2IV","UMa",0.33,65,"λ UMa",0],["Achird",12.274,57.815,3.46,19.42,"G0V SB","Cas",4.59,1.2753,"η Cas",0],["Kaffaljidhma",40.825,3.236,3.47,79.6,"A3V","Cet",1.53,21,"γ Cet",0],["Nganurganity",105.43,-27.935,3.49,1120.8,"K4III","CMa",-4.19,4134,"σ CMa",0],["Alula Borealis",169.62,33.094,3.49,399.2,"K3III SB","UMa",-1.95,524,"ν UMa",0],["Nekkar",225.487,40.391,3.49,225.2,"G8III","Boo",-0.71,167,"β Boo",0],["Wasat",110.031,21.982,3.5,60.5,"F0IV...","Gem",2.16,12,"δ Gem",0],["Sadalbari",342.501,24.602,3.51,106.1,"M2III","Peg",0.95,36,"μ Peg",0],["Rana",55.812,-9.763,3.52,29.49,"K0IV","Eri",3.74,2.7823,"δ Eri",0],["Subra",145.288,9.892,3.52,130.3,"A5V+...","Leo",0.51,54,"ο Leo",0],["Sheliak",282.52,33.363,3.52,962.1,"A8:V comp SB","Lyr",-3.83,2962,"β Lyr",0],["Biham",332.55,6.198,3.52,92.3,"A2V","Peg",1.26,27,"θ Peg",0],["Ain",67.154,19.18,3.53,146.7,"K0III","Tau",0.27,68,"ε Tau",0],["Tarf",124.129,9.186,3.53,303.4,"K4III","Cnc",-1.31,292,"β Cnc",0],["Pipirima",253.084,-38.018,3.56,474.1,"B2IV","Sco",-2.25,693,"μ² Sco",0],["Alkaphrah",135.906,47.157,3.57,358.4,"A1Vn","UMa",-1.64,393,"κ UMa",0],["Algedi",304.514,-12.545,3.58,105.8,"G6/G8III","Cap",1.02,34,"α² Cap",0],["Nembus",24.498,48.628,3.59,177.2,"K3III","And",-0.09,94,"51 And",0],["Zavijava",177.674,1.765,3.59,35.6,"F8V","Vir",3.4,3.8124,"β Vir",0],["Ginan",185.34,-60.401,3.59,229.8,"K3/K4III","Cru",-0.65,158,"ε Cru",0],["Bharani",42.496,27.261,3.61,165.6,"B8Vn","Ari",0.08,81,"41 Ari",0],["Alpherg",22.871,15.346,3.62,349.6,"G8III","Psc",-1.53,357,"η Psc",0],["Atlas",57.291,24.053,3.62,382.4,"B8III","Tau",-1.73,427,"27 Tau",0],["Rotanev",309.387,14.595,3.64,100.9,"F5IV","Del",1.19,29,"β Del",0],["Prima Hyadum",64.948,15.628,3.65,161.5,"G8III","Tau",0.18,74,"γ Tau",0],["Nusakan",231.957,29.106,3.66,111.8,"F0p","CrB",0.98,35,"β CrB",0],["Thuban",211.097,64.376,3.67,303.1,"A0III SB","Dra",-1.17,256,"α Dra",0],["Fulu",9.243,53.897,3.69,593.0,"B2IV","Cas",-2.61,962,"ζ Cas",0],["Saclateni",75.62,41.076,3.69,785.9,"K4II comp","Aur",-3.22,1690,"ζ Aur",0],["Taiyangshou",176.513,47.779,3.69,183.6,"K0III","UMa",-0.06,92,"χ UMa",0],["Nashira",325.023,-16.662,3.69,157.0,"A7III:mp...","Cap",0.28,67,"γ Cap",0],["Alshain",298.828,6.407,3.71,44.7,"G8IVvar","Aql",3.03,5.3604,"β Aql",0],["Ran",53.233,-9.458,3.72,10.49,"K2V","Eri",6.18,0.293,"ε Eri",1],["Electra",56.219,24.113,3.72,404.7,"B6III","Tau",-1.75,436,"17 Tau",0],["Grumium",268.382,56.873,3.73,112.5,"K2III","Dra",1.04,33,"ξ Dra",0],["Baten Kaitos",27.865,-10.335,3.74,235.0,"K2III","Cet",-0.55,144,"ζ Cet",0],["Miram",42.674,55.895,3.77,879.1,"K3Ib comp SB","Per",-3.38,1964,"η Per",0],["Secunda Hyadum",65.734,17.543,3.77,155.6,"G8III","Tau",0.38,62,"δ¹ Tau",0],["Sualocin",309.91,15.912,3.77,253.8,"B9V","Del",-0.69,164,"α Del",0],["Albali",311.919,-9.496,3.78,207.7,"A1V","Aqr",-0.24,109,"ε Aqr",0],["Misam",47.374,44.858,3.79,112.7,"K0III","Per",1.1,32,"κ Per",0],["Praecipua",163.328,34.215,3.79,94.9,"K0III-IV","LMi",1.47,22,"46 LMi",0],["Dalim",48.019,-28.988,3.8,46.4,"F8V","For",3.03,5.3309,"α For",0],["Theemin",68.888,-30.562,3.81,213.9,"G8III","Eri",-0.27,112,"υ² Eri",0],["Alrescha",30.512,2.764,3.82,150.6,"A2","Psc",0.5,55,"α Psc",0],["Giausar",172.851,69.331,3.82,333.2,"M0IIIvar","Dra",-1.23,269,"λ Dra",0],["Marfik",247.728,1.984,3.82,173.1,"A2V","Oph",0.2,73,"λ Oph",0],["Atik",56.08,32.288,3.84,1120.8,"B1III","Per",-3.84,2995,"ο Per",0],["Polis",273.441,-21.059,3.84,0,"B2III:","Sgr",-16.16,253512863,"μ Sgr",0],["Sceptrum",69.545,-14.304,3.86,109.9,"K1III","Eri",1.22,28,"53 Eri",0],["Sadachbia",335.414,-1.387,3.86,163.7,"A0V","Aqr",0.36,63,"γ Aqr",0],["Maia",56.457,24.368,3.87,383.3,"B8III","Tau",-1.48,340,"20 Tau",0],["Iklil",239.221,-29.214,3.87,472.0,"B2IV/V","Sco",-1.93,517,"ρ Sco",0],["Mesarthim",28.383,19.294,3.88,164.1,"A1p Si","Ari",0.37,62,"γ² Ari",0],["Rasalas",148.191,26.007,3.88,124.1,"K0III","Leo",0.98,35,"μ Leo",0],["Azha",44.107,-8.898,3.89,136.5,"K1III-IV","Eri",0.78,42,"η Eri",0],["Zaniah",184.976,-0.667,3.89,265.4,"A2IV","Vir",-0.66,160,"η Vir",0],["Ukdah",144.964,-1.143,3.9,263.2,"K3IIIvar","Hya",-0.64,156,"ι Hya",0],["Zubenelhakrabi",233.882,-14.79,3.91,163.2,"K0III","Lib",0.41,59,"γ Lib",0],["Kitalpha",318.956,5.248,3.92,190.3,"G0III+...","Equ",0.09,80,"α Equ",0],["Wurren",17.096,-55.246,3.94,298.7,"B6V + B0V","Phe",-0.87,194,"ζ Phe",0],["Asellus Australis",131.171,18.154,3.94,130.6,"K0III","Cnc",0.93,37,"δ Cnc",0],["Arkab Prior",290.66,-44.459,3.96,313.6,"B9V","Sgr",-0.95,210,"β¹ Sgr",0],["Rukbat",290.972,-40.616,3.96,181.8,"B8V","Sgr",0.23,71,"α Sgr",0],["Beemim",66.009,-34.017,3.97,296.2,"K4III","Eri",-0.82,186,"43 Eri",0],["Menkib",59.741,35.791,3.98,1244.9,"O7.5Iab:","Per",-3.93,3245,"ξ Per",0],["Alcor",201.306,54.988,3.99,81.7,"A5V SB","UMa",2.0,14,"80 UMa",0],["Jabbah",242.999,-19.461,4.0,474.1,"B2IV","Sco",-1.81,462,"ν Sco",0],["Mekbuda",106.027,20.57,4.01,1376.2,"G3Ibv SB","Gem",-4.12,3858,"ζ Gem",0],["Alchiba",182.103,-24.729,4.02,48.7,"F0IV/V","Crv",3.15,4.7907,"α Crv",0],["Aldulfin",308.303,11.303,4.03,330.5,"B6III","Del",-1.0,218,"ε Del",0],["Beid",62.966,-6.838,4.04,121.7,"F2II-III","Eri",1.18,29,"ο¹ Eri",0],["Syrma",214.004,-6.001,4.07,72.5,"F7V","Vir",2.33,10,"ι Vir",0],["Alkes",164.944,-18.299,4.08,159.2,"K1III","Crt",0.64,48,"α Crt",0],["Gudja",237.185,18.142,4.09,381.9,"M1III","Ser",-1.25,276,"κ Ser",0],["Titawin",24.199,41.405,4.1,44.0,"F8V","And",3.45,3.6308,"υ And",0],["Muliphein",105.94,-15.633,4.11,441.9,"B8II","CMa",-1.55,363,"γ CMa",0],["Zhang",147.87,-14.847,4.11,263.9,"G6/G8III","Hya",-0.43,129,"υ¹ Hya",0],["Meridiana",287.368,-37.904,4.11,125.3,"A0/A1V","CrA",1.19,29,"α CrA",0],["Merope",56.582,23.948,4.14,380.1,"B6IV","Tau",-1.19,261,"23 Tau",0],["Ancha",334.208,-7.783,4.17,187.4,"G8III-IV","Aqr",0.37,62,"θ Aqr",0],["Kang",213.224,-10.274,4.18,254.8,"K3III","Vir",-0.28,113,"κ Vir",0],["Xuange",214.096,46.088,4.18,99.0,"A0sh","Boo",1.77,17,"λ Boo",0],["Chara",188.436,41.357,4.24,27.53,"G0V","CVn",4.61,1.2497,"β CVn",0],["Alsciaukat",125.709,43.188,4.25,382.4,"K5III","Lyn",-1.09,239,"31 Lyn",0],["Torcular",26.348,9.158,4.26,279.5,"K0III","Psc",-0.41,126,"ο Psc",0],["82 G. Eri",49.979,-43.07,4.26,19.71,"G8V","Eri",5.35,0.6286,"",0],["Acubens",134.622,11.858,4.26,188.3,"A5m","Cnc",0.45,57,"α Cnc",0],["Kurhah",330.947,64.628,4.26,96.5,"Am","Cep",1.9,15,"ξ Cep",0],["Arkab Posterior",290.805,-44.8,4.27,134.2,"F2III","Sgr",1.2,29,"β² Sgr",0],["Taygeta",56.302,24.467,4.3,409.2,"B6V","Tau",-1.19,261,"19 Tau",0],["Alkalurops",231.123,37.377,4.31,113.1,"F0V","Boo",1.61,20,"μ¹ Boo",0],["Alterf",142.93,22.968,4.32,329.1,"K5IIIvar","Leo",-0.7,166,"λ Leo",0],["Diadem",197.497,17.529,4.32,58.1,"F5V","Com",3.06,5.1761,"α Com",0],["Guniibuu",258.838,-26.603,4.33,19.35,"K2:III:","Oph",5.46,0.5681,"36 Oph",0],["Alula Australis",169.547,31.529,4.33,34.0,"G0 Ve","UMa",4.24,1.7523,"ξ UMa",0],["Botein",47.907,19.727,4.35,169.7,"K2IIIvar","Ari",0.77,43,"δ Ari",0],["Yildun",263.054,86.586,4.35,172.1,"A1Vn","UMi",0.74,44,"δ UMi",0],["Sham",295.024,18.014,4.39,425.2,"G0II","Sge",-1.19,260,"α Sge",0],["Maasym",262.685,26.111,4.41,369.4,"K3IIIvar","Her",-0.86,192,"λ Her",0],["Alkarab",351.345,23.404,4.42,170.4,"F8IV","Peg",0.83,41,"υ Peg",0],["Keid",63.818,-7.653,4.43,16.26,"K1V","Eri",5.94,0.3658,"ο² Eri",1],["Aladfar",288.44,39.146,4.43,1387.9,"B2.5IV","Lyr",-3.71,2667,"η Lyr",0],["Anser",292.176,24.665,4.44,297.3,"M0 comp","Vul",-0.36,121,"α Vul",0],["Minchir",129.689,3.341,4.45,372.7,"K2III","Hya",-0.84,189,"σ Hya",0],["Fumalsamakah",345.969,3.82,4.48,408.2,"B6Ve","Psc",-1.01,220,"β Psc",0],["Lilii Borea",41.977,29.247,4.52,171.6,"K1III","Ari",0.92,37,"39 Ari",0],["Khambalia",214.777,-13.371,4.52,186.5,"A1V","Vir",0.73,44,"λ Vir",0],["Cujam",246.354,14.033,4.57,250.1,"B9p Cr","Her",0.15,76,"ω Her",0],["Dziban",265.485,72.149,4.57,74.5,"F5IV-V","Dra",2.78,6.7484,"ψ¹ Dra",0],["Salm",350.159,23.74,4.58,161.7,"A5V","Peg",1.1,32,"τ Peg",0],["Castula",14.166,59.181,4.62,199.9,"G8III-IV","Cas",0.68,46,"υ² Cas",0],["Alya",284.055,4.204,4.62,154.6,"A5V","Ser",1.24,28,"θ¹ Ser",0],["Asellus Borealis",130.821,21.469,4.66,181.2,"A1IV","Cnc",0.94,37,"γ Cnc",0],["Tegmine",123.053,17.648,4.67,81.8,"G0V","Cnc",2.67,7.4268,"ζ² Cnc",0],["Alsafi",293.087,69.661,4.67,18.77,"K0V","Dra",5.87,0.3908,"σ Dra",0],["Bunda",324.438,-7.854,4.68,178.6,"A7V","Aqr",0.99,35,"ξ Aqr",0],["Azelfafage",325.524,51.19,4.69,1725.7,"B3IV","Cyg",-3.93,3245,"π¹ Cyg",0],["Terebellum",298.96,-26.3,4.7,84.8,"G3/G5III","Sgr",2.63,7.7553,"ω Sgr",0],["Libertas",298.562,8.461,4.71,183.5,"K0III","Aql",0.96,36,"ξ Aql",0],["Angetenar",42.76,-21.004,4.76,186.9,"K0III","Eri",0.97,36,"τ² Eri",0],["Alshat",305.166,-12.759,4.77,253.2,"B9IV","Cap",0.32,65,"ν Cap",0],["Zibal",48.958,-8.82,4.8,109.7,"A5m","Eri",2.17,12,"ζ Eri",0],["Alula Australis B",169.547,31.529,4.8,34.0,"G0 Ve","UMa",4.71,1.1366,"ξ UMa",0],["Elgafar",217.051,-2.228,4.81,118.3,"G2III","Vir",2.01,14,"φ Vir",0],["Fafnir",276.496,65.563,4.82,314.8,"K2III","Dra",-0.1,96,"42 Dra",0],["Graffias",241.092,-11.375,4.84,79.4,"F6 IV-V","Sco",2.91,5.9759,"ξ Sco",0],["Ainalrami",283.542,-22.745,4.86,1124.7,"K1II","Sgr",-2.83,1178,"ν¹ Sgr",0],["Adhil",20.585,45.529,4.87,214.4,"K0III-IV","And",0.78,42,"ξ And",0],["Jishui",114.791,34.584,4.89,166.3,"F3III","Gem",1.35,25,"ο Gem",0],["Acrab B",241.361,-19.802,4.9,398.2,"B2V","Sco",-0.53,142,"β² Sco",0],["Felis",148.718,-19.009,4.94,614.2,"K5III","Hya",-1.44,327,"",0],["Alya B",284.061,4.202,4.98,169.4,"A5Vn","Ser",1.4,24,"θ² Ser",0],["Elkurud",91.882,-37.253,5.0,721.6,"B8:IV","Col",-1.72,426,"θ Col",0],["Marsic",242.019,17.047,5.0,367.7,"G8III","Her",-0.26,111,"κ Her",0],["Chalawan",164.867,40.43,5.03,45.9,"G0V","UMa",4.29,1.6749,"47 UMa",0],["Situla",339.439,-4.228,5.04,213.9,"K2III","Aqr",0.96,36,"κ Aqr",0],["Pleione",57.297,24.137,5.05,381.9,"B7p","Tau",-0.29,114,"28 Tau",0],["Guniibuu B",258.836,-26.603,5.07,19.52,"K1 Ve","Oph",6.18,0.2924,"36 Oph",0],["Cervantes",266.036,-51.834,5.12,50.6,"G5V","Ara",4.17,1.8759,"μ Ara",0],["Albireo B",292.689,27.965,5.12,399.7,"B8V","Cyg",-0.32,117,"β² Cyg",0],["Nahn",137.34,22.045,5.16,373.2,"K0III","Cnc",-0.13,98,"ξ Cnc",0],["Revati",18.433,7.575,5.21,173.9,"A7IV","Psc",1.58,20,"ζ Psc",0],["Veritate",352.822,39.236,5.22,258.2,"K0III","And",0.73,45,"14 And",0],["Taiyi",193.869,65.438,5.23,95.5,"A5n","Dra",2.9,6.0478,"8 Dra",0],["Intercrus",142.167,45.601,5.4,280.0,"K0III-IV","UMa",0.73,44,"",0],["La Superba",191.283,45.44,5.42,1045.4,"C7Iab","CVn",-2.11,608,"",0],["Tianyi",191.893,66.79,5.43,741.3,"K5III","Dra",-1.35,303,"7 Dra",0],["Celaeno",56.201,24.289,5.45,377.1,"B7IV","Tau",0.14,77,"16 Tau",0],["Polaris Australis",317.192,-88.956,5.45,280.9,"F0III","Oct",0.77,43,"σ Oct",0],["Helvetios",344.367,20.769,5.45,50.9,"G5V","Peg",4.48,1.4022,"51 Peg",0],["Musica",314.608,10.839,5.51,245.6,"G6III:","Del",1.13,31,"18 Del",0],["Proxima Centauri",217.44,-62.679,11.01,4.23,"M5Ve","Cen",15.45,0.0001,"",1],["Barnard's Star",269.452,4.693,9.54,5.95,"sdM4","Oph",13.23,0.0004,"",1],["Wolf 359",164.122,7.015,13.45,7.8,"M6","Leo",16.56,0.0,"",1],["Lalande 21185",165.834,35.97,7.49,8.31,"M2V","UMa",10.46,0.0057,"",1],["Luyten 726-8 A",24.753,-17.95,12.57,8.57,"dM5.5e","Cet",15.47,0.0001,"",1],["UV Ceti",24.753,-17.95,12.7,8.57,"dM5.5e","Cet",15.6,0.0,"",1],["Sirius B",101.288,-16.715,8.44,8.6,"DA2","CMa",11.33,0.0025,"",1],["Ross 154",282.456,-23.836,10.37,9.69,"M3.5Ve","Sgr",13.01,0.0005,"",1],["Ross 248",355.476,44.175,12.29,10.33,"dM6  e","And",14.79,0.0001,"",1],["Lacaille 9352",346.463,-35.853,7.35,10.68,"M2/M3V","PsA",9.77,0.0107,"",1],["Ross 128",176.935,0.805,11.12,10.94,"M4.5V","Vir",13.49,0.0003,"",1],["EZ Aquarii",339.638,-15.303,12.66,11.08,"M5  e","Aqr",15.0,0.0001,"",1],["Struve 2398 B",280.699,59.627,9.7,11.27,"K5","Dra",12.01,0.0014,"",1],["61 Cygni A",316.722,38.749,5.2,11.37,"K5V","Cyg",7.49,0.0881,"61 Cyg",1],["Procyon B",114.825,5.227,10.7,11.41,"DA","CMi",12.98,0.0006,"",1],["61 Cygni B",316.727,38.742,6.05,11.41,"K7V","Cyg",8.33,0.0405,"61 Cyg",1],["Groombridge 34 B",4.577,44.024,11.06,11.64,"M6 Ve","And",13.3,0.0004,"",1],["Struve 2398 A",280.698,59.63,8.94,11.64,"K5","Dra",11.18,0.0029,"",1],["Groombridge 34",4.593,44.023,8.09,11.7,"M1V","And",10.32,0.0065,"",1],["Epsilon Indi",330.832,-56.786,4.69,11.81,"K5V","Ind",6.89,0.1521,"ε Ind",1],["DX Cancri",127.459,26.779,14.81,11.83,"M6.5","Cnc",17.01,0.0,"",1],["Tau Ceti",26.017,-15.937,3.49,11.91,"G8V","Cet",5.68,0.4664,"τ Cet",1],["YZ Ceti",18.128,-16.999,12.1,12.03,"M5.5Ve","Cet",14.27,0.0002,"",1],["Luyten's Star",111.852,5.226,9.84,12.4,"M5","CMi",11.94,0.0015,"",1],["Kapteyn's Star",77.913,-45.018,8.86,12.76,"M0V","Pic",10.9,0.0038,"",1],["Lacaille 8760",319.316,-38.867,6.69,12.87,"M1/M2V","Mic",8.71,0.0286,"",1],["Kruger 60",337.0,57.696,9.59,13.05,"M2V","Cep",11.58,0.002,"",1],["Kruger 60 B",337.009,57.697,11.3,13.07,"M6 V","Cep",13.29,0.0004,"",1],["Ross 614 B",97.349,-2.812,14.6,13.43,"","Mon",16.53,0.0,"",1],["Ross 614",97.347,-2.814,11.12,13.46,"M4.5Ve","Mon",13.04,0.0005,"",1],["Van Maanen's Star",12.291,5.389,12.37,13.9,"DG","Psc",14.22,0.0002,"",1],["GJ 1061",53.996,-44.512,13.03,14.0,"M4.5","Hor",14.87,0.0001,"",1],["Wolf 1061",247.575,-12.663,10.1,14.0,"M4","Oph",11.94,0.0015,"",1],["Wolf 424 A",188.322,9.021,13.04,14.05,"dM5.5eJ","Vir",14.87,0.0001,"",1],["Wolf 424 B",188.322,9.021,13.3,14.05,"M7","Vir",15.13,0.0001,"",1],["GJ 1",1.348,-37.357,8.56,14.15,"M2V","Scl",10.37,0.0062,"",1],["GJ 3522",134.734,8.475,10.89,14.56,"k","Cnc",12.64,0.0008,"",1],["TZ Arietis",30.053,13.053,12.28,14.57,"dM8  e","Ari",14.03,0.0002,"",1],["GJ 3618",161.136,-61.194,13.92,14.64,"m","Car",15.66,0.0,"",1],["GJ 3622",162.052,-11.337,15.6,14.76,"M6.5","Sex",17.32,0.0,"",1],["Gliese 687",264.109,68.339,9.15,14.77,"M3.5Vvar","Dra",10.87,0.0039,"",1],["Gliese 674",262.166,-46.895,9.38,14.81,"K5","Ara",11.09,0.0032,"",1],["LP 145-141",176.42,-64.842,11.5,15.03,"DC:","Mus",13.18,0.0005,"",1],["Gliese 876",343.32,-14.264,10.16,15.29,"M5","Aqr",11.8,0.0017,"",1],["GJ 1002",1.682,-7.539,13.75,15.33,"M5-5.5","Cet",15.39,0.0001,"",1],["GJ 1245 A",298.473,44.415,13.41,15.38,"M5.5 V e","Cyg",15.04,0.0001,"",1],["GJ 1245 B",298.477,44.415,14.01,15.38,"m","Cyg",15.64,0.0,"",1],["WX Ursae Majoris",166.403,43.521,14.4,15.76,"M6  e","UMa",15.98,0.0,"",1],["Lalande 21258",166.373,43.527,8.82,15.81,"M2Vvar","UMa",10.39,0.0061,"",1],["Groombridge 1618",152.844,49.454,6.6,15.89,"K8V","UMa",8.16,0.0474,"",1],["AD Leonis",154.903,19.87,9.4,16.0,"M4.5Ve","Leo",10.95,0.0036,"",1],["Gliese 832",323.392,-49.009,8.66,16.16,"M1V","Gru",10.19,0.0073,"",1],["GJ 1005",3.867,-16.134,11.49,16.26,"M:","Cet",13.0,0.0005,"",1],["40 Eridani B",63.843,-7.658,9.52,16.45,"DA4","Eri",11.01,0.0034,"",1],["40 Eridani C",63.843,-7.658,11.17,16.45,"dM4.5e","Eri",12.66,0.0008,"",1],["Gliese 682",264.266,-44.319,10.94,16.56,"M5","Sco",12.41,0.0009,"",1],["70 Ophiuchi A",271.364,2.5,4.03,16.58,"K0V SB","Oph",5.5,0.55,"70 Oph",1],["70 Ophiuchi B",271.365,2.498,6.0,16.59,"K5 Ve","Oph",7.47,0.0897,"",1],["EV Lacertae",341.708,44.334,10.29,16.71,"M4.5Ve","Lac",11.74,0.0017,"",1]];
+  const CLS = 'OBAFGKML', CLS_T = [45000, 30000, 9800, 7300, 6000, 5300, 3900, 2300, 1300];
+  function starTemp(sp) {
+    if (/^D/.test(sp)) return 9000;
+    const m = /([OBAFGKML])(\d(\.\d)?)?/.exec(sp || ''); if (!m) return 5800;
+    const i = CLS.indexOf(m[1]), s = m[2] ? +m[2] : 5;
+    return CLS_T[i] + (CLS_T[i + 1] - CLS_T[i]) * s / 10;
+  }
+  // radius in solar radii: main-sequence stars from their absolute magnitude, giants from luminosity and temperature
+  const MS = [[-5, 7.4], [0.6, 2.5], [2, 1.7], [4.8, 1.0], [7.4, 0.72], [8.9, 0.62], [11, 0.4], [12.8, 0.26], [16.6, 0.12], [20, 0.08]];
+  function starRadius(sp, am, lum, T) {
+    if (/^D/.test(sp)) return 0.013;
+    const lc = (/(Ia|Ib|III|II|IV|V|I)/.exec((sp || '').slice(1)) || [])[1];
+    if ((lc === 'I' || lc === 'Ia' || lc === 'Ib' || lc === 'II' || lc === 'III') || am < -5) {
+      const bc = T < 4000 ? 1.6 : T < 5000 ? 0.6 : T > 20000 ? 2.0 : 0.1;
+      return Math.min(1500, Math.sqrt(lum * Math.pow(10, 0.4 * bc)) * Math.pow(5772 / T, 2));
+    }
+    for (let i = 1; i < MS.length; i++) if (am <= MS[i][0]) { const a = MS[i - 1], b = MS[i], t = Math.max(0, (am - a[0]) / (b[0] - a[0])); return a[1] + (b[1] - a[1]) * t; }
+    return 0.08;
+  }
+  const STAR_COL = { O: '#9db4ff', B: '#aabfff', A: '#d5e0ff', F: '#f8f6ff', G: '#fff2d8', K: '#ffd09a', M: '#ffad6a', D: '#e6edff' };
+  const STARLIST = STARCAT.map(r => {
+    const [name, ra, dec, mag, ly, sp, con, am, lum, desig, near] = r, rr = ra * D2R, dd = dec * D2R;
+    const u = E.equToEcl(Math.cos(dd) * Math.cos(rr), Math.cos(dd) * Math.sin(rr), Math.sin(dd)), d = (ly || 1000) * LY, T = starTemp(sp);
+    return { id: 'st-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name, kind: 'star', ra, dec, mag, ly, spect: sp, con, absmag: am, lum, desig, near: !!near, temp: T,
+      color: STAR_COL[(sp || 'G')[0]] || '#fff2d8', radius: starRadius(sp, am, lum, T) * 695700, u, p: [u[0] * d, u[1] * d, u[2] * d] };
+  });
+
+  /* ---------- Earth satellites ----------
+     Real orbit sizes, tilts and periods, with the drift of the orbit plane caused by Earth's equatorial bulge (J2).
+     Where each one is along its orbit is illustrative: this is not live tracking. */
+  const R_EQ = 6378.137, MU_E = 398600.4418, J2E = 1.08262668e-3, SAT_EP = 2460676.5;
+  const gmstE = jd => 2 * Math.PI * ((((0.7790572732640 + 1.00273781191135448 * (jd - J2000)) % 1) + 1) % 1);
+  // id, name, altitude km, inclination deg, node deg, phase deg, colour, launched (JD), size m, blurb, geostationary east longitude
+  const SAT_DATA = [
+    ['iss', 'International Space Station', 418, 51.64, 30, 0, '#f6e7b0', 2451137.5, 109, 'Crewed without a break since November 2000. The largest thing people have built in space: its 109 m truss carries eight pairs of solar wings. One lap of Earth takes about 92 minutes.'],
+    ['tiangong', 'Tiangong', 385, 41.47, 150, 70, '#ffc9a8', 2459333.5, 55, 'China’s space station, a T of three modules, crewed since 2021.'],
+    ['hubble', 'Hubble Space Telescope', 525, 28.47, 260, 200, '#d8e2ff', 2448005.5, 13.2, 'Launched in 1990 and serviced by five shuttle crews. Its 2.4 m mirror sees from ultraviolet to near infrared.'],
+    ['landsat9', 'Landsat 9', 705, 98.2, 320, 300, '#cfe9c9', 2459484.5, 12, 'Maps Earth’s land from a sun-synchronous orbit: its orbit plane turns once a year, so it always crosses the equator at about 10 a.m. local time.'],
+    ['goes19', 'GOES-19', 35786, 0.05, 0, 0, '#a8e4ff', 2460486.5, 20, 'A weather satellite in geostationary orbit over 75°W. It circles once a day, so it hangs over the same spot as Earth turns.', -75.2]
+  ];
+  const SATS = SAT_DATA.map(r => {
+    const [key, name, alt, inc, node, ph, color, t0, size, blurb, geo] = r, a = R_EQ + alt, n = Math.sqrt(MU_E / (a * a * a)) * 86400, ci = Math.cos(inc * D2R), k = J2E * Math.pow(R_EQ / a, 2);
+    return { id: 'sat-' + key, key, name, kind: 'sat', color, blurb, size, radius: size / 2000, a, alt, inc, i: inc * D2R, O0: node * D2R, u0: ph * D2R, t0,
+      geo: geo === undefined ? null : geo, n, dO: -1.5 * n * k * ci, du: n * (1 + 0.75 * k * (8 * ci * ci - 2)), periodMin: 2 * Math.PI / n * 1440 };
+  });
+  function satGeo(s, jd, out) { // geocentric, ecliptic J2000, km
+    let x, y, z;
+    if (s.geo !== null) { const th = gmstE(jd) + s.geo * D2R; x = s.a * Math.cos(th); y = s.a * Math.sin(th); z = 0; }
+    else {
+      const dt = jd - SAT_EP, u = s.u0 + s.du * dt, O = s.O0 + s.dO * dt, cu = Math.cos(u), su = Math.sin(u), cO = Math.cos(O), sO = Math.sin(O), ci = Math.cos(s.i), si = Math.sin(s.i);
+      x = s.a * (cO * cu - sO * su * ci); y = s.a * (sO * cu + cO * su * ci); z = s.a * su * si;
+    }
+    const e = E.equToEcl(x, y, z); out[0] = e[0]; out[1] = e[1]; out[2] = e[2]; return out;
+  }
+  const satLive = (s, jd) => jd >= s.t0;
+  function satSub(s, jd) { // the point on Earth below it
+    const o = satGeo(s, jd, [0, 0, 0]), eps = 23.4392911 * D2R, x = o[0], y = o[1] * Math.cos(eps) - o[2] * Math.sin(eps), z = o[1] * Math.sin(eps) + o[2] * Math.cos(eps);
+    let lon = (Math.atan2(y, x) - gmstE(jd)) / D2R; lon = ((lon % 360) + 540) % 360 - 180;
+    return { lat: Math.asin(z / Math.hypot(x, y, z)) / D2R, lon };
+  }
+  // The big constellations as evenly phased (Walker) patterns of their real orbit shells: a picture of how crowded each orbit is, not a catalogue.
+  // [label, altitude km, inclination, planes, per plane, phasing, colour, first launch JD]
+  const SHELLS = [
+    ['Starlink', 550, 53, 72, 22, 17, [0.78, 0.86, 1.0], 2458624.5], ['Starlink', 540, 53.2, 72, 22, 11, [0.78, 0.86, 1.0], 2459300.5], ['Starlink', 570, 70, 36, 20, 7, [0.78, 0.86, 1.0], 2459300.5], ['Starlink', 560, 97.6, 6, 58, 1, [0.78, 0.86, 1.0], 2459300.5],
+    ['OneWeb', 1200, 87.9, 18, 36, 5, [0.9, 0.78, 1.0], 2458535.5],
+    ['GPS', 20180, 55, 6, 5, 1, [1.0, 0.82, 0.42], 2443900.5], ['GLONASS', 19130, 64.8, 3, 8, 1, [1.0, 0.6, 0.5], 2445260.5], ['Galileo', 23222, 56, 3, 8, 1, [0.6, 0.9, 1.0], 2455860.5], ['BeiDou', 21528, 55, 3, 8, 1, [1.0, 0.95, 0.6], 2455170.5]
+  ];
+  const CLOUD = (function () {
+    const rows = [];
+    SHELLS.forEach(([lab, alt, inc, P, N, F, col, t0]) => {
+      const a = R_EQ + alt, n = Math.sqrt(MU_E / (a * a * a)) * 86400, ci = Math.cos(inc * D2R), k = J2E * Math.pow(R_EQ / a, 2);
+      for (let p = 0; p < P; p++) for (let q = 0; q < N; q++) rows.push([a, inc * D2R, 2 * Math.PI * p / P, 2 * Math.PI * (q / N + F * p / (P * N)), n * (1 + 0.75 * k * (8 * ci * ci - 2)), -1.5 * n * k * ci, col, t0, 0]);
+    });
+    let s = 7; const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+    for (let i = 0; i < 420; i++) { // the geostationary belt, crowded over the Americas, Europe-Africa and Asia
+      const c = [-100, -20, 30, 110][i % 4], w = rnd() < 0.7 ? 35 : 180;
+      rows.push([R_EQ + 35786, 0, 0, (c + (rnd() - 0.5) * 2 * w) * D2R, 0, 0, [0.55, 1.0, 0.85], 2438600.5, 1]);
+    }
+    const n = rows.length, col = new Float32Array(n * 3); rows.forEach((r, i) => col.set(r[6], i * 3));
+    return { n, rows, col };
+  })();
+  // fills out (Float32Array) with geocentric ecliptic positions in km; satellites not yet launched go to the centre of Earth
+  function cloudPositions(jd, out) {
+    const eps = 23.4392911 * D2R, ce = Math.cos(eps), se = Math.sin(eps), g = gmstE(jd), dt = jd - SAT_EP;
+    for (let k = 0; k < CLOUD.n; k++) {
+      const r = CLOUD.rows[k]; let x, y, z;
+      if (jd < r[7]) { x = y = z = 0; }
+      else if (r[8]) { const th = g + r[3]; x = r[0] * Math.cos(th); y = r[0] * Math.sin(th); z = 0; }
+      else { const u = r[3] + r[4] * dt, O = r[2] + r[5] * dt, cu = Math.cos(u), su = Math.sin(u), cO = Math.cos(O), sO = Math.sin(O), ci = Math.cos(r[1]), si = Math.sin(r[1]); x = r[0] * (cO * cu - sO * su * ci); y = r[0] * (sO * cu + cO * su * ci); z = r[0] * su * si; }
+      out[k * 3] = x; out[k * 3 + 1] = y * ce + z * se; out[k * 3 + 2] = -y * se + z * ce;
+    }
+    return out;
+  }
+
   /* ---------- bookkeeping ---------- */
-  const BODIES = [].concat(MOONS, NAMED, COMETS, CRAFT);
+  const BODIES = [].concat(MOONS, NAMED, COMETS, CRAFT, STARLIST, SATS);
   BODIES.forEach(b => { E.BY_ID[b.id] = b; });
   const tmp = [0, 0, 0], tmp6 = [0, 0, 0, 0, 0, 0];
   // Adds every moon, named asteroid and comet to st.pos (heliocentric km), so any of them can be followed or selected.
@@ -1150,10 +1285,12 @@ const Ext = (function () {
     NAMED.forEach(b => { st.pos[b.id] = elemPos(b.a, b.e, b.n, b.ma, b.ep, b.pq, jd, [0, 0, 0]); });
     COMETS.forEach(c => { st.pos[c.id] = cometPos(c, jd, [0, 0, 0]); });
     CRAFT.forEach(c => { const o = craftState(c, jd, tmp6); st.pos[c.id] = [o[0], o[1], o[2]]; });
+    { const e = st.pos.earth; SATS.forEach(s => { const o = satGeo(s, jd, tmp); st.pos[s.id] = [e[0] + o[0], e[1] + o[1], e[2] + o[2]]; }); }
+    STARLIST.forEach(s => { st.pos[s.id] = s.p; });
     return st;
   }
   const byParent = {}; MOONS.forEach(m => (byParent[m.parent] = byParent[m.parent] || []).push(m));
-  return { MOONS, NAMED, COMETS, CRAFT, craftLive, craftState, craftPath, GROUPS, BODIES, byParent, moonOffset, moonOrbit, beltPositions, cometPos, smallOrbit, augment, KIND_COLOR };
+  return { MOONS, NAMED, COMETS, CRAFT, craftLive, craftState, craftPath, GROUPS, BODIES, byParent, moonOffset, moonOrbit, beltPositions, cometPos, smallOrbit, augment, KIND_COLOR, STARS: STARLIST, SATS, satGeo, satLive, satSub, CLOUD, cloudPositions, LY };
 })();
 (function () {
 "use strict";
@@ -1175,10 +1312,11 @@ const S = {
   scale: 1e6, follow: 'sun', pan: [0, 0], sel: 'earth', preset: 'inner',
   tol: 2, opp: false, tracked: new Set(PIDS.concat(['sun'])), mode: 'same', origin: 'sun', etype: 'any', trailDays: 0, trailOnly: null, view: '2d',
   w: 800, h: 600, dpr: 1, silent: true,
-  show: { moons: true, belt: true, comets: true, craft: true, stars: true, clines: true, cnames: true, dso: true, places: true }, scrub: 0, scrubbing: false,
-  sky: { on: false, lat: 37.57, lon: 126.98, name: 'Seoul', az: Math.PI, alt: 0.55, fov: 70 }
+  show: { moons: true, belt: true, comets: true, craft: true, stars: true, clines: true, cnames: true, dso: true, places: true, landing: true, sats: true, oort: true, wind: false, aur: true, lagr: false, roche: false, eclpath: true, term: false, agrid: false, egrid: false, ecl: false, mer: false, ground: true, refr: true }, band: 'visible', bandMsg: '', scrub: 0, scrubbing: false,
+  sky: { on: false, lat: 37.57, lon: 126.98, name: 'Seoul', az: Math.PI, alt: 0.55, fov: 70, bortle: 3 }
 };
-const SMIN = 0.5, SMAX = 4e7, LMIN = Math.log(SMIN), LMAX = Math.log(SMAX);
+const sminF = () => { const b = E.BY_ID[S.follow]; return b && (b.kind === 'craft' || b.kind === 'sat') && S.view !== '2d' ? 2e-6 : SMIN; };
+const SMIN = 0.5, SMAX = 6e11, SMAX2D = 4e7, LMIN = Math.log(SMIN), LMAX = Math.log(SMAX);
 const scaleToT = s => Math.round((Math.log(s) - LMIN) / (LMAX - LMIN) * 1000);
 const tToScale = t => Math.exp(LMIN + t / 1000 * (LMAX - LMIN));
 const fit = rKm => rKm / (Math.max(120, Math.min(S.w, S.h)) / 2 * 0.9);
@@ -1237,9 +1375,9 @@ function setDir(d) {
 
 /* ---------- view ---------- */
 function setScale(s) {
-  S.scale = Math.min(SMAX, Math.max(SMIN, s));
+  S.scale = Math.min(S.view === '2d' ? SMAX2D : SMAX, Math.max(sminF(), s));
   $('zoom').value = scaleToT(S.scale);
-  $('zoomOut').textContent = '1 px = ' + fmtKmShort(S.scale);
+  $('zoomOut').textContent = '1 px = ' + (S.scale > 1e9 ? fmtN(S.scale / AU) + ' AU' : fmtKmShort(S.scale));
 }
 function setView(v) {
   if ((v === '3d' || v === 'sky') && !V3.ok) return;
@@ -1247,7 +1385,8 @@ function setView(v) {
   S.view = v === '2d' ? '2d' : '3d';
   document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === v));
   ['skyBox'].forEach(id => { $(id).hidden = !sky; });
-  ['grpGo', 'grpZoom', 'grpTrails'].forEach(id => { $(id).hidden = sky; });
+  ['grpGo', 'grpZoom', 'grpTrails', 'grpLayers'].forEach(id => { $(id).hidden = sky; });
+  if (v === '2d') { $('grpLayers').hidden = true; setScale(S.scale); }
   V3.show && V3.show(v !== '2d');
   $('gl').style.display = v !== '2d' ? 'block' : 'none';
   v = S.view;
@@ -1315,7 +1454,7 @@ function flyTo(o) {
   else S.pan = [S.pan[0], S.pan[1], S.pan[2] || 0];
   if (o.follow) S.follow = o.follow;
   FLY.on = true; FLY.t0 = performance.now(); FLY.dur = RM ? 1 : (o.dur || 1100); FLY.p0 = S.pan.slice();
-  FLY.s0 = S.scale; FLY.s1 = Math.min(SMAX, Math.max(SMIN, o.scale || S.scale));
+  FLY.s0 = S.scale; FLY.s1 = Math.min(SMAX, Math.max(sminF(), o.scale || S.scale));
   FLY.y1 = null; FLY.q1 = null;
   if (o.yaw !== undefined && V3.ok) { const c = V3.cam; FLY.y0 = c.yaw; FLY.q0 = c.pitch; FLY.y1 = o.yaw; FLY.q1 = o.pitch; const dy = ((FLY.y1 - FLY.y0) % 6.2831853 + 9.42477796) % 6.2831853 - 3.14159265; FLY.y1 = FLY.y0 + dy; }
   S.zoomGoal = null; MOM.vx = MOM.vy = 0;
@@ -1335,8 +1474,9 @@ function scaleFor(b) {
 }
 function goTo(b) {
   if (S.sky.on) { S.sel = b.id; markChips(); V3.skyLook(b.id); return; }
+  const close = (b.kind === 'craft' || b.kind === 'sat') && S.follow === b.id && S.view === '3d' && S.scale > fit(b.radius * 6);
   S.sel = b.id; S.preset = null;
-  flyTo({ follow: b.id, scale: scaleFor(b) });
+  flyTo({ follow: b.id, scale: close ? fit(b.radius * 2.4) : b.kind === 'sat' ? fit(E.BY_ID.earth.radius * 1.6) : scaleFor(b) });
   markChips(); markPresets();
 }
 function applyPreset(p) {
@@ -1358,6 +1498,16 @@ function trackedIds() {
 function activeText(ids, origin) { return [nm(origin || S.origin)].concat(ids.map(nm)).join(' – '); }
 
 /* ---------- body panel ---------- */
+function starKind(b) {
+  const sp = b.spect || '', c = sp[0], lc = (/(Ia|Ib|III|II|IV|V|I)/.exec(sp.slice(1)) || [])[1];
+  if (c === 'D') return 'white dwarf';
+  const col = { O: 'blue', B: 'blue-white', A: 'white', F: 'yellow-white', G: 'yellow', K: 'orange', M: 'red' }[c] || '';
+  if (lc === 'I' || lc === 'Ia' || lc === 'Ib') return col + ' supergiant';
+  if (lc === 'II' || lc === 'III') return col + ' giant';
+  if (lc === 'IV') return col + ' subgiant';
+  if (c === 'M' && b.absmag > 8) return 'red dwarf';
+  return col + ' main-sequence star';
+}
 function renderInfo(st) {
   const b = E.BY_ID[S.sel] || E.BY_ID.earth, rows = [], add = (k, v) => rows.push('<dt>' + k + '</dt><dd>' + v + '</dd>');
   const dKm = 2 * b.radius, px = dKm / S.scale;
@@ -1394,6 +1544,26 @@ function renderInfo(st) {
     add('Speed from the Sun', fmtN(Math.hypot(o[3], o[4], o[5]), 2) + ' km/s');
     add('Track begins', fmtDate(b.t0));
     add('', b.blurb);
+  } else if (b.kind === 'star') {
+    const con = SKYDATA.names.find(n => n[0] === b.con), yr = E.jdToCal(S.jd).y, ago = Math.round(b.ly);
+    if (b.desig) add('Designation', b.desig);
+    if (con) add('Constellation', con[1]);
+    add('Brightness', 'magnitude ' + b.mag.toFixed(2) + (b.mag < 1.5 ? ', one of the brightest stars' : b.mag > 6.5 ? ', too faint to see without a telescope' : ''));
+    if (b.ly) { add('Distance', fmtN(b.ly, b.ly < 100 ? 2 : 0) + ' light years'); add('', fmtN(b.ly * 63241.1, 0) + ' AU'); add('The light you see left it', ago < 2 ? 'about a year ago' : yr - ago > 0 && ago < 3000 ? 'around ' + yearLabel(yr - ago) : 'about ' + fmtN(ago) + ' years ago'); }
+    add('Spectral type', (b.spect || '?') + ' · ' + starKind(b));
+    add('Surface temperature', 'about ' + fmtN(Math.round(b.temp / 100) * 100) + ' K');
+    add('Luminosity', (b.lum >= 10 ? fmtN(b.lum) : b.lum >= 0.01 ? b.lum.toFixed(2) : b.lum.toPrecision(2)) + '× the Sun (visible light)');
+    add('Radius (estimate)', (b.radius / 695700 >= 10 ? fmtN(b.radius / 695700) : (b.radius / 695700).toFixed(b.radius / 695700 < 0.1 ? 3 : 2)) + '× the Sun');
+  } else if (b.kind === 'sat') {
+    const o = Ext.satSub(b, S.jd), live = Ext.satLive(b, S.jd);
+    if (!live) add('Status', 'Not yet launched');
+    add('Height', fmtN(b.alt) + ' km');
+    add('Orbit tilt', b.inc.toFixed(1) + '° to the equator');
+    add('One orbit', b.periodMin < 200 ? fmtN(b.periodMin, 1) + ' minutes' : fmtN(b.periodMin / 60, 1) + ' hours');
+    add('Speed', fmtN(Math.sqrt(398600.4418 / b.a), 2) + ' km/s');
+    if (live) add('Above', Math.abs(o.lat).toFixed(1) + '°' + (o.lat >= 0 ? 'N' : 'S') + ' ' + Math.abs(o.lon).toFixed(1) + '°' + (o.lon >= 0 ? 'E' : 'W') + (b.geo === null ? ' (illustrative)' : ''));
+    add('In orbit since', fmtDate(b.t0));
+    add('', b.blurb);
   } else if (b.kind === 'asteroid' || b.kind === 'comet') {
     const p = st.pos[b.id], r = Math.hypot(p[0], p[1], p[2]), e0 = st.pos.earth, de = Math.hypot(p[0] - e0[0], p[1] - e0[1], p[2] - e0[2]);
     add('Distance from Sun', fmtN(r / AU, 3) + ' AU');
@@ -1427,7 +1597,7 @@ function renderInfo(st) {
     add('Diameter vs Earth', (dKm / 12742).toFixed(2) + '×');
   }
   add('Drawn at this zoom', (px >= 10 ? fmtN(px) : px.toFixed(px < 0.1 ? 3 : 2)) + ' px wide');
-  const kindLabel = { moon: 'Moon of ' + (b.parent ? nm(b.parent) : ''), asteroid: 'Asteroid or dwarf planet', comet: 'Comet', craft: 'Spacecraft' }[b.kind];
+  const kindLabel = { moon: 'Moon of ' + (b.parent ? nm(b.parent) : ''), asteroid: 'Asteroid or dwarf planet', comet: 'Comet', craft: 'Spacecraft', sat: 'Earth satellite', star: b.near ? 'Star · one of the nearest' : 'Star' }[b.kind];
   if (kindLabel) rows.unshift('<dt class="kind" style="grid-column:1/-1">' + kindLabel + '</dt>');
   $('info').innerHTML = '<div class="title"><span class="dot" style="background:' + b.color + '"></span>' + b.name + '</div>' + rows.join('');
 }
@@ -1499,7 +1669,26 @@ function buildUI() {
   $('astCount').textContent = Ext.NAMED.length;
   Ext.CRAFT.forEach(c => chip(c.id, c.name, c.color, $('craftChips'), () => goTo(c)).classList.add('small'));
   $('craftCount').textContent = Ext.CRAFT.length;
-  [['shMoons', 'moons'], ['shBelt', 'belt'], ['shCraft', 'craft'], ['shStars', 'stars'], ['shPlaces', 'places'], ['shCL', 'clines'], ['shCN', 'cnames'], ['shDSO', 'dso']].forEach(([id, k]) => $(id).addEventListener('change', e => { S.show[k] = e.target.checked; if (k === 'stars') buildStars(); }));
+  Ext.SATS.forEach(c => chip(c.id, c.name, c.color, $('satChips'), () => goTo(c)).classList.add('small'));
+  $('satCount').textContent = Ext.SATS.length;
+  Ext.STARS.slice().sort((a, c) => a.mag - c.mag).slice(0, 30).forEach(s => chip(s.id, s.name, s.color, $('starChips'), () => goTo(s)).classList.add('small'));
+  Ext.STARS.filter(s => s.near).sort((a, c) => a.ly - c.ly).filter((s, i, a) => i === 0 || Math.abs(s.ly - a[i - 1].ly) > 0.02 || s.mag < 6).slice(0, 26).forEach(s => chip(s.id, s.name, s.color, $('nearChips'), () => goTo(s)).classList.add('small'));
+  $('starCount').textContent = Ext.STARS.length;
+  { const BN = ['', 'excellent dark site', 'truly dark site', 'rural sky', 'rural to suburban', 'suburban', 'bright suburban', 'suburban to urban', 'city sky', 'inner city'];
+    const sb = () => { $('bortleOut').textContent = S.sky.bortle + ' · ' + BN[S.sky.bortle]; }; sb();
+    $('bortle').addEventListener('input', e => { S.sky.bortle = +e.target.value; sb(); }); }
+  { const BC = { visible: '', radio: 'Radio at 408 MHz: electrons spiralling in the galaxy’s magnetic field. The arc above the centre is the North Polar Spur. Haslam et al., Remazeilles et al. 2015, via NASA LAMBDA.',
+      microwave: 'The cosmic microwave background, light from 380,000 years after the Big Bang, with temperature ripples of a few hundred-thousandths of a degree. WMAP 9-year, via NASA LAMBDA.',
+      infrared: 'Far infrared at 100 µm: warm dust in the plane of the galaxy and in nearby clouds. IRAS/IRIS, via NASA LAMBDA.',
+      halpha: 'Hydrogen-alpha light from gas lit by hot young stars. Finkbeiner 2003, via NASA LAMBDA.',
+      xray: 'Soft X-rays from million-degree gas around the Sun and in old supernova bubbles. ROSAT All-Sky Survey, via NASA SkyView.',
+      gamma: 'Gamma rays from cosmic rays hitting gas, from pulsars and from distant blazars. Fermi LAT 2008–2012, via NASA SkyView.' };
+    const hint = () => { $('bandHint').textContent = S.bandMsg || BC[S.band]; };
+    $('bandSel').addEventListener('change', e => { S.band = e.target.value; S.bandMsg = ''; hint(); });
+    setInterval(hint, 600); }
+  [['shMoons', 'moons'], ['shBelt', 'belt'], ['shCraft', 'craft'], ['shStars', 'stars'], ['shPlaces', 'places'], ['shCL', 'clines'], ['shCN', 'cnames'], ['shDSO', 'dso'],
+    ['shOort', 'oort'], ['shSats', 'sats'], ['shWind', 'wind'], ['shAur', 'aur'], ['shLagr', 'lagr'], ['shRoche', 'roche'], ['shEclPath', 'eclpath'], ['shTerm', 'term'], ['shLanding', 'landing'],
+    ['shAGrid', 'agrid'], ['shEGrid', 'egrid'], ['shEcl', 'ecl'], ['shMer', 'mer'], ['shGround', 'ground'], ['shRefr', 'refr']].forEach(([id, k]) => $(id).addEventListener('change', e => { S.show[k] = e.target.checked; if (k === 'stars') buildStars(); }));
   $('scrub').addEventListener('input', e => { S.scrub = +e.target.value / 1000; S.scrubbing = true; });
   const endScrub = () => { S.scrubbing = false; };
   $('scrub').addEventListener('change', endScrub); $('scrub').addEventListener('pointerup', endScrub); $('scrub').addEventListener('pointercancel', endScrub); $('scrub').addEventListener('blur', endScrub);
@@ -1584,6 +1773,7 @@ function buildUI() {
   $('fPrev').addEventListener('click', () => runFind(-1));
   $('fNext').addEventListener('click', () => runFind(1));
   $('eSee').addEventListener('click', watchEclipse);
+  $('eTrack').addEventListener('click', trackEclipse);
   $('ePrev').addEventListener('click', () => runEclipse(-1));
   $('eNext').addEventListener('click', () => runEclipse(1));
   ['inY', 'inM', 'inD'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') $('goBtn').click(); }));
@@ -1625,6 +1815,14 @@ function watchEclipse() { // open the sky view at the place where this eclipse i
   setView('sky'); $('skyLoc').value = 'c'; $('skyLat').value = S.sky.lat; $('skyLon').value = S.sky.lon;
   S.sky.fov = r.type === 'solar' ? 16 : 45; S.sel = r.type === 'solar' ? 'sun' : 'moon'; V3.skyLook(S.sel); markChips(); phoneClose();
 }
+function trackEclipse() { // the 3D view of Earth at greatest eclipse, turned toward the shadow
+  const r = lastEcl; if (!r || !V3.ok || r.type !== 'solar') return;
+  setPlaying(false); jump(r.jd); S.show.eclpath = true; $('shEclPath').checked = true;
+  setView('3d'); setSpeed(1);
+  const p = V3.eclipsePlace(r.jd, true), v = V3.placeView('earth', p.lat, p.lon);
+  S.sel = 'earth'; S.preset = null; flyTo({ follow: 'earth', scale: fit(E.BY_ID.earth.radius * 2.6), yaw: v ? v.yaw : undefined, pitch: v ? v.pitch : undefined });
+  markChips(); markPresets(); phoneClose();
+}
 function runEclipse(dir) {
   const out = $('eOut');
   out.textContent = 'Searching…';
@@ -1636,7 +1834,7 @@ function runEclipse(dir) {
     const c = E.jdToCal(r.jd);
     S.sel = 'earth'; S.preset = 'earth'; flyTo({ follow: 'earth', scale: fit(440000) }); markPresets(); markChips();
     out.textContent = fmtDate(r.jd) + ' · ' + cap(r.kind) + ' ' + r.type + ' eclipse · greatest at ' + pad2(c.h) + ':' + pad2(c.mi) + ' UT';
-    lastEcl = r; $('eView').hidden = !V3.ok;
+    lastEcl = r; $('eView').hidden = !V3.ok; $('eTrack').hidden = r.type !== 'solar';
     if (V3.ok && r.type === 'solar') { const p = V3.eclipsePlace(r.jd, true); out.textContent += ' · best seen near ' + Math.abs(p.lat).toFixed(1) + '°' + (p.lat >= 0 ? 'N' : 'S') + ' ' + Math.abs(p.lon).toFixed(1) + '°' + (p.lon >= 0 ? 'E' : 'W'); }
   }, 20);
 }
@@ -1670,6 +1868,7 @@ function openScene(code) {
     if (Array.isArray(o.k)) { S.sky.lat = +o.k[0] || 0; S.sky.lon = +o.k[1] || 0; S.sky.name = String(o.k[2] || ''); S.sky.az = +o.k[3] || 0; S.sky.alt = +o.k[4] || 0; S.sky.fov = Math.max(5, Math.min(120, +o.k[5] || 70)); $('skyLat').value = S.sky.lat; $('skyLon').value = S.sky.lon; $('skyLoc').value = 'c'; }
     const v = o.v === 'sky' || o.v === '3d' || o.v === '2d' ? o.v : '2d';
     setView(V3.ok || v === '2d' ? v : '2d');
+    if (isFinite(o.s)) setScale(o.s); // again: the 3D view zooms out further than the map
     if (V3.ok && isFinite(o.y)) { V3.cam.yaw = o.y; V3.cam.pitch = Math.max(-1.55, Math.min(1.55, o.q || 0)); }
     if (isFinite(o.sp)) setSpeed(Math.max(0, Math.min(S.maxSpeed || 20, o.sp | 0)));
     if (o.d === -1) setDir(-1);
@@ -1709,9 +1908,9 @@ function initExtras() {
   $('sceneIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('sceneOpen').click(); });
   { const h = (typeof location !== 'undefined' && location.hash) || ''; const i = h.indexOf('scene='); if (i >= 0) setTimeout(() => openScene(decodeURIComponent(h.slice(i + 6))), 400); }
   // distance and light time
-  { const ids = [['sun', 'Sun']].concat(PIDS.map(id => [id, nm(id)]), [['moon', 'Moon']], Ext.MOONS.map(m => [m.id, m.name]), Ext.CRAFT.map(c => [c.id, c.name]));
+  { const ids = [['sun', 'Sun']].concat(PIDS.map(id => [id, nm(id)]), [['moon', 'Moon']], Ext.MOONS.map(m => [m.id, m.name]), Ext.CRAFT.map(c => [c.id, c.name]), Ext.SATS.map(c => [c.id, c.name]), Ext.STARS.filter(s => s.near && s.mag < 12).map(s => [s.id, s.name]));
     [$('dA'), $('dB')].forEach((sel, k) => { ids.forEach(([id, n]) => { const o = document.createElement('option'); o.value = id; o.textContent = n; sel.appendChild(o); }); sel.value = k ? 'mars' : 'earth'; });
-    const fmtT = s => s < 90 ? s.toFixed(1) + ' seconds' : s < 5400 ? (s / 60).toFixed(1) + ' minutes' : s < 172800 ? (s / 3600).toFixed(2) + ' hours' : (s / 86400).toFixed(2) + ' days';
+    const fmtT = s => s < 90 ? s.toFixed(1) + ' seconds' : s < 5400 ? (s / 60).toFixed(1) + ' minutes' : s < 172800 ? (s / 3600).toFixed(2) + ' hours' : s < 6.3e7 ? (s / 86400).toFixed(2) + ' days' : (s / 31557600).toFixed(2) + ' years';
     setInterval(() => {
       const pn = $('p-find'); if (!lastSt || !pn || pn.hidden) return;
       const a = lastSt.pos[$('dA').value], b = lastSt.pos[$('dB').value]; if (!a || !b) { $('dOut').textContent = ''; return; }
@@ -2789,11 +2988,13 @@ void main(){
   // The sky: the Milky Way photo is in galactic coordinates, so each pixel's direction is rotated into place; catalogue stars sit on top.
   function skyMaterial(tex) {
     return new THREE.ShaderMaterial({
-      uniforms: { uTex: { value: tex }, uK: { value: 0.62 } },
+      uniforms: { uTex: { value: tex }, uK: { value: 0.62 }, uUp: { value: new THREE.Vector3(0, 1, 0) }, uRef: { value: 0 } },
       vertexShader: 'varying vec3 vD;\nvoid main(){ vD=position; gl_Position=projectionMatrix*viewMatrix*modelMatrix*vec4(position,1.0); }',
-      fragmentShader: `uniform sampler2D uTex; uniform float uK; varying vec3 vD;
+      fragmentShader: `uniform sampler2D uTex; uniform float uK; uniform vec3 uUp; uniform float uRef; varying vec3 vD;
 void main(){
- vec3 d=normalize(vD); vec3 e=vec3(d.x,-d.z,d.y);
+ vec3 d=normalize(vD);
+ if(uRef>0.5){ float s=dot(d,uUp); float h=degrees(asin(clamp(s,-1.0,1.0))); float hh=max(h,-0.9); float R=radians(1.0/tan(radians(hh+7.31/(hh+4.4)))/60.0)*(h< -0.9?max(0.0,1.0+(h+0.9)/3.0):1.0); vec3 pp=uUp-d*s; float L=length(pp); if(L>1e-5) d=normalize(d*cos(R)-pp/L*sin(R)); }
+ vec3 e=vec3(d.x,-d.z,d.y);
  const float ce=0.9174820620691818, se=0.3977771559319137;
  vec3 q=vec3(e.x, e.y*ce-e.z*se, e.y*se+e.z*ce);
  vec3 g=vec3(dot(vec3(-0.0548755604,-0.8734370902,-0.4838350155),q), dot(vec3(0.4941094279,-0.4448296300,0.7469822445),q), dot(vec3(-0.8676661490,-0.1980763734,0.4559837762),q));
@@ -2805,7 +3006,9 @@ void main(){
     });
   }
   // Stars: flux from magnitude sets brightness; the core grows slowly, bright stars get a soft halo and faint diffraction spikes.
-  const STAR_VS = `attribute float aMag; attribute vec3 aCol; varying vec3 vC; varying float vS; varying float vSp; uniform float uPx; uniform float uLim; uniform float uGain;
+  const STAR_VS = `uniform vec3 uUp; uniform float uRef; attribute float aMag; attribute vec3 aCol; varying vec3 vC; varying float vS; varying float vSp; uniform float uPx; uniform float uLim; uniform float uGain;
+vec3 starRef(vec3 P){ if(uRef<0.5) return P; vec3 d=normalize(P); float s=dot(d,uUp); float h=degrees(asin(clamp(s,-1.0,1.0))); float hh=max(h,-1.5);
+ float R=radians(1.02/tan(radians(hh+10.3/(hh+5.11)))/60.0)*(h< -1.5?max(0.0,1.0+(h+1.5)/3.0):1.0); vec3 pp=uUp-d*s; float L=length(pp); if(L>1e-6) d=d*cos(R)+pp/L*sin(R); return d*length(P); }
 void main(){
  float b=pow(10.0,-0.4*(aMag-7.4));
  float I=min(0.075*pow(b,0.62),3.0)*smoothstep(uLim+0.6,uLim-0.2,aMag)*uGain;
@@ -2814,7 +3017,7 @@ void main(){
  gl_PointSize=core+halo; vS=core/(core+halo); vSp=aMag<1.6?(1.6-aMag)*0.35:0.0;
  float l=dot(aCol,vec3(0.3,0.59,0.11)); vC=max(mix(vec3(l),aCol,1.35),0.0)*I;
  if(I<0.004) gl_PointSize=0.0;
- gl_Position=projectionMatrix*viewMatrix*modelMatrix*vec4(position,1.0); }`;
+ gl_Position=projectionMatrix*viewMatrix*modelMatrix*vec4(starRef(position),1.0); }`;
   const STAR_FS = `varying vec3 vC; varying float vS; varying float vSp;
 void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discard;
  float rc=r/vS, core=exp(-rc*rc*3.2);
@@ -2824,12 +3027,12 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
 
   /* ---------- planet shading patches: inner atmosphere, twilight, ring shadow on Saturn, the Moon's shadow on Earth ---------- */
   function patchPlanet(rec, o) {
-    const f3 = n => Number(n).toFixed(3), mat = rec.mat, U = rec.U = { uSunW: { value: new THREE.Vector3() }, uC: { value: new THREE.Vector3() }, uN: { value: new THREE.Vector3(0, 1, 0) }, uRing: { value: null }, uR: { value: new THREE.Vector3() }, uMoon: { value: new THREE.Vector4() }, uTan: { value: new THREE.Vector2() }, uJM: { value: [new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4()] }, uMag: { value: new THREE.Vector3(0, 1, 0) } };
+    const f3 = n => Number(n).toFixed(3), mat = rec.mat, U = rec.U = { uSunW: { value: new THREE.Vector3() }, uC: { value: new THREE.Vector3() }, uN: { value: new THREE.Vector3(0, 1, 0) }, uRing: { value: null }, uR: { value: new THREE.Vector3() }, uMoon: { value: new THREE.Vector4() }, uTan: { value: new THREE.Vector2() }, uJM: { value: [new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4()] }, uMag: { value: new THREE.Vector3(0, 1, 0) }, uAur: { value: new THREE.Vector4(1.17, 0.055, 1, 1) }, uAurC: { value: new THREE.Vector3(0.12, 1.0, 0.5) } };
     mat.customProgramCacheKey = () => 'planet-' + JSON.stringify([o.lights, o.rim, o.twi, !!o.ring, !!o.moonShadow, !!o.jmoons, !!o.aurora]);
     mat.onBeforeCompile = sh => {
       Object.assign(sh.uniforms, U);
       sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWp;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvWp=(modelMatrix*vec4(transformed,1.0)).xyz;');
-      let decl = 'varying vec3 vWp; uniform vec3 uSunW; uniform vec3 uC; uniform vec3 uN; uniform sampler2D uRing; uniform vec3 uR; uniform vec4 uMoon; uniform vec2 uTan; uniform vec4 uJM[4]; uniform vec3 uMag;\n';
+      let decl = 'varying vec3 vWp; uniform vec3 uSunW; uniform vec3 uC; uniform vec3 uN; uniform sampler2D uRing; uniform vec3 uR; uniform vec4 uMoon; uniform vec2 uTan; uniform vec4 uJM[4]; uniform vec3 uMag; uniform vec4 uAur; uniform vec3 uAurC;\n';
       sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + decl);
       if (o.lights) sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>',
         '#include <emissivemap_fragment>\n#if NUM_POINT_LIGHTS > 0\n { vec3 Ld = normalize(pointLights[0].position + vViewPosition); totalEmissiveRadiance *= 1.0 - smoothstep(-0.16, 0.05, dot(normal, Ld)); }\n#endif');
@@ -2841,7 +3044,7 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
       if (o.rim) rim = `{ vec3 Ld=normalize(pointLights[0].position+vViewPosition); vec3 V=normalize(vViewPosition); float mu=clamp(dot(normal,V),0.0,1.0); float fr=pow(1.0-mu,${f3(o.rim[3])}); float ndl=dot(normal,Ld); float lit=smoothstep(-0.15,0.5,ndl);
         outgoingLight+=vec3(${f3(o.rim[0])},${f3(o.rim[1])},${f3(o.rim[2])})*fr*lit*${f3(o.rim[4])};
         ${o.twi ? 'outgoingLight+=vec3(1.0,0.42,0.16)*exp(-pow(ndl/0.17,2.0))*fr*0.9;' : ''} }`;
-      if (o.aurora) rim += `{ vec3 nrm=normalize(vWp-uC); float ml=asin(clamp(dot(nrm,uMag),-1.0,1.0)); float al=abs(ml); float ring=exp(-pow((al-1.17)/0.055,2.0)); vec3 Ls=normalize(uSunW-vWp); float night=1.0-smoothstep(-0.18,0.02,dot(nrm,Ls)); float mlon=atan(dot(nrm,cross(uMag,vec3(0.0,1.0,0.0))),dot(nrm,cross(uMag,cross(uMag,vec3(0.0,1.0,0.0))))); float cur=0.78+0.22*sin(mlon*9.0)*sin(mlon*3.0+1.0); outgoingLight+=vec3(0.12,1.0,0.5)*ring*night*cur*0.42+vec3(0.8,0.1,0.35)*exp(-pow((al-1.10)/0.03,2.0))*night*0.08; }`;
+      if (o.aurora) rim += `{ vec3 nrm=normalize(vWp-uC); float ml=asin(clamp(dot(nrm,uMag),-1.0,1.0)); float al=abs(ml); float ring=exp(-pow((al-uAur.x)/uAur.y,2.0)); vec3 Ls=normalize(uSunW-vWp); float night=mix(1.0,1.0-smoothstep(-0.18,0.02,dot(nrm,Ls)),uAur.w); float mlon=atan(dot(nrm,cross(uMag,vec3(0.0,1.0,0.0))),dot(nrm,cross(uMag,cross(uMag,vec3(0.0,1.0,0.0))))); float cur=0.78+0.22*sin(mlon*9.0)*sin(mlon*3.0+1.0); outgoingLight+=(uAurC*ring*cur*0.42+vec3(0.8,0.1,0.35)*exp(-pow((al-uAur.x+0.07)/0.03,2.0))*0.08)*night*uAur.z; }`;
       sh.fragmentShader = sh.fragmentShader.replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n float sh=1.0;\n' + shadow + '\n reflectedLight.directDiffuse*=sh; reflectedLight.directSpecular*=sh;');
       sh.fragmentShader = sh.fragmentShader.replace('#include <envmap_fragment>', '#include <envmap_fragment>\n' + rim);
     };
@@ -2970,7 +3173,7 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
       sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D uDetTex; uniform sampler2D uDetLT; uniform sampler2D uDetH; uniform float uHS; uniform vec4 uDet; uniform float uDetOn;')
         .replace('#include <map_fragment>', '#ifdef USE_MAP\n ' + pick + ' vec4 texelColor = texture2D(map, vUv);\n if (dEdge > 0.0) texelColor = mix(texelColor, texture2D(uDetTex, vec2(ddx, ddy)), dEdge);\n texelColor = mapTexelToLinear(texelColor); diffuseColor *= texelColor;\n#endif');
       if (cfg.lights) sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', '#ifdef USE_EMISSIVEMAP\n vec4 emissiveColor = texture2D(emissiveMap, vUv);\n if (dEdge > 0.0) emissiveColor = mix(emissiveColor, texture2D(uDetLT, vec2(ddx, ddy)), dEdge);\n emissiveColor.rgb = emissiveMapTexelToLinear(emissiveColor).rgb; totalEmissiveRadiance *= emissiveColor.rgb;\n#endif');
-      if (cfg.hgt) sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + HPERT().replace('POLEFADE', polefade(cfg.pf)));
+      if (cfg.hgt) sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n#ifdef USE_MAP\n' + HPERT().replace('POLEFADE', polefade(cfg.pf)) + '\n#endif');
     };
     if (cfg.hgt) mat.extensions = Object.assign(mat.extensions || {}, { derivatives: true });
     mat.needsUpdate = true;
@@ -3096,7 +3299,7 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
         mg[i] = STARS.mag[i]; col[i * 3] = STARS.rgb[i * 3]; col[i * 3 + 1] = STARS.rgb[i * 3 + 1]; col[i * 3 + 2] = STARS.rgb[i * 3 + 2];
       }
       const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); sg.setAttribute('aCol', new THREE.BufferAttribute(col, 3)); sg.setAttribute('aMag', new THREE.BufferAttribute(mg, 1));
-      starMat = new THREE.ShaderMaterial({ uniforms: { uPx: { value: 1 }, uLim: { value: 7.4 }, uGain: { value: 1 } }, vertexShader: STAR_VS, fragmentShader: STAR_FS, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
+      starMat = new THREE.ShaderMaterial({ uniforms: { uPx: { value: 1 }, uLim: { value: 7.4 }, uGain: { value: 1 }, uUp: { value: new THREE.Vector3(0, 1, 0) }, uRef: { value: 0 } }, vertexShader: STAR_VS, fragmentShader: STAR_FS, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
       starPts = new THREE.Points(sg, starMat); starPts.frustumCulled = false; starScene.add(starPts);
     }
     scene.add(new THREE.AmbientLight(0x0c1122, 1));
@@ -3122,7 +3325,7 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
         rec.cloud.visible = false; rec.cloud.renderOrder = 1; rec.drift = 0; grp.add(rec.cloud);
       }
       const PO = { earth: { lights: true, twi: true, moonShadow: true, aurora: true, rim: [0.32, 0.58, 1.0, 3.0, 1.2] }, venus: { rim: [1.0, 0.9, 0.7, 2.4, 0.8] }, mars: { rim: [0.9, 0.6, 0.42, 3.2, 0.32] },
-        jupiter: { jmoons: true, rim: [0.9, 0.82, 0.7, 3.0, 0.16] }, saturn: { ring: true, rim: [0.95, 0.88, 0.7, 3.0, 0.16] }, uranus: { rim: [0.5, 0.85, 0.9, 2.6, 0.55] }, neptune: { rim: [0.35, 0.55, 1.0, 2.6, 0.55] } }[b.id];
+        jupiter: { jmoons: true, aurora: true, rim: [0.9, 0.82, 0.7, 3.0, 0.16] }, saturn: { ring: true, aurora: true, rim: [0.95, 0.88, 0.7, 3.0, 0.16] }, uranus: { rim: [0.5, 0.85, 0.9, 2.6, 0.55] }, neptune: { rim: [0.35, 0.55, 1.0, 2.6, 0.55] } }[b.id];
       if (PO) patchPlanet(rec, PO);
       if (DEEP[b.id]) setupDeep(rec);
       if (b.rings) {
@@ -3149,10 +3352,10 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
     // the sky seen from the ground: blue daylight and twilight drawn behind the planets, and an opaque horizon drawn in front of them
     const domeMat = ground => new THREE.ShaderMaterial({
       side: THREE.BackSide, transparent: true, depthTest: false, depthWrite: false,
-      uniforms: { uUp: { value: new THREE.Vector3(0, 1, 0) }, uSun: { value: new THREE.Vector3(1, 0, 0) }, uSunAlt: { value: 0 }, uObs: { value: 0 } },
+      uniforms: { uUp: { value: new THREE.Vector3(0, 1, 0) }, uSun: { value: new THREE.Vector3(1, 0, 0) }, uSunAlt: { value: 0 }, uObs: { value: 0 }, uLP: { value: 0 } },
       vertexShader: 'varying vec3 vDir; void main(){ vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
       fragmentShader: [
-        'uniform vec3 uUp, uSun; uniform float uSunAlt, uObs; varying vec3 vDir;',
+        'uniform vec3 uUp, uSun; uniform float uSunAlt, uObs, uLP; varying vec3 vDir;',
         'void main(){',
         '  vec3 d = normalize(vDir); float alt = dot(d, uUp);',
         '  float day = smoothstep(-0.16, 0.10, uSunAlt) * (1.0 - 0.95 * smoothstep(0.7, 1.0, uObs));',
@@ -3162,6 +3365,7 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
         '  float fogH = exp(alt * 30.0);',
         '  vec3 g = vec3(0.022, 0.027, 0.024) * (0.3 + 2.4 * day);',
         '  vec3 hz = mix(vec3(0.035, 0.05, 0.085), vec3(0.45, 0.58, 0.78), day) * 0.6 + vec3(0.55, 0.24, 0.08) * tw * 0.35;',
+        '  hz += vec3(0.42, 0.3, 0.17) * uLP * (1.0 - day);',
         '  gl_FragColor = vec4(mix(g, hz, fogH * 0.9), 1.0);'].join('\n') : [
         '  float h = pow(1.0 - max(alt, 0.0), 3.0);',
         '  vec3 col = mix(vec3(0.07, 0.24, 0.62), vec3(0.62, 0.78, 0.95), h);',
@@ -3172,6 +3376,7 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
         '  float bl = (pow(sa, 700.0) * 0.55 + pow(sa, 5000.0)) * (0.35 + 0.65 * day) * (1.0 - uObs); col = mix(col, vec3(1.0, 0.96, 0.82), clamp(bl, 0.0, 1.0));',
         '  float a = day * 0.97 + (1.0 - day) * (0.10 * h + tw * (0.22 + 0.5 * pow(sa, 4.0) * (1.0 - max(alt, 0.0))));',
         '  a = max(a, clamp(bl, 0.0, 1.0) * smoothstep(-0.12, 0.0, uSunAlt));',
+        '  { float lp = uLP * (1.0 - day) * (0.3 + 0.7 * h); vec3 lc = vec3(0.36, 0.28, 0.2); col = (col * a + lc * lp) / max(a + lp, 1e-4); a = a + lp * (1.0 - a); }',
         '  gl_FragColor = vec4(col, clamp(a, 0.0, 1.0));'].join('\n'),
         '}'].join('\n') });
     domeScene = new THREE.Scene(); groundScene = new THREE.Scene();
@@ -3309,16 +3514,16 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
   function placeXY(id, lat, lon) { const rec = placeRec(id); if (!rec) return null; placeVec(rec, lat, lon, _pl); const R = rec.b.radius / KU, cc = toScreen(rec.grp.position.clone().addScaledVector(_pl, R)), q = proj(cc); return { x: q.x, y: q.y, z: cc.z, face: _pl.dot(camera.position.clone().sub(rec.grp.position)) / R }; }
   const PL_COL = { s: 'rgba(150,235,215,0.95)', k: 'rgba(255,214,150,0.92)' };
   function drawPlaces(ctx, scr, W, H, FONT) {
-    if (!S.show.places || typeof PLACES === 'undefined') return;
+    if ((!S.show.places && !S.show.landing) || typeof PLACES === 'undefined') return;
     const camPos = camera.position;
-    ['earth', 'moon', 'mars', 'mercury', 'io', 'europa', 'ganymede', 'callisto'].forEach(id => {
+    ['earth', 'moon', 'mars', 'mercury', 'io', 'europa', 'ganymede', 'callisto', 'venus', 'titan'].forEach(id => {
       const L = PLACES[id], rec = placeRec(id); if (!L || !rec || !rec.grp.visible) return;
       let s = scr[id]; if (!s) { const p = rec.grp.position, c = toScreen(p), dist = Math.max(p.distanceTo(camPos), 1e-9); s = { front: c.z < 0, r: rec.b.radius / KU / (dist * TANH) * S.h / 2 }; }
       if (!s.front || s.r < 300) return;
       const lvl = s.r > 520 ? 3 : s.r > 300 ? 2 : 1, c = rec.grp.position, R = rec.b.radius / KU, toCam = camPos.clone().sub(c);
       ctx.font = '500 12px ' + FONT; ctx.textBaseline = 'middle';
       L.forEach(pl => {
-        if (pl[3] > lvl) return;
+        if (pl[3] > lvl || (pl[4] === 's' ? !S.show.landing : !S.show.places)) return;
         placeVec(rec, pl[1], pl[2], _pl); if (_pl.dot(toCam) < R * 1.03) return;
         const cc = toScreen(c.clone().addScaledVector(_pl, R)); if (cc.z >= -camera.near) return;
         const q = proj(cc); if (q.x < 24 || q.x > W - 24 || q.y < 24 || q.y > H - 70) return;
@@ -3421,7 +3626,387 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
     Ext.MOONS.forEach(m => { if (M3[m.id].vis) add(m); });
     if (S.show.belt) Ext.NAMED.forEach(add);
     if (S.show.craft) Ext.CRAFT.forEach(add);
+    if (S.show.sats) Ext.SATS.forEach(add);
     if (S.show.comets) Ext.COMETS.forEach(add);
+  }
+
+  /* ====================== layers: models, solar wind, Oort cloud, nearby stars, satellites, overlays and sky aids ====================== */
+  const X = { built: false, models: {}, modelPx: {}, term: {}, termM: {}, wind: [], helio: [], oort: null, oortK: 0, near: null, nearK: 0, starMesh: null, starGlow: null, sats: null, satBuf: null, roche: null, hill: null, lagN: {}, ecl: null, eclT: 0, viewKm: 1 };
+  let curF = null;
+  const YAX = new THREE.Vector3(0, 1, 0), AUU = 149597870.7 / KU, LYU = 9.4607304725808e12 / KU;
+  const smoothK = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  function circleGeo(n) { const a = new Float32Array(n * 3); for (let i = 0; i < n; i++) { const t = i / n * 2 * Math.PI; a[i * 3] = Math.cos(t); a[i * 3 + 2] = Math.sin(t); } const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(a, 3)); return g; }
+
+  /* ---------- spacecraft and satellite models at true size, in metres; boresight (dish or main instrument) along +Z ---------- */
+  const MAT = {};
+  function mats() {
+    if (MAT.gold) return MAT;
+    const P = (c, sp, sh, o) => new THREE.MeshPhongMaterial(Object.assign({ color: c, specular: sp, shininess: sh, emissive: 0x07080b }, o || {}));
+    MAT.gold = P(0xc99a3c, 0x664422, 40); MAT.white = P(0xe2e2de, 0x222222, 12); MAT.silver = P(0xb9bec8, 0x888888, 70); MAT.dark = P(0x2c2e33, 0x111111, 20);
+    MAT.panel = P(0x1d2f6b, 0x5577bb, 90, { side: THREE.DoubleSide }); MAT.blanket = P(0x8f6029, 0x553311, 40, { side: THREE.DoubleSide });
+    MAT.mirror = P(0xf0c050, 0xffe6a0, 140, { side: THREE.DoubleSide, emissive: 0x4a3208 }); MAT.kapton = P(0x9d93b4, 0x1a1720, 6, { side: THREE.DoubleSide }); MAT.dish = P(0xd8d8d4, 0x222222, 10, { side: THREE.DoubleSide });
+    return MAT;
+  }
+  const mm = (geo, mat, x, y, z, rx, ry, rz) => { const o = new THREE.Mesh(geo, mat); o.position.set(x || 0, y || 0, z || 0); o.rotation.set(rx || 0, ry || 0, rz || 0); return o; };
+  const box = (w, h, d, mat, x, y, z) => mm(new THREE.BoxGeometry(w, h, d), mat, x, y, z);
+  const cyl = (r, len, ax, mat, x, y, z, seg) => mm(new THREE.CylinderGeometry(r, r, len, seg || 16), mat, x, y, z, ax === 'z' ? Math.PI / 2 : 0, 0, ax === 'x' ? Math.PI / 2 : 0);
+  const boom = (ang, from, len, r, mat, z) => mm(new THREE.CylinderGeometry(r, r, len, 8), mat, Math.cos(ang) * (from + len / 2), Math.sin(ang) * (from + len / 2), z || 0, 0, 0, ang - Math.PI / 2);
+  function dishM(d, depth, mat, x, y, z) { const pts = []; for (let i = 0; i <= 12; i++) { const r = d / 2 * i / 12; pts.push(new THREE.Vector2(r, depth * Math.pow(r / (d / 2), 2))); } const g = new THREE.LatheGeometry(pts, 36); g.rotateX(Math.PI / 2); return mm(g, mat, x, y, z); }
+  const MODELS = {
+    voyager: g => { const M = mats();
+      g.add(dishM(3.66, 0.5, M.dish, 0, 0, 0.3)); g.add(mm(new THREE.CylinderGeometry(0.95, 0.95, 0.47, 10), M.dark, 0, 0, 0, Math.PI / 2));
+      g.add(boom(Math.PI, 0.9, 3.2, 0.03, M.silver, -0.3)); for (let k = 0; k < 3; k++) g.add(cyl(0.2, 0.5, 'x', M.dark, -2.7 - k * 0.55, 0, -0.3, 10));
+      g.add(boom(0, 0.9, 2.3, 0.03, M.silver, -0.3)); g.add(box(0.6, 0.6, 0.8, M.gold, 3.4, 0, -0.3));
+      g.add(boom(Math.PI / 2 + 0.2, 0.5, 13, 0.02, M.silver, -0.4)); },
+    pioneer: g => { const M = mats();
+      g.add(dishM(2.74, 0.45, M.dish, 0, 0, 0.25)); g.add(mm(new THREE.CylinderGeometry(0.72, 0.72, 0.36, 6), M.gold, 0, 0, -0.2, Math.PI / 2));
+      [Math.PI * 0.83, Math.PI * 1.17].forEach(a => { g.add(boom(a, 0.7, 2.6, 0.03, M.silver, -0.3)); g.add(boom(a, 3.0, 0.9, 0.18, M.dark, -0.3)); });
+      g.add(boom(0, 0.7, 6.6, 0.02, M.silver, -0.3)); },
+    newhorizons: g => { const M = mats();
+      g.add(mm(new THREE.CylinderGeometry(1.25, 1.25, 0.7, 3), M.gold, 0, 0, 0, Math.PI / 2)); g.add(dishM(2.1, 0.3, M.dish, 0, 0, 0.4));
+      g.add(boom(Math.PI, 0.6, 0.6, 0.05, M.silver, 0)); g.add(boom(Math.PI, 1.2, 1.1, 0.21, M.dark, 0)); },
+    lucy: g => { const M = mats();
+      g.add(box(2, 2, 1.8, M.gold)); g.add(dishM(2, 0.3, M.dish, 0, 0, 0.95));
+      [-1, 1].forEach(s => { g.add(cyl(0.05, 1.4, 'x', M.silver, s * 1.7, 0, 0)); g.add(mm(new THREE.CircleGeometry(3.65, 24), M.panel, s * (2.4 + 3.65), 0, 0)); }); },
+    psyche: g => { const M = mats();
+      g.add(box(2.2, 2.2, 2.4, M.gold)); g.add(dishM(2, 0.3, M.dish, 0, 0, 1.25));
+      [-1, 1].forEach(s => { const c = s * 7.5; g.add(cyl(0.05, 5, 'x', M.silver, s * 3.6, 0, 0)); [[0, 0], [2.55, 0], [-2.55, 0], [0, 2.55], [0, -2.55]].forEach(([dx, dy]) => g.add(box(2.5, 2.5, 0.05, M.panel, c + dx, dy, 0))); }); },
+    clipper: g => { const M = mats();
+      g.add(cyl(0.8, 3, 'z', M.white, 0, 0, -1)); g.add(box(1.6, 1.6, 1.2, M.gold, 0, 0, 0.8)); g.add(dishM(3, 0.4, M.dish, 0, 0, 1.45));
+      [-1, 1].forEach(s => { for (let k = 0; k < 5; k++) g.add(box(2.6, 4.1, 0.05, M.panel, s * (1.6 + 1.35 + k * 2.7), 0, -1)); });
+      g.add(boom(-Math.PI / 2, 0.8, 8.5, 0.02, M.silver, -1)); },
+    jwst: g => { const M = mats(), sh = new THREE.Shape();
+      [[10.5, 0], [4, 7.1], [-4, 7.1], [-10.5, 0], [-4, -7.1], [4, -7.1]].forEach((p, i) => i ? sh.lineTo(p[0], p[1]) : sh.moveTo(p[0], p[1]));
+      for (let k = 0; k < 5; k++) { const m = mm(new THREE.ShapeGeometry(sh), M.kapton, 0, 0, -k * 0.25); m.scale.set(1 - k * 0.03, 1 - k * 0.03, 1); g.add(m); }
+      const ote = new THREE.Group(), s = 1.32; ote.position.set(-2, 0, -4.2); ote.rotation.y = Math.PI / 2; g.add(ote);
+      for (let q = -2; q <= 2; q++) for (let r = -2; r <= 2; r++) { const ring = Math.max(Math.abs(q), Math.abs(r), Math.abs(q + r)); if (ring < 1 || ring > 2) continue; const hg = new THREE.CircleGeometry(0.75, 6); hg.rotateZ(Math.PI / 6); ote.add(mm(hg, M.mirror, s * (q + r / 2), s * r * 0.866, 0)); }
+      ote.add(mm(new THREE.CircleGeometry(0.37, 16), M.silver, 0, 0, 7)); [0, 2.1, 4.2].forEach(a => { const st = new THREE.Vector3(Math.cos(a) * 3.3, Math.sin(a) * 3.3, 0), en = new THREE.Vector3(0, 0, 7), m = mm(new THREE.CylinderGeometry(0.04, 0.04, st.distanceTo(en), 6), M.dark); m.position.copy(st).add(en).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(YAX, en.clone().sub(st).normalize()); ote.add(m); });
+      g.add(box(2.6, 2.6, 1.4, M.dark, 0, 0, 1.2)); g.add(mm(new THREE.PlaneGeometry(5.9, 2.4), M.panel, 0, -2.2, 2.0, -0.6)); },
+    bepicolombo: g => { const M = mats();
+      g.add(box(3.7, 3.7, 2, M.gold, 0, 0, -1)); [-1, 1].forEach(s => g.add(box(12.2, 2.6, 0.05, M.panel, s * (1.85 + 6.1), 0, -1)));
+      g.add(box(2.4, 2.4, 3.3, M.white, 0, 0, 1.6)); g.add(box(2.1, 7.5, 0.05, M.blanket, 0, -(1.2 + 3.75), 1.6));
+      g.add(cyl(1.6, 1.4, 'z', M.white, 0, 0, 4, 20)); g.add(cyl(0.9, 0.9, 'z', M.dark, 0, 0, 5.1, 8)); },
+    iss: g => { const M = mats();
+      g.add(box(109, 1.8, 1.8, M.silver, 0, 2.6, 0));
+      [-49, -34, 34, 49].forEach(x => [-1, 1].forEach(s => g.add(box(11.6, 0.08, 35, M.blanket, x, 2.6, s * 18.7))));
+      [-20, 20].forEach(x => g.add(box(3.2, 13, 0.08, M.white, x, 2.6 - 7, 0)));
+      g.add(cyl(2.1, 52, 'z', M.white, 0, 0, -6)); g.add(cyl(2.2, 7, 'x', M.white, 5.6, 0, 14)); g.add(cyl(2.2, 11, 'x', M.white, -7.6, 0, 14));
+      g.add(box(30, 0.08, 3.3, M.panel, 0, 0, -27)); },
+    tiangong: g => { const M = mats();
+      g.add(cyl(2.1, 16.6, 'z', M.white, 0, 0, 0)); [-1, 1].forEach(s => { g.add(cyl(2.1, 17.9, 'x', M.white, s * (2.1 + 8.95), 0, 8.3)); g.add(box(4.2, 0.08, 27, M.panel, s * 18.6, 0, 8.3)); });
+      g.add(box(24, 0.08, 2.8, M.panel, 0, 0, -5)); },
+    hubble: g => { const M = mats();
+      g.add(cyl(2.1, 9.2, 'z', M.silver, 0, 0, 2)); g.add(cyl(2.2, 4, 'z', M.silver, 0, 0, -4.6)); g.add(box(3.8, 0.06, 2.6, M.silver, 0, 2.6, 7.6)).rotation.x = -0.5;
+      [-1, 1].forEach(s => g.add(box(7.1, 0.04, 2.6, M.panel, s * (2.3 + 3.55), 0, -1))); },
+    landsat: g => { const M = mats(); g.add(box(3, 2, 4.3, M.gold)); g.add(box(8, 0.06, 2.3, M.panel, 5.5, 0, 0)); g.add(box(1.5, 1, 1.5, M.dark, 0, 0, 2.6)); },
+    goes: g => { const M = mats(); g.add(box(2.5, 2.5, 2.5, M.white)); g.add(box(10, 0.06, 2.7, M.panel, 6.3, 0, 0)); g.add(cyl(0.03, 8, 'x', M.silver, -5.3, 0, 0)); g.add(dishM(1.2, 0.2, M.dish, 0.6, 0.6, 1.3)); }
+  };
+  const MODEL_OF = { voyager1: 'voyager', voyager2: 'voyager', pioneer10: 'pioneer', pioneer11: 'pioneer', newhorizons: 'newhorizons', lucy: 'lucy', psyche: 'psyche', clipper: 'clipper', jwst: 'jwst', bepicolombo: 'bepicolombo', iss: 'iss', tiangong: 'tiangong', hubble: 'hubble', landsat9: 'landsat', goes19: 'goes' };
+  const _o6 = [0, 0, 0];
+  function updateModels(st, F, camPos, sky) {
+    Ext.CRAFT.concat(Ext.SATS).forEach(b => {
+      const key = MODEL_OF[b.key], p = st.pos[b.id];
+      const on = !sky && key && p && (b.kind === 'craft' ? S.show.craft && Ext.craftLive(b, S.jd) : S.show.sats && Ext.satLive(b, S.jd));
+      let rec = X.models[b.id], px = 0, pos = null;
+      if (on) { pos = F(p); px = b.radius / KU / (Math.max(pos.distanceTo(camPos), 1e-15) * TANH) * S.h / 2; }
+      X.modelPx[b.id] = on ? px : 0;
+      if (!on || px < 1.2) { if (rec) rec.visible = false; return; }
+      if (!rec) { rec = X.models[b.id] = new THREE.Group(); const inner = new THREE.Group(); MODELS[key](inner); inner.scale.setScalar(1e-3 / KU); rec.add(inner); scene.add(rec); }
+      rec.visible = true; rec.position.copy(pos); rec.updateMatrixWorld();
+      if (b.kind === 'sat' && b.key !== 'goes19') { // station-keeping attitude: +Y away from Earth, +Z along the direction of travel
+        Ext.satGeo(b, S.jd + 1e-4, _o6); const Y = v3(Ext.satGeo(b, S.jd, [0, 0, 0])).normalize(), V = v3(_o6).sub(v3(Ext.satGeo(b, S.jd, [0, 0, 0]))), Z = V.sub(Y.clone().multiplyScalar(V.dot(Y))).normalize(), Xv = new THREE.Vector3().crossVectors(Y, Z);
+        rec.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(Xv, Y, Z));
+      } else rec.lookAt(F(b.key === 'jwst' || b.key === 'bepicolombo' ? st.pos.sun : st.pos.earth));
+    });
+  }
+
+  /* ---------- solar wind (Parker spiral), heliosphere, Oort cloud, nearby stars, Earth's satellites ---------- */
+  const WIND_VS = LOGV + `attribute vec3 aW; uniform float uPh; uniform float uRot; uniform float uRmax; uniform float uK; uniform float uPx; varying float vA;
+void main(){
+ float f=fract(aW.z+uPh); float r=0.7+f*uRmax; float lon=aW.x+uRot-0.0071635*r; float cl=cos(aW.y);
+ vec3 p=vec3(r*cl*cos(lon), r*sin(aW.y), -r*cl*sin(lon));
+ vA=uK*smoothstep(1.0,0.72,f)*smoothstep(0.0,0.03,f);
+ gl_PointSize=uPx*1.8; gl_Position=projectionMatrix*viewMatrix*modelMatrix*vec4(p,1.0);
+#include <logdepthbuf_vertex>
+}`;
+  const WIND_FS = LOGF + `varying float vA;
+void main(){
+#include <logdepthbuf_fragment>
+ vec2 q=gl_PointCoord-0.5; float d=dot(q,q); if(d>0.25) discard; gl_FragColor=vec4(vec3(1.0,0.8,0.52)*vA*(1.0-d*4.0),1.0); }`;
+  const rimMat = (col, k) => new THREE.ShaderMaterial({ uniforms: { uC: { value: new THREE.Color(col) }, uK: { value: k } },
+    vertexShader: LOGV + 'varying vec3 vN; varying vec3 vV;\nvoid main(){ vec4 w=modelMatrix*vec4(position,1.0); vN=normalize(mat3(modelMatrix)*normal); vV=cameraPosition-w.xyz; gl_Position=projectionMatrix*viewMatrix*w;\n#include <logdepthbuf_vertex>\n}',
+    fragmentShader: LOGF + 'uniform vec3 uC; uniform float uK; varying vec3 vN; varying vec3 vV;\nvoid main(){\n#include <logdepthbuf_fragment>\n float m=1.0-abs(dot(normalize(vN),normalize(vV))); gl_FragColor=vec4(uC*pow(m,4.0)*uK,1.0); }',
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  function buildExtras() {
+    let seed = 11; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }, gauss = () => Math.sqrt(-2 * Math.log(rnd() + 1e-9)) * Math.cos(2 * Math.PI * rnd());
+    // solar wind in three populations, sized for the inner planets, the outer planets and the edge of the heliosphere
+    const streams = []; for (let k = 0; k < 14; k++) streams.push([rnd() * 2 * Math.PI, (rnd() - 0.5) * 0.9]);
+    [2.2, 14, 100].forEach(Rau => {
+      const n = 5000, aw = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) { const s = streams[i % streams.length]; aw[i * 3] = s[0] + gauss() * 0.07; aw[i * 3 + 1] = s[1] + gauss() * 0.06; aw[i * 3 + 2] = rnd(); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('aW', new THREE.BufferAttribute(aw, 3));
+      const mat = new THREE.ShaderMaterial({ uniforms: { uPh: { value: 0 }, uRot: { value: 0 }, uRmax: { value: Rau * AUU }, uK: { value: 0 }, uPx: { value: 1 } }, vertexShader: WIND_VS, fragmentShader: WIND_FS, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+      const pts = new THREE.Points(g, mat); pts.frustumCulled = false; pts.visible = false; scene.add(pts); X.wind.push({ pts, mat, Rau });
+    });
+    [[90, 0x5f8fd6, 0.55], [121, 0x9a72e0, 0.8]].forEach(([Rau, c, k]) => { const m = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), rimMat(c, k)); m.scale.setScalar(Rau * AUU); m.visible = false; m.frustumCulled = false; scene.add(m); X.helio.push({ m, k, Rau }); });
+    // the Oort cloud: an inner disc-like Hills cloud and a round outer cloud, thinning out as r^-3.5. Illustrative: no Oort cloud body has been seen out there.
+    { const n = 9000, a = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) {
+        const inner = i < 3000, r = inner ? 2000 * Math.pow(10, rnd()) : 20000 * Math.pow(1 - rnd() * (1 - Math.pow(5, -1.5)), -1 / 1.5);
+        const lon = rnd() * 2 * Math.PI, lat = inner ? Math.asin(2 * rnd() - 1) * 0.45 : Math.asin(2 * rnd() - 1), R = r * AUU;
+        a[i * 3] = R * Math.cos(lat) * Math.cos(lon); a[i * 3 + 1] = R * Math.sin(lat); a[i * 3 + 2] = -R * Math.cos(lat) * Math.sin(lon);
+      }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(a, 3));
+      X.oort = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xa9bde0, size: 1.4, sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false })); X.oort.frustumCulled = false; X.oort.visible = false; scene.add(X.oort); }
+    // the nearest stars at their real distances
+    { const L = Ext.STARS.filter(s => s.near), n = L.length, a = new Float32Array(n * 3), c = new Float32Array(n * 3);
+      L.forEach((s, i) => { const q = v3(s.p).multiplyScalar(1 / KU); a.set([q.x, q.y, q.z], i * 3); const col = new THREE.Color(s.color); c.set([col.r, col.g, col.b], i * 3); });
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(a, 3)); g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+      X.near = new THREE.Points(g, new THREE.PointsMaterial({ size: 4, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0, depthWrite: false })); X.near.frustumCulled = false; X.near.visible = false; scene.add(X.near);
+      X.starMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), new THREE.MeshBasicMaterial({ color: 0xffffff })); X.starMesh.visible = false; scene.add(X.starMesh);
+      X.starGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); X.starGlow.visible = false; scene.add(X.starGlow); }
+    // Earth's satellites
+    { const n = Ext.CLOUD.n, g = new THREE.BufferGeometry(); X.satBuf = new Float32Array(n * 3);
+      g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('color', new THREE.BufferAttribute(Ext.CLOUD.col, 3));
+      X.sats = new THREE.Points(g, new THREE.PointsMaterial({ size: 1.3, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0.8, depthWrite: false })); X.sats.frustumCulled = false; X.sats.visible = false; scene.add(X.sats); }
+    // Roche limit (in the planet's equator) and Hill sphere (in the ecliptic)
+    [['roche', 0xff9a8a], ['hill', 0x8fd0ff]].forEach(([k, c]) => { const l = new THREE.LineLoop(circleGeo(256), new THREE.LineDashedMaterial({ color: c, dashSize: 0.025, gapSize: 0.02, transparent: true, opacity: 0.8, depthWrite: false })); l.computeLineDistances(); l.visible = false; l.frustumCulled = false; scene.add(l); X[k] = l; });
+    X.circ = circleGeo(256); X.built = true;
+  }
+  // the system whose Lagrange points, Hill sphere and Roche limit are drawn: the selected planet or the Moon, else the followed planet
+  function sysBody() {
+    const ok = id => id && (id === 'moon' || PIDS.indexOf(id) >= 0);
+    return ok(S.sel) ? S.sel : ok(S.follow) ? S.follow : null;
+  }
+  function planetDensity(b) { return b.mass * 1.98892e30 / (4 / 3 * Math.PI * Math.pow(b.radius * 1e3, 3)); }
+  function updateExtras(st, F, sc, camPos, sky, d, sunP) {
+    if (!X.built) buildExtras();
+    const viewKm = X.viewKm = d * TANH, sunDist = sc.sun.dist * KU;
+    // solar wind and heliosphere
+    X.wind.forEach(w => {
+      const q = viewKm / (w.Rau * 149597870.7), k = S.show.wind && !sky ? 0.9 * smoothK(0.012, 0.05, q) * (1 - smoothK(2, 6, q)) : 0;
+      w.pts.visible = k > 0.01; if (!w.pts.visible) return;
+      const U = w.mat.uniforms; U.uK.value = k; U.uPx.value = Math.min(2, S.dpr) * RSt.k; U.uPh.value = (S.jd * 34.56 / (w.Rau * AUU)) % 1; U.uRot.value = (S.jd * 2 * Math.PI / 25.38) % (2 * Math.PI);
+      w.pts.position.copy(sunP);
+    });
+    X.helio.forEach(h => { const k = S.show.wind && !sky ? smoothK(8, 30, viewKm / 149597870.7) * (1 - smoothK(4000, 20000, viewKm / 149597870.7)) : 0; h.m.visible = k > 0.01; h.m.material.uniforms.uK.value = h.k * k; h.m.position.copy(sunP); });
+    // Oort cloud
+    { const au = viewKm / 149597870.7, k = S.show.oort && !sky ? smoothK(250, 2500, au) : 0; X.oortK = k; X.oort.visible = k > 0.01; X.oort.material.opacity = 0.6 * k; X.oort.position.copy(sunP); }
+    // nearby stars, and the star we are visiting
+    { const k = S.show.stars && !sky ? smoothK(1500, 15000, Math.max(viewKm, sunDist) / 149597870.7) : 0; X.nearK = k; X.near.visible = k > 0.01; X.near.material.opacity = k; X.near.position.copy(sunP);
+      const f = E.BY_ID[S.follow], on = !sky && f && f.kind === 'star';
+      X.starMesh.visible = X.starGlow.visible = !!on;
+      if (on) { const p = F(f.p), R = f.radius / KU; X.starMesh.position.copy(p); X.starMesh.scale.setScalar(R); X.starMesh.material.color.set(f.color); X.starGlow.position.copy(p); X.starGlow.scale.setScalar(R * 9); X.starGlow.material.color.set(f.color); } }
+    // satellites around Earth
+    { const er = sc.earth && sc.earth.r, on = S.show.sats && !sky && er > 2.5 && sc.earth.front;
+      X.sats.visible = !!on;
+      if (on) { Ext.cloudPositions(S.jd, X.satBuf); const a = X.sats.geometry.attributes.position.array, b = X.satBuf; for (let i = 0; i < a.length; i += 3) { a[i] = b[i] / KU; a[i + 1] = b[i + 2] / KU; a[i + 2] = -b[i + 1] / KU; } X.sats.geometry.attributes.position.needsUpdate = true; X.sats.position.copy(F(st.pos.earth)); X.sats.material.size = er > 200 ? 2.0 : 1.3; } }
+    updateModels(st, F, camPos, sky);
+    // day-night line on every world big enough to see it on
+    [E.SUN, ...PLAN, E.MOON].forEach(b => {
+      if (b.id === 'sun') return; const rec = B[b.id], s = sc[b.id], on = S.show.term && !sky && s && s.front && s.r > 22;
+      let t = X.term[b.id];
+      if (!on) { if (t) t.holder.visible = false; return; }
+      if (!t) { const holder = new THREE.Group(), line = new THREE.LineLoop(X.circ, new THREE.LineBasicMaterial({ color: 0xffc27a, transparent: true, opacity: 0.65, depthWrite: false })); holder.add(line); rec.grp.add(holder); t = X.term[b.id] = { holder, line }; }
+      const c = 1 - (FLAT[b.id] || 0), sw = sunP.clone().sub(rec.grp.position).normalize().applyQuaternion(rec.grp.quaternion.clone().invert()), s2 = new THREE.Vector3(sw.x, sw.y / c, sw.z).normalize();
+      t.holder.visible = true; t.holder.scale.set(1, c, 1); t.line.quaternion.setFromUnitVectors(YAX, s2); t.line.scale.setScalar(b.radius / KU * 1.006);
+    });
+    Ext.MOONS.forEach(m => {
+      const r3 = M3[m.id], on = S.show.term && !sky && r3.vis && r3.mesh.visible; let t = X.termM[m.id];
+      if (on) { const p = r3.mesh.position, c = toScreen(p), dist = Math.max(p.distanceTo(camPos), 1e-9), rp = m.radius / KU / (dist * TANH) * S.h / 2; if (!(c.z < 0 && rp > 22)) { if (t) t.visible = false; return; } }
+      else { if (t) t.visible = false; return; }
+      if (!t) { t = X.termM[m.id] = new THREE.LineLoop(X.circ, new THREE.LineBasicMaterial({ color: 0xffc27a, transparent: true, opacity: 0.65, depthWrite: false })); scene.add(t); }
+      t.visible = true; t.position.copy(r3.mesh.position); t.quaternion.setFromUnitVectors(YAX, sunP.clone().sub(r3.mesh.position).normalize()); t.scale.setScalar(m.radius / KU * 1.006);
+    });
+    // Roche limit and Hill sphere
+    X.roche.visible = X.hill.visible = false;
+    const sid = S.show.roche && !sky ? sysBody() : null;
+    if (sid) {
+      const b = E.BY_ID[sid], rec = B[sid], p = st.pos[sid], par = sid === 'moon' ? st.pos.earth : st.pos.sun, r = Math.hypot(p[0] - par[0], p[1] - par[1], p[2] - par[2]);
+      const rH = r * Math.cbrt((sid === 'moon' ? 0.0123000371 : b.mass) / 3), rR = sid === 'moon' ? 0 : 2.44 * b.radius * Math.cbrt(planetDensity(b) / 1000);
+      X.hillR = rH; X.rocheR = rR; X.sysId = sid;
+      X.hill.visible = true; X.hill.position.copy(rec.grp.position); X.hill.quaternion.identity(); X.hill.scale.setScalar(rH / KU);
+      if (rR) { X.roche.visible = true; X.roche.position.copy(rec.grp.position); X.roche.quaternion.copy(rec.grp.quaternion); X.roche.scale.setScalar(rR / KU); }
+    }
+  }
+
+  /* ---------- the solar eclipse track: centre line and limits of the Moon's umbra (or antumbra) across Earth ---------- */
+  function axisHit(m, u, e, off, R) { // where a ray parallel to the shadow axis, offset from it by the vector off, first meets Earth; relative to Earth's centre (km)
+    const w = [m[0] + off[0] - e[0], m[1] + off[1] - e[1], m[2] + off[2] - e[2]], b = w[0] * u[0] + w[1] * u[1] + w[2] * u[2], c = w[0] * w[0] + w[1] * w[1] + w[2] * w[2] - R * R, D = b * b - c;
+    if (D < 0) return null; const s = -b - Math.sqrt(D); return [w[0] + s * u[0], w[1] + s * u[1], w[2] + s * u[2], s];
+  }
+  const RE_EQ = 6378.137;
+  function eclipseTrack(jd) {
+    const st0 = E.state(jd), e0 = st0.pos.earth, g0 = st0.moonGeo, gl = Math.hypot(g0[0], g0[1], g0[2]), el = Math.hypot(e0[0], e0[1], e0[2]);
+    const cosE = -(e0[0] * g0[0] + e0[1] * g0[1] + e0[2] * g0[2]) / (gl * el);
+    if (cosE < Math.cos(0.3)) { X.ecl = null; return; }
+    if (X.ecl && Math.abs(jd - X.ecl.tMax) < 0.45) return;
+    if (X.ecl === false && X.eclNone && Math.abs(jd - X.eclNone) < 0.45) return;
+    const f = j => E.eclipseAt(E.state(j)).dSolar;
+    let best = jd, bv = Infinity; for (let k = -12; k <= 12; k++) { const t = jd + k * 0.05, v = f(t); if (v < bv) { bv = v; best = t; } }
+    let a = best - 0.05, b = best + 0.05; for (let i = 0; i < 24; i++) { const m1 = a + (b - a) / 3, m2 = b - (b - a) / 3; f(m1) < f(m2) ? (b = m2) : (a = m1); }
+    const tMax = (a + b) / 2, ec = E.eclipseAt(E.state(tMax));
+    if (!ec.solar) { X.ecl = false; X.eclNone = tMax; return; }
+    const C = [], N = [], Sx = []; let kind = null;
+    for (let t = tMax - 0.17; t <= tMax + 0.17; t += 1 / 720) {
+      const st = E.state(t), sh = E.shadows(st).moon, m = st.pos.moon, e = st.pos.earth, u = sh.u, h = axisHit(m, u, e, [0, 0, 0], RE_EQ);
+      if (!h) { C.push(null); N.push(null); Sx.push(null); continue; }
+      const umb = R_MOON_ - h[3] * sh.tan1; kind = kind === null ? (umb > 0 ? 'total' : 'annular') : kind === (umb > 0 ? 'total' : 'annular') ? kind : 'hybrid';
+      const st2 = E.state(t + 1 / 1440), h2 = axisHit(st2.pos.moon, E.shadows(st2).moon.u, st2.pos.earth, [0, 0, 0], RE_EQ);
+      C.push(geoOf(v3(h).normalize(), t));
+      if (h2) { const mv = [h2[0] - h[0], h2[1] - h[1], h2[2] - h[2]], n = [u[1] * mv[2] - u[2] * mv[1], u[2] * mv[0] - u[0] * mv[2], u[0] * mv[1] - u[1] * mv[0]], L = Math.hypot(n[0], n[1], n[2]) || 1, w = Math.abs(umb);
+        const p1 = axisHit(m, u, e, [n[0] / L * w, n[1] / L * w, n[2] / L * w], RE_EQ), p2 = axisHit(m, u, e, [-n[0] / L * w, -n[1] / L * w, -n[2] / L * w], RE_EQ);
+        N.push(p1 ? geoOf(v3(p1).normalize(), t) : null); Sx.push(p2 ? geoOf(v3(p2).normalize(), t) : null); }
+      else { N.push(null); Sx.push(null); }
+    }
+    X.ecl = { tMax, C, N, S: Sx, kind: kind || ec.solar.kind, partial: !C.some(Boolean) };
+  }
+  const R_MOON_ = E.R_MOON;
+  function drawEclipse(ctx, st, W, H, FONT, GOLD) {
+    const rec = B.earth, s0 = rec && lastScr.earth; if (!rec || !s0 || !s0.front || s0.r < 18) return;
+    const now = performance.now(); if (now - X.eclT > 200) { X.eclT = now; eclipseTrack(S.jd); }
+    const c = rec.grp.position, R = E.R_EARTH / KU * 1.003, toCam = camera.position.clone().sub(c), _p = new THREE.Vector3();
+    const pt = g => { if (!g) return null; placeVec(rec, g.lat, g.lon, _p); if (_p.dot(toCam) < R * 1.0) return null; const cc = toScreen(c.clone().addScaledVector(_p, R)); if (cc.z >= -camera.near) return null; return proj(cc); };
+    const scene3 = q => { const cc = toScreen(q); if (cc.z >= -camera.near) return null; return proj(cc); };
+    const T = X.ecl;
+    if (T && T.C) {
+      const C = T.C.map(pt), N = T.N.map(pt), Sx = T.S.map(pt);
+      ctx.save(); ctx.fillStyle = 'rgba(' + GOLD + ',0.22)';
+      for (let i = 1; i < C.length; i++) { const a = N[i - 1], b = N[i], c2 = Sx[i], d2 = Sx[i - 1]; if (a && b && c2 && d2) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(d2.x, d2.y); ctx.closePath(); ctx.fill(); } }
+      const line = (P, w, a) => { ctx.beginPath(); let prev = null; P.forEach(q => { if (q && prev && Math.hypot(q.x - prev.x, q.y - prev.y) < 200) { ctx.moveTo(prev.x, prev.y); ctx.lineTo(q.x, q.y); } prev = q; }); ctx.lineWidth = w; ctx.strokeStyle = 'rgba(' + GOLD + ',' + a + ')'; ctx.stroke(); };
+      line(N, 1, 0.75); line(Sx, 1, 0.75); line(C, 1.6, 0.95);
+      const mid = C.filter(Boolean); if (mid.length) { const q = mid[Math.floor(mid.length / 2)]; ctx.font = '600 12px ' + FONT; ctx.fillStyle = 'rgb(' + GOLD + ')'; ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 4; const lab = (T.kind === 'annular' ? 'Annular eclipse path' : T.kind === 'hybrid' ? 'Hybrid eclipse path' : 'Path of totality') + ' · ' + fmtDateV(T.tMax); lblDraw(ctx, lab, lblPlace(ctx, lab, q.x, q.y, 12, true)); }
+      ctx.restore();
+    }
+    // the shadow on Earth right now: the penumbra (partial eclipse) and the umbra or antumbra
+    if (T) {
+      const sh = E.shadows(st).moon, m = st.pos.moon, e = st.pos.earth, u = sh.u, wv = [e[0] - m[0], e[1] - m[1], e[2] - m[2]], z0 = wv[0] * u[0] + wv[1] * u[1] + wv[2] * u[2];
+      const a0 = Math.abs(u[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0], e1 = [u[1] * a0[2] - u[2] * a0[1], u[2] * a0[0] - u[0] * a0[2], u[0] * a0[1] - u[1] * a0[0]], l1 = Math.hypot(e1[0], e1[1], e1[2]);
+      e1[0] /= l1; e1[1] /= l1; e1[2] /= l1; const e2 = [u[1] * e1[2] - u[2] * e1[1], u[2] * e1[0] - u[0] * e1[2], u[0] * e1[1] - u[1] * e1[0]];
+      [[R_MOON_ + z0 * sh.tan2, 'rgba(170,190,250,0.95)', 'Partial eclipse'], [Math.abs(R_MOON_ - z0 * sh.tan1), 'rgba(' + GOLD + ',0.95)', null]].forEach(([rad, col, lab]) => {
+        const pts = []; for (let k = 0; k <= 96; k++) { const t = k / 96 * 2 * Math.PI, off = [0, 1, 2].map(i => (Math.cos(t) * e1[i] + Math.sin(t) * e2[i]) * rad), h = axisHit(m, u, e, off, E.R_EARTH * 1.003); pts.push(h ? scene3(c.clone().add(v3(h).multiplyScalar(1 / KU))) : null); }
+        if (!pts.some(Boolean)) return;
+        ctx.beginPath(); let prev = null; pts.forEach(q => { if (q && prev) { ctx.moveTo(prev.x, prev.y); ctx.lineTo(q.x, q.y); } prev = q; }); ctx.strokeStyle = col; ctx.lineWidth = 1.3; ctx.setLineDash(lab ? [5, 4] : []); ctx.stroke(); ctx.setLineDash([]);
+        if (lab) { const q = pts.filter(Boolean)[0]; ctx.font = '11px ' + FONT; ctx.fillStyle = col; lblDraw(ctx, lab, lblPlace(ctx, lab, q.x, q.y, 6, false)); }
+      });
+    }
+  }
+  const fmtDateV = jd => { const c = E.jdToCal(jd), M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return M[c.m - 1] + ' ' + c.d + ', ' + (c.y > 0 ? c.y : (1 - c.y) + ' BC'); };
+
+  /* ---------- Lagrange points of the selected planet (with the Sun) or of the Moon (with Earth) ---------- */
+  function drawLagrange(ctx, st, W, H, FONT) {
+    const id = sysBody() || 'earth', moon = id === 'moon', P = moon ? 'earth' : 'sun', m2 = moon ? 0.0123000371 : E.BY_ID[id].mass, mu = m2 / (1 + m2);
+    const p = st.pos[P], s = st.pos[id], dx = [s[0] - p[0], s[1] - p[1], s[2] - p[2]];
+    let h = X.lagN[id];
+    if (!h || Math.abs(h.jd - S.jd) > (moon ? 0.5 : 20)) { const dt = moon ? 0.02 : 1, s2 = E.state(S.jd + dt), q = moon ? [s2.pos.moon[0] - s2.pos.earth[0], s2.pos.moon[1] - s2.pos.earth[1], s2.pos.moon[2] - s2.pos.earth[2]] : s2.pos[id];
+      const n = [dx[1] * q[2] - dx[2] * q[1], dx[2] * q[0] - dx[0] * q[2], dx[0] * q[1] - dx[1] * q[0]], L = Math.hypot(n[0], n[1], n[2]); h = X.lagN[id] = { jd: S.jd, n: [n[0] / L, n[1] / L, n[2] / L] }; }
+    const n = h.n, k = Math.cbrt(mu / 3), rot = a => { const c = Math.cos(a), sn = Math.sin(a), x = [n[1] * dx[2] - n[2] * dx[1], n[2] * dx[0] - n[0] * dx[2], n[0] * dx[1] - n[1] * dx[0]]; return [p[0] + dx[0] * c + x[0] * sn, p[1] + dx[1] * c + x[1] * sn, p[2] + dx[2] * c + x[2] * sn]; };
+    const L = [['L1', [p[0] + dx[0] * (1 - k), p[1] + dx[1] * (1 - k), p[2] + dx[2] * (1 - k)]], ['L2', [p[0] + dx[0] * (1 + k), p[1] + dx[1] * (1 + k), p[2] + dx[2] * (1 + k)]],
+      ['L3', [p[0] - dx[0] * (1 + 5 * mu / 12), p[1] - dx[1] * (1 + 5 * mu / 12), p[2] - dx[2] * (1 + 5 * mu / 12)]], ['L4', rot(Math.PI / 3)], ['L5', rot(-Math.PI / 3)]];
+    const sp = q => { const c = toScreen(curF(q)); return c.z < -camera.near ? proj(c) : null; }, bS = sp(s), pS = sp(p);
+    ctx.save(); ctx.strokeStyle = 'rgba(127,224,208,0.28)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 1;
+    [L[3], L[4]].forEach(([, q]) => { const a = sp(q); if (!a) return; ctx.beginPath(); if (pS) { ctx.moveTo(pS.x, pS.y); ctx.lineTo(a.x, a.y); } if (bS) { ctx.moveTo(a.x, a.y); ctx.lineTo(bS.x, bS.y); } ctx.stroke(); });
+    ctx.setLineDash([]); ctx.font = '600 11px ' + FONT; ctx.textBaseline = 'middle';
+    L.forEach(([lab, q]) => {
+      const a = sp(q); if (!a || a.x < -20 || a.x > W + 20 || a.y < -20 || a.y > H + 20) return;
+      if (bS && Math.hypot(a.x - bS.x, a.y - bS.y) < 9) return;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y - 5); ctx.lineTo(a.x + 5, a.y); ctx.lineTo(a.x, a.y + 5); ctx.lineTo(a.x - 5, a.y); ctx.closePath(); ctx.strokeStyle = 'rgba(127,224,208,0.95)'; ctx.lineWidth = 1.3; ctx.stroke();
+      ctx.fillStyle = 'rgba(127,224,208,0.95)'; lblDraw(ctx, lab, lblPlace(ctx, lab, a.x, a.y, 8, true));
+    });
+    ctx.restore();
+  }
+
+  /* ---------- labels for the layers, the nearby stars and the star you selected ---------- */
+  let lastScr = {};
+  function overlayExtras(ctx, st, sc, scr, W, H, FONT, MONO, hits, GOLD, farOut) {
+    lastScr = scr;
+    const sky = S.sky.on; if (sky) return;
+    if (S.show.eclpath) drawEclipse(ctx, st, W, H, FONT, GOLD);
+    if (S.show.lagr) drawLagrange(ctx, st, W, H, FONT);
+    const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0), sunP = sc.sun.p;
+    const at = (q, txt, col) => { const c = toScreen(q); if (c.z >= -camera.near) return; const s = proj(c); if (s.x < 10 || s.x > W - 10 || s.y < 10 || s.y > H - 10) return; ctx.fillStyle = col; lblDraw(ctx, txt, lblPlace(ctx, txt, s.x, s.y, 4, false)); };
+    ctx.save(); ctx.font = '600 10px ' + FONT; try { ctx.letterSpacing = '1.5px'; } catch (e) {} ctx.textBaseline = 'middle';
+    if (X.roche.visible || X.hill.visible) {
+      const c = B[X.sysId].grp.position;
+      if (X.hill.visible) at(c.clone().addScaledVector(new THREE.Vector3(right.x, 0, right.z).normalize(), X.hillR / KU), 'HILL SPHERE ' + fmtKmV(X.hillR), 'rgba(143,208,255,0.9)');
+      if (X.roche.visible) at(c.clone().addScaledVector(right, X.rocheR / KU), 'ROCHE LIMIT', 'rgba(255,154,138,0.95)');
+    }
+    const au = X.viewKm / 149597870.7;
+    if (S.show.belt && au > 18 && au < 500) at(sunP.clone().addScaledVector(right, 44 * AUU), 'KUIPER BELT', 'rgba(169,195,230,0.75)');
+    if (X.helio[0] && X.helio[0].m.visible) { at(sunP.clone().addScaledVector(right, -90 * AUU), 'TERMINATION SHOCK', 'rgba(130,170,240,0.8)'); at(sunP.clone().addScaledVector(right, 121 * AUU), 'HELIOPAUSE', 'rgba(170,140,240,0.85)'); }
+    if (X.oortK > 0.3) { at(sunP.clone().addScaledVector(right, 6000 * AUU), 'INNER OORT CLOUD', 'rgba(169,189,224,0.8)'); at(sunP.clone().addScaledVector(right, -45000 * AUU), 'OORT CLOUD', 'rgba(169,189,224,0.8)'); }
+    try { ctx.letterSpacing = '0px'; } catch (e) {} ctx.restore();
+    // stars: the nearest ones once zoomed out far enough, and whichever star is selected
+    ctx.textBaseline = 'middle';
+    Ext.STARS.forEach(s => {
+      const isSel = S.sel === s.id, isF = S.follow === s.id; if (!isSel && !(s.near && X.nearK > 0.35)) return;
+      const c = toScreen(curF(s.p)); if (c.z >= -camera.near) return; const q = proj(c); if (q.x < -40 || q.x > W + 40 || q.y < -40 || q.y > H + 40) return;
+      const r = s.radius / KU / (Math.max(c.length(), 1e-12) * TANH) * H / 2;
+      if (isSel && r < 150) { ctx.beginPath(); ctx.arc(q.x, q.y, Math.max(Math.min(r, 400), 3) + 7, 0, 6.2832); ctx.strokeStyle = 'rgba(' + GOLD + ',0.8)'; ctx.lineWidth = 1.4; ctx.stroke(); }
+      if (!isF || r < 300) { ctx.font = (isSel ? '600 ' : '500 ') + '11px ' + FONT; ctx.fillStyle = isSel ? '#fff' : 'rgba(255,236,210,0.78)'; lblDraw(ctx, s.name, lblPlace(ctx, s.name, q.x, q.y, Math.max(Math.min(r, 400), 3) + 10, isSel)); }
+      hits.push({ id: s.id, x: q.x, y: q.y, r: Math.max(Math.min(r, 300), 7) });
+    });
+  }
+  const fmtKmV = x => x >= 1e6 ? (x / 1e6).toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' million km' : Math.round(x).toLocaleString('en-US') + ' km';
+
+  /* ---------- sky aids: refraction, grids, the ecliptic and meridian, named stars ---------- */
+  function refrDeg(h) { const hh = Math.max(h, -1.5); return 1.02 / Math.tan((hh + 10.3 / (hh + 5.11)) * D2R) / 60 * (h < -1.5 ? Math.max(0, 1 + (h + 1.5) / 3) : 1); }
+  const _rp = new THREE.Vector3();
+  function refractDir(d, up) { // a true direction, lifted toward the zenith as the air bends the light
+    if (!S.show.refr) return d;
+    const s = Math.max(-1, Math.min(1, d.dot(up))), R = refrDeg(Math.asin(s) / D2R) * D2R; if (!(R > 0)) return d;
+    _rp.copy(up).addScaledVector(d, -s); const L = _rp.length(); if (L < 1e-9) return d;
+    return d.clone().multiplyScalar(Math.cos(R)).addScaledVector(_rp, Math.sin(R) / L);
+  }
+  function refractPos(p, camPos, up) { const v = p.clone().sub(camPos), L = v.length(); if (L <= 0) return p; return camPos.clone().addScaledVector(refractDir(v.multiplyScalar(1 / L), up), L); }
+  const eqDir = (ra, dec) => { const r = ra * D2R, d = dec * D2R, q = E.equToEcl(Math.cos(d) * Math.cos(r), Math.cos(d) * Math.sin(r), Math.sin(d)); return new THREE.Vector3(q[0], q[2], -q[1]); };
+  let EQG = null;
+  function polyl(ctx, pts) { let prev = null; for (const q of pts) { if (q && prev && Math.abs(q.x - prev.x) < 1500 && Math.abs(q.y - prev.y) < 1500) { ctx.moveTo(prev.x, prev.y); ctx.lineTo(q.x, q.y); } prev = q; } }
+  function skyGrids(ctx, fr, P, proj3, W, H, FONT, MONO) {
+    const lab = (q, t, col) => { if (q && q.x > 8 && q.x < W - 8 && q.y > 8 && q.y < H - 8) { ctx.fillStyle = col; ctx.fillText(t, q.x, q.y); } };
+    ctx.save(); ctx.shadowBlur = 0; ctx.lineWidth = 1; ctx.font = '10px ' + MONO; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const lo = S.show.ground ? 0 : -80;
+    if (S.show.agrid) {
+      ctx.strokeStyle = 'rgba(120,214,170,0.32)'; ctx.beginPath();
+      for (let a = lo === 0 ? 15 : -75; a <= 75; a += 15) { if (a === 0) continue; const pts = []; for (let z = 0; z <= 360; z += 2) pts.push(P(z * D2R, a * D2R)); polyl(ctx, pts); }
+      for (let z = 0; z < 360; z += 30) { const pts = []; for (let a = lo; a <= 88; a += 2) pts.push(P(z * D2R, a * D2R)); polyl(ctx, pts); }
+      ctx.stroke();
+      for (let a = 15; a <= 75; a += 15) lab(P(S.sky.az, a * D2R), a + '°', 'rgba(140,224,185,0.7)');
+    }
+    if (S.show.egrid) {
+      if (!EQG) { EQG = { dec: [], ra: [] }; for (let d = -75; d <= 75; d += 15) { const L = []; for (let r = 0; r <= 360; r += 2) L.push(eqDir(r, d)); EQG.dec.push([d, L]); } for (let r = 0; r < 360; r += 15) { const L = []; for (let d = -88; d <= 88; d += 2) L.push(eqDir(r, d)); EQG.ra.push([r, L]); } }
+      ctx.strokeStyle = 'rgba(130,170,255,0.3)'; ctx.beginPath(); EQG.dec.forEach(([, L]) => polyl(ctx, L.map(proj3))); EQG.ra.forEach(([, L]) => polyl(ctx, L.map(proj3))); ctx.stroke();
+      ctx.strokeStyle = 'rgba(130,170,255,0.55)'; ctx.beginPath(); polyl(ctx, EQG.dec[5][1].map(proj3)); ctx.stroke();
+      for (let r = 0; r < 360; r += 30) lab(proj3(eqDir(r, 0)), (r / 15) + 'h', 'rgba(160,190,255,0.75)');
+      const lst = ((gmstV(S.jd) / D2R + S.sky.lon) % 360 + 360) % 360; for (let d = -60; d <= 60; d += 30) if (d) lab(proj3(eqDir(lst, d)), (d > 0 ? '+' : '−') + Math.abs(d) + '°', 'rgba(160,190,255,0.7)');
+      lab(proj3(eqDir(0, 90)), 'NCP', 'rgba(160,190,255,0.8)'); lab(proj3(eqDir(0, -90)), 'SCP', 'rgba(160,190,255,0.8)');
+    }
+    if (S.show.ecl) {
+      const pts = []; for (let l = 0; l <= 360; l += 1) pts.push(proj3(new THREE.Vector3(Math.cos(l * D2R), 0, -Math.sin(l * D2R))));
+      ctx.strokeStyle = 'rgba(243,195,90,0.6)'; ctx.setLineDash([6, 4]); ctx.beginPath(); polyl(ctx, pts); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font = '600 10px ' + FONT; let best = null; pts.forEach(q => { if (q && q.x > 40 && q.x < W - 40 && q.y > 30 && q.y < H - 120 && (!best || Math.abs(q.x - W * 0.7) < Math.abs(best.x - W * 0.7))) best = q; });
+      if (best) lab({ x: best.x, y: best.y - 10 }, 'ECLIPTIC', 'rgba(243,195,90,0.85)');
+    }
+    if (S.show.mer) {
+      const pts = []; for (let a = 0; a <= 90; a += 1) pts.push(P(0, a * D2R)); for (let a = 90; a >= 0; a -= 1) pts.push(P(Math.PI, a * D2R));
+      ctx.strokeStyle = 'rgba(255,140,140,0.45)'; ctx.beginPath(); polyl(ctx, pts); ctx.stroke(); ctx.font = '600 10px ' + FONT; lab(P(Math.PI, 0.5), 'MERIDIAN', 'rgba(255,160,160,0.8)'); lab(P(0, 0.5), 'MERIDIAN', 'rgba(255,160,160,0.8)');
+    }
+    ctx.restore();
+  }
+  const gmstV = jd => 6.283185307179586 * (((0.7790572732640 + 1.00273781191135448 * (jd - 2451545.0)) % 1) + 1) % 6.283185307179586;
+  const BORTLE = { lim: [1.0, 0.5, 0, -0.4, -0.8, -1.2, -1.6, -2.0, -2.4], mw: [1.15, 1.08, 1, 0.8, 0.55, 0.35, 0.18, 0.08, 0.03], glow: [0, 0.02, 0.05, 0.1, 0.18, 0.28, 0.4, 0.55, 0.7] };
+  // the sky imagery: visible light by default, or an all-sky survey at another wavelength
+  let bandCur = 'visible', visTex = null; const bandTex = {};
+  function applyBand() {
+    const want = S.band || 'visible'; if (want === bandCur || !milkyDone) return;
+    const U = skyMesh.material.uniforms;
+    if (bandCur === 'visible') visTex = U.uTex.value;
+    bandCur = want;
+    if (want === 'visible') { if (visTex) U.uTex.value = visTex; return; }
+    if (bandTex[want]) { U.uTex.value = bandTex[want]; return; }
+    if (location.protocol === 'file:') { S.bandMsg = 'Other wavelengths need the local server: start it with start-windows.bat or start-mac-linux.command.'; return; }
+    const im = new Image(); im.onload = () => { const t = new THREE.Texture(im); t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; t.needsUpdate = true; bandTex[want] = t; if (bandCur === want) U.uTex.value = t; S.bandMsg = ''; };
+    im.onerror = () => { S.bandMsg = 'That sky map could not be loaded.'; }; S.bandMsg = 'Loading…'; im.src = 'sky/wave_' + want + '.webp';
   }
 
   /* ---------- per-frame ---------- */
@@ -3436,11 +4021,11 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
     lastSt = st;
     const sky = S.sky.on, fv = sky ? S.sky.fov : 42;
     if (fv !== FOV) { FOV = fv; TANH = Math.tan(FOV * Math.PI / 360); }
-    const f = st.pos[sky ? 'earth' : S.follow], F = (p) => v3([p[0] - f[0], p[1] - f[1], p[2] - f[2]]).multiplyScalar(1 / KU);
+    const f = st.pos[sky ? 'earth' : S.follow], F = (p) => v3([p[0] - f[0], p[1] - f[1], p[2] - f[2]]).multiplyScalar(1 / KU); curF = F;
     const pan = S.pan, d = sky ? 1e5 : camDistance();
     const cp = Math.cos(cam.pitch), tgt = v3([pan[0], pan[1], pan[2] || 0]).multiplyScalar(1 / KU);
     camera.fov = FOV; starCam.fov = FOV;
-    camera.aspect = ASP(); camera.near = sky ? 1e-6 : Math.max(d * 8e-4, 1) / KU; camera.far = 1e5; camera.updateProjectionMatrix();
+    camera.aspect = ASP(); camera.near = sky ? 1e-6 : Math.max(d * 8e-4, 1e-5) / KU; camera.far = Math.max(1e5, d / KU * 40); camera.updateProjectionMatrix();
     let skyFr = null;
     if (sky) {
       skyFr = skyFrame(S.jd); skyUp.copy(skyFr.up);
@@ -3459,7 +4044,7 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
     light.position.copy(sunP);
     const sc = {}, camPos = camera.position;
     [E.SUN, ...PLAN, E.MOON].forEach(b => {
-      const rec = B[b.id], p = F(st.pos[b.id]);
+      const rec = B[b.id], p = sky && S.show.refr ? refractPos(F(st.pos[b.id]), camera.position, skyFr.up) : F(st.pos[b.id]);
       rec.grp.position.copy(p);
       if (b.id === 'moon') { // tidally locked: the near side keeps facing Earth
         const toE = F(st.pos.earth).sub(p).normalize(), Y = rec.pole.clone(), X = toE.sub(Y.clone().multiplyScalar(toE.dot(Y))).normalize(), Z = new THREE.Vector3().crossVectors(X, Y);
@@ -3500,23 +4085,23 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
         else { const A = rS * rS * Math.acos((sep * sep + rS * rS - rM * rM) / (2 * sep * rS)) + rM * rM * Math.acos((sep * sep + rM * rM - rS * rS) / (2 * sep * rM)) - 0.5 * Math.sqrt((-sep + rS + rM) * (sep + rS - rM) * (sep - rS + rM) * (sep + rS + rM)); ob = Math.min(1, A / (Math.PI * rS * rS)); }
       }
       skyObs = ob;
-      [skyDome, groundDome].forEach(m => { const U = m.material.uniforms; m.position.copy(camPos); U.uUp.value.copy(skyFr.up); U.uSun.value.copy(sd); U.uSunAlt.value = sd.dot(skyFr.up); U.uObs.value = ob; });
+      [skyDome, groundDome].forEach(m => { const U = m.material.uniforms; m.position.copy(camPos); U.uUp.value.copy(skyFr.up); U.uSun.value.copy(sd); U.uSunAlt.value = sd.dot(skyFr.up); U.uObs.value = ob; U.uLP.value = BORTLE.glow[S.sky.bortle - 1]; });
     }
     // corona
     { const dist = sc.sun.dist, half = Math.max(sc.sun.r * 7.5, 64), size = half * 4 * dist * TANH / H;
-      glow.position.copy(sunP); glow.quaternion.copy(camera.quaternion); glow.scale.set(size, size, 1);
+      glow.position.copy(sc.sun.p); glow.quaternion.copy(camera.quaternion); glow.scale.set(size, size, 1);
       glow.material.uniforms.uT.value = now / 1000; if (sunMat) sunMat.uniforms.uTime.value = now / 1000; glow.material.uniforms.uRs.value = Math.min(0.5, sc.sun.r / half); glow.visible = sc.sun.front; }
     if (!sunPhoto && Surf.best('sun')) { sunMat.uniforms.uPhoto.value = texOf(Surf.best('sun').canvas); sunMat.uniforms.uHas.value = 1; sunPhoto = true; }
     if (!milkyDone && PHOTO.milky) {
       const t = new THREE.Texture(PHOTO.milky); t.anisotropy = 4; t.needsUpdate = true; skyMesh.material.uniforms.uTex.value = t;
       if (!LITE && !SMALLDEV && renderer.capabilities.maxTextureSize >= 8192) {
-        const im = new Image(); im.onload = () => { const t8 = new THREE.Texture(im); t8.anisotropy = 4; t8.needsUpdate = true; const old = skyMesh.material.uniforms.uTex.value; skyMesh.material.uniforms.uTex.value = t8; old.dispose(); };
+        const im = new Image(); im.onload = () => { const t8 = new THREE.Texture(im); t8.anisotropy = 4; t8.needsUpdate = true; if (bandCur === 'visible') { const old = skyMesh.material.uniforms.uTex.value; skyMesh.material.uniforms.uTex.value = t8; old.dispose(); } else { if (visTex) visTex.dispose(); visTex = t8; } };
         im.src = 'sky/milkyway8k.avif';
       } skyMesh.visible = true; milkyDone = true;
     }
     starMat.uniforms.uPx.value = Math.min(2, S.dpr) * RSt.k;
     if (sunMat && post && post.half) { const sm = B.sun && B.sun.mesh; if (sm) { sm.getWorldPosition(_sv); const dd = camera.position.distanceTo(_sv), rpx = (S.h / 2) * (696000 / KU) / (Math.max(dd, 1e-6) * TANH); sunMat.uniforms.uBoost.value = 0.9 + 1.5 * (1 - Math.min(1, Math.max(0, (rpx - 20) / 60))); } }
-    starMat.uniforms.uLim.value = sky ? Math.max(5.6, Math.min(9.2, 6.3 + 2.6 * Math.log10(60 / FOV))) : 6.9;
+    starMat.uniforms.uLim.value = sky ? Math.max(2.6, Math.max(5.6, Math.min(9.2, 6.3 + 2.6 * Math.log10(60 / FOV))) + BORTLE.lim[S.sky.bortle - 1]) : 6.9;
     // shadows on the planets themselves: Saturn's rings, the Moon on Earth
     { const sh = E.shadows(st);
       PLAN.forEach(b => { const r = B[b.id]; if (!r.U) return; r.U.uSunW.value.copy(sunP); r.U.uC.value.copy(r.grp.position); r.U.uN.value.copy(r.pole); });
@@ -3525,7 +4110,11 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
         ['io', 'europa', 'ganymede', 'callisto'].forEach((id, k) => { const m = E.BY_ID[id], q = F(st.pos[id]); jr.U.uJM.value[k].set(q.x, q.y, q.z, m.radius / KU); });
         jr.U.uTan.value.set(tj, tj);
         const er = B.earth, la = 80.7 * D2R, lo = -72.7 * D2R, mg = new THREE.Vector3(Math.cos(la) * Math.cos(lo), Math.sin(la), -Math.cos(la) * Math.sin(lo));
-        mg.applyAxisAngle(new THREE.Vector3(0, 1, 0), er.mesh.rotation.y).applyQuaternion(er.grp.quaternion); er.U.uMag.value.copy(mg); }
+        mg.applyAxisAngle(new THREE.Vector3(0, 1, 0), er.mesh.rotation.y).applyQuaternion(er.grp.quaternion); er.U.uMag.value.copy(mg);
+        const ak = S.show.aur ? 1 : 0; er.U.uAur.value.set(1.17, 0.055, ak, 1);
+        const jm = new THREE.Vector3(Math.cos(80.4 * D2R) * Math.cos(-200.8 * D2R), Math.sin(80.4 * D2R), -Math.cos(80.4 * D2R) * Math.sin(-200.8 * D2R)); jm.applyAxisAngle(new THREE.Vector3(0, 1, 0), jr.mesh.rotation.y).applyQuaternion(jr.grp.quaternion);
+        jr.U.uMag.value.copy(jm); jr.U.uAur.value.set(1.29, 0.045, 1.3 * ak, 0.25); jr.U.uAurC.value.set(0.62, 0.42, 1.0);
+        const sr = B.saturn; sr.U.uMag.value.copy(sr.pole); sr.U.uAur.value.set(1.31, 0.04, 1.2 * ak, 0.25); sr.U.uAurC.value.set(0.55, 0.5, 1.0); }
       const eu = B.earth.U; eu.uMoon.value.set(B.moon.grp.position.x, B.moon.grp.position.y, B.moon.grp.position.z, E.R_MOON / KU); eu.uTan.value.set(sh.moon.tan1, sh.moon.tan2); }
     // moons
     updateMoons(st, f, sc, camPos);
@@ -3533,7 +4122,9 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
       let s = null;
       if (M3[m.id].vis) { const p = r.grp.position, c = toScreen(p), dist = Math.max(p.distanceTo(camPos), 1e-9); s = { front: c.z < 0, r: m.radius / KU / (dist * TANH) * S.h / 2 }; }
       updateDeep(r, s, camPos); });
-    updateBelts(st, f); updateCraftPath(f);
+    updateBelts(st, f); updateCraftPath(f); updateExtras(st, F, sc, camPos, sky, d, sunP); applyBand();
+    { const U = skyMesh.material.uniforms, alt = bandCur !== 'visible'; U.uK.value = alt ? 1.0 : sky ? 0.62 * BORTLE.mw[S.sky.bortle - 1] : 0.62; starMat.uniforms.uGain.value = alt ? 0.35 : 1;
+      const rf = sky && S.show.refr ? 1 : 0; U.uRef.value = rf; starMat.uniforms.uRef.value = rf; if (skyFr) { U.uUp.value.copy(skyFr.up); starMat.uniforms.uUp.value.copy(skyFr.up); } }
     // orbits
     // orbits
     PLAN.forEach(b => {
@@ -3583,7 +4174,7 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
     renderer.clear(); starPts.visible = S.show.stars; if (milkyDone) skyMesh.visible = S.show.stars; if (S.show.stars) renderer.render(starScene, starCam);
     if (sky) renderer.render(domeScene, camera);
     renderer.clearDepth(); renderer.render(scene, camera);
-    if (sky) renderer.render(groundScene, camera);
+    if (sky && S.show.ground) renderer.render(groundScene, camera);
     if (post) bloomAndShow();
 
     // ---- overlay ----
@@ -3591,7 +4182,7 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
   }
 
   const CARD = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-  function skyHud(ctx, st, hooks, W, H, FONT, MONO) {
+  function skyHud(ctx, st, hooks, W, H, FONT, MONO, hits) {
     const fr = skyFrame(S.jd), cp = camera.position, P = (az, alt) => { const c = toScreen(cp.clone().add(skyDir(fr, az, alt))); return c.z < -1e-9 ? proj(c) : null; };
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 4;
     for (let a = 0; a < 360; a += 5) {
@@ -3601,10 +4192,12 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
       else if (a % 15 === 0) { const q = P(az, -0.035); if (q && q.x > -30 && q.x < W + 30) { ctx.font = '10px ' + MONO; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText(a + '°', q.x, q.y); } }
     }
     const z = P(S.sky.az, Math.PI / 2 - 1e-3); if (z && S.sky.alt > 0.7) { ctx.font = '11px ' + MONO; ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fillText('zenith', z.x, z.y); }
+    { const proj3g = d => { if (S.show.ground && d.dot(fr.up) < -0.012) return null; d = refractDir(d, fr.up); const c = toScreen(cp.clone().add(d)); if (c.z >= -1e-6) return null; const q = proj(c); return Math.abs(q.x) > 4e4 || Math.abs(q.y) > 4e4 ? null : q; };
+      skyGrids(ctx, fr, P, proj3g, W, H, FONT, MONO); }
     // constellation figures and names, and the Messier objects, once the sky is dark enough
     { const e1 = st.pos.earth, s1 = st.pos.sun, sd1 = v3([s1[0] - e1[0], s1[1] - e1[1], s1[2] - e1[2]]).normalize(), C = skyCache();
       if (C && S.show.stars && sd1.dot(fr.up) < -0.08) {
-        const proj3 = d => { if (d.dot(fr.up) < -0.012) return null; const c = toScreen(cp.clone().add(d)); if (c.z >= -1e-6) return null; const q = proj(c); return Math.abs(q.x) > 4e4 || Math.abs(q.y) > 4e4 ? null : q; };
+        const proj3 = d => { if (S.show.ground && d.dot(fr.up) < -0.012) return null; d = refractDir(d, fr.up); const c = toScreen(cp.clone().add(d)); if (c.z >= -1e-6) return null; const q = proj(c); return Math.abs(q.x) > 4e4 || Math.abs(q.y) > 4e4 ? null : q; };
         if (S.show.clines) {
           ctx.save(); ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(125,165,255,0.34)'; ctx.lineWidth = 1; ctx.beginPath();
           for (const segs of C.lines) for (const pl of segs) { let prev = null; for (const d of pl) { const q = proj3(d); if (q && prev) { ctx.moveTo(prev.x, prev.y); ctx.lineTo(q.x, q.y); } prev = q; } }
@@ -3630,16 +4223,18 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
           });
         }
       } }
-    // the brightest stars by name, once the sky is dark enough to see them
-    { const e0 = st.pos.earth, s0 = st.pos.sun, sd = v3([s0[0] - e0[0], s0[1] - e0[1], s0[2] - e0[2]]).normalize();
-      if (S.show.stars && sd.dot(fr.up) < -0.08 && DATA.starNames) {
-        ctx.font = '11px ' + FONT; ctx.fillStyle = 'rgba(200,214,255,0.62)'; ctx.textBaseline = 'middle';
-        DATA.starNames.forEach(([ra, dec, m, name]) => {
-          const r = ra * D2R, d = dec * D2R, q = E.equToEcl(Math.cos(d) * Math.cos(r), Math.cos(d) * Math.sin(r), Math.sin(d)), dir = new THREE.Vector3(q[0], q[2], -q[1]);
-          if (dir.dot(fr.up) < 0.02) return;
-          const c = toScreen(cp.clone().add(dir)); if (c.z >= 0) return;
-          const s = proj(c); if (s.x < 0 || s.x > W || s.y < 0 || s.y > H) return;
-          lblDraw(ctx, name, lblPlace(ctx, name, s.x, s.y, 7, false));
+    // named stars: labels for the brightest once the sky is dark, and a click target for every one
+    { const e0 = st.pos.earth, s0 = st.pos.sun, sd = v3([s0[0] - e0[0], s0[1] - e0[1], s0[2] - e0[2]]).normalize(), dark = sd.dot(fr.up) < -0.08;
+      const magLab = S.sky.fov > 75 ? 1.6 : S.sky.fov > 40 ? 2.6 : S.sky.fov > 15 ? 3.8 : 5.6, magLim = Math.min(5.6, 6.6 + BORTLE.lim[S.sky.bortle - 1]);
+      if (S.show.stars) {
+        ctx.font = '11px ' + FONT; ctx.textBaseline = 'middle';
+        Ext.STARS.forEach(s => {
+          const isSel = S.sel === s.id; if (!isSel && (!dark || s.mag > magLim)) return;
+          let dir = s._v || (s._v = v3(s.u)); if (S.show.ground && dir.dot(fr.up) < 0.0) return; dir = refractDir(dir, fr.up);
+          const c = toScreen(cp.clone().add(dir)); if (c.z >= 0) return; const q = proj(c); if (q.x < 0 || q.x > W || q.y < 0 || q.y > H) return;
+          if (isSel) { ctx.beginPath(); ctx.arc(q.x, q.y, 9, 0, 6.2832); ctx.strokeStyle = 'rgba(' + hooks.GOLD + ',0.85)'; ctx.lineWidth = 1.4; ctx.stroke(); }
+          if (isSel || s.mag <= magLab) { ctx.fillStyle = isSel ? '#fff' : 'rgba(200,214,255,0.62)'; lblDraw(ctx, s.name, lblPlace(ctx, s.name, q.x, q.y, isSel ? 13 : 7, isSel)); }
+          hits.push({ id: s.id, x: q.x, y: q.y, r: 5 });
         });
       } }
     // status line
@@ -3649,7 +4244,7 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.font = '11px ' + MONO; ctx.fillStyle = 'rgba(235,238,248,0.85)';
     ctx.fillText((S.sky.name || 'Custom place') + ' · ' + Math.abs(S.sky.lat).toFixed(2) + '°' + (S.sky.lat >= 0 ? 'N' : 'S') + ' ' + Math.abs(S.sky.lon).toFixed(2) + '°' + (S.sky.lon >= 0 ? 'E' : 'W'), 16, by0 - 24);
     ctx.fillText('Facing ' + CARD[Math.round(fa / 45) % 8] + ' ' + fa.toFixed(0) + '° · up ' + fmt(S.sky.alt / D2R) + ' · field ' + S.sky.fov.toFixed(S.sky.fov < 10 ? 1 : 0) + '°', 16, by0 - 10);
-    ctx.fillText('Sun ' + fmt(alt('sun')) + ' · Moon ' + fmt(alt('moon')) + (alt('sun') < 0 ? '' : '  (daylight hides the stars)'), 16, by0 + 4);
+    ctx.fillText('Sun ' + fmt(alt('sun')) + ' · Moon ' + fmt(alt('moon')) + (alt('sun') < 0 ? ' · light pollution Bortle ' + S.sky.bortle : '  (daylight hides the stars)') + (bandCur !== 'visible' ? ' · sky shown in ' + ({ radio: 'radio', microwave: 'microwaves', infrared: 'infrared', halpha: 'hydrogen-alpha', xray: 'X-rays', gamma: 'gamma rays' }[bandCur] || bandCur) : ''), 16, by0 + 4);
     ctx.shadowBlur = 0;
   }
 
@@ -3682,7 +4277,8 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
       const oc = c.clone().sub(camera.position), tca = oc.dot(dv); if (tca < 0) return false; const d2 = oc.lengthSq() - tca * tca; if (d2 > R * R) return false;
       return tca - Math.sqrt(R * R - d2) < L;
     };
-    const hidden = id => occl(sc[id].p, id) || sky && (id === 'earth' || sc[id].p.clone().sub(camera.position).normalize().dot(skyUp) < -0.002 || ((sunUp > -0.06 && skyObs < 0.97) && id !== 'sun' && id !== 'moon' && id !== 'venus') || (sunUp > 0.02 && id === 'venus'));
+    const farOut = !sky && sc.sun.dist > 3e5;
+    const hidden = id => (farOut && id !== 'sun') || occl(sc[id].p, id) || sky && (id === 'earth' || (S.show.ground && sc[id].p.clone().sub(camera.position).normalize().dot(skyUp) < -0.002) || ((sunUp > -0.06 && skyObs < 0.97) && id !== 'sun' && id !== 'moon' && id !== 'venus') || (sunUp > 0.02 && id === 'venus'));
     [E.SUN, ...PLAN, E.MOON].forEach(b => { const s = sc[b.id]; scr[b.id] = Object.assign(s.front ? proj(s.c) : { x: -1e5, y: -1e5 }, { r: s.r, front: s.front }); });
     const showMoon = sky || sc.moon.front && Math.hypot(scr.moon.x - scr.earth.x, scr.moon.y - scr.earth.y) > 10;
 
@@ -3748,12 +4344,13 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
     if (sky) { /* no moons, asteroids or comets from the ground */ }
     Ext.MOONS.forEach(m => { if (M3[m.id].vis) extras.push(m); });
     if (S.show.belt && !sky) Ext.NAMED.forEach(b => extras.push(b));
-    if (S.show.craft && !sky) Ext.CRAFT.forEach(b => { if (Ext.craftLive(b, S.jd)) extras.push(b); });
+    if (S.show.sats && !sky && !farOut && scr.earth && scr.earth.front && scr.earth.r > 3) Ext.SATS.forEach(b => { if (Ext.satLive(b, S.jd)) extras.push(b); });
+    if (S.show.craft && !sky && !farOut) Ext.CRAFT.forEach(b => { if (Ext.craftLive(b, S.jd)) extras.push(b); });
     if (S.show.comets) Ext.COMETS.forEach(b => extras.push(b));
     extras.forEach(b => {
       const s0 = sc[b.id]; if (!s0 || !s0.front || occl(s0.p, b.id)) return;
       const s = proj(s0.c); if (s.x < -80 || s.x > W + 80 || s.y < -80 || s.y > H + 80) return;
-      const isSel = S.sel === b.id, r = s0.r;
+      const isSel = S.sel === b.id, r = s0.r, mdl = X.modelPx[b.id] > 6;
       if (b.kind === 'comet') {
         const pa = st.pos[b.id], rAU = Math.hypot(pa[0], pa[1], pa[2]) / E.AU, fa = Math.max(0, 1 - Math.max(0, rAU - 0.4) / 3.4);
         if (fa > 0.02) {
@@ -3764,10 +4361,11 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
         }
       }
       const col = b.kind === 'comet' ? '#bfe6ff' : b.color;
-      if (b.kind === 'craft') { const q = isSel ? 5.5 : 4; ctx.beginPath(); ctx.moveTo(s.x, s.y - q); ctx.lineTo(s.x + q, s.y); ctx.lineTo(s.x, s.y + q); ctx.lineTo(s.x - q, s.y); ctx.closePath(); ctx.fillStyle = col; ctx.fill(); }
+      if (mdl) { /* the model itself is on screen */ }
+      else if (b.kind === 'craft') { const q = isSel ? 5.5 : 4; ctx.beginPath(); ctx.moveTo(s.x, s.y - q); ctx.lineTo(s.x + q, s.y); ctx.lineTo(s.x, s.y + q); ctx.lineTo(s.x - q, s.y); ctx.closePath(); ctx.fillStyle = col; ctx.fill(); }
       else if (r < 1.3) { ctx.beginPath(); ctx.arc(s.x, s.y, isSel ? 3 : b.kind === 'moon' ? 1.8 : 2.2, 0, 6.2832); ctx.fillStyle = col; ctx.fill(); }
       if (isSel && r < 150) { ctx.beginPath(); ctx.arc(s.x, s.y, Math.max(Math.min(r, 400), 3) + 7, 0, 6.2832); ctx.strokeStyle = 'rgba(' + GOLD + ',0.8)'; ctx.lineWidth = 1.4; ctx.stroke(); }
-      if (isSel || (b.kind === 'moon' && M3[b.id].aPx > 34) || (b.kind === 'craft' && (S.scale < 5e5 || Math.hypot(st.pos[b.id][0], st.pos[b.id][1], st.pos[b.id][2]) / E.AU > 5))) {
+      if (isSel || (b.kind === 'moon' && M3[b.id].aPx > 34) || (b.kind === 'sat' && scr.earth.r > 40) || (b.kind === 'craft' && (S.scale < 5e5 || Math.hypot(st.pos[b.id][0], st.pos[b.id][1], st.pos[b.id][2]) / E.AU > 5))) {
         ctx.textBaseline = 'middle'; ctx.font = (isSel ? '600 ' : '500 ') + '11px ' + FONT; ctx.fillStyle = isSel ? '#fff' : b.kind === 'craft' ? 'rgba(150,235,215,0.85)' : 'rgba(200,206,222,0.7)'; lblDraw(ctx, b.name, lblPlace(ctx, b.name, s.x, s.y, (b.kind === 'craft' ? 8 : Math.max(Math.min(r, 400), 3)) + 11, isSel));
       }
       hits.push({ id: b.id, x: s.x, y: s.y, r: Math.max(Math.min(r, 300), 7) });
@@ -3795,7 +4393,8 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
       hits.push({ id: b.id, x: s.x, y: s.y, r: Math.max(Math.min(s.r, 400), 11) });
     });
     if (!sky) drawPlaces(ctx, scr, W, H, FONT);
-    if (sky) { skyHud(ctx, st, hooks, W, H, FONT, MONO); return hits; }
+    if (!sky) overlayExtras(ctx, st, sc, scr, W, H, FONT, MONO, hits, GOLD, farOut);
+    if (sky) { skyHud(ctx, st, hooks, W, H, FONT, MONO, hits); return hits; }
     // scale bar at the distance of the target
     const fb = E.BY_ID[S.follow], dSurf = fb && fb.radius && Math.hypot(S.pan[0], S.pan[1], S.pan[2] || 0) < fb.radius * 0.05 ? Math.max(d - fb.radius, fb.radius * 0.01) : d;
     const eff = dSurf * TANH / (H / 2), nb = hooks.niceBar(eff), by0 = H - hooks.trEl.offsetHeight - 30, bx0 = 16;
@@ -3872,9 +4471,9 @@ function drawBody(b, s, sun, tint) {
 }
 function niceBar(sc) {
   sc = sc || S.scale;
-  const target = 110 * sc, useAU = target > 0.2 * AU, base = useAU ? AU : 1, v = target / base;
+  const target = 110 * sc, useLY = target > 0.05 * 9.4607304725808e12, useAU = !useLY && target > 0.2 * AU, base = useLY ? 9.4607304725808e12 : useAU ? AU : 1, v = target / base;
   const pow = Math.pow(10, Math.floor(Math.log10(v))), m = v / pow, nice = m >= 5 ? 5 : m >= 2 ? 2 : 1, val = nice * pow;
-  const label = useAU ? (+val.toFixed(3)) + ' AU' : (val >= 1e6 ? (val / 1e6) + ' million km' : fmtN(val) + ' km');
+  const label = useLY ? (+val.toFixed(3)) + (val === 1 ? ' light year' : ' light years') : useAU ? fmtN(+val.toFixed(3), val < 1 ? 1 : 0) + ' AU' : val < 1 ? (+(val * 1000).toPrecision(2)) + ' m' : (val >= 1e6 ? (val / 1e6) + ' million km' : fmtN(val) + ' km');
   return { px: val * base / sc, label };
 }
 function drawCone(c, L) {
@@ -4172,14 +4771,14 @@ function localXY(e) { const r = cv.getBoundingClientRect(); return [e.clientX - 
 function zoomAt(px, py, factor) {
   if (S.sky.on) { S.sky.fov = Math.min(110, Math.max(0.6, S.sky.fov * factor)); return; }
   if (S.view === '3d') { S.preset = null; markPresets(); setScale(S.scale * factor); return; }
-  const ns = Math.min(SMAX, Math.max(SMIN, S.scale * factor));
+  const ns = Math.min(SMAX, Math.max(sminF(), S.scale * factor));
   S.pan[0] += (px - S.w / 2) * (S.scale - ns);
   S.pan[1] -= (py - S.h / 2) * (S.scale - ns);
   S.preset = null; markPresets(); setScale(ns);
 }
 let lastMove = 0;
 function applyDrag(dx, dy, shift) {
-  if (S.sky.on) { const k = S.sky.fov * Math.PI / 180 / Math.max(200, S.h); S.sky.az = (S.sky.az - dx * k + 6.2831853) % 6.2831853; S.sky.alt = Math.max(-0.12, Math.min(1.5707, S.sky.alt + dy * k)); return; }
+  if (S.sky.on) { const k = S.sky.fov * Math.PI / 180 / Math.max(200, S.h); S.sky.az = (S.sky.az - dx * k + 6.2831853) % 6.2831853; S.sky.alt = Math.max(S.show.ground ? -0.12 : -1.5707, Math.min(1.5707, S.sky.alt + dy * k)); return; }
   if (S.view === '3d') {
     if (shift) { const k = V3.lookBasis(), s = S.scale; S.preset = null; markPresets(); for (let i = 0; i < 3; i++) S.pan[i] = (S.pan[i] || 0) - dx * s * k.r[i] + dy * s * k.u[i]; }
     else { V3.cam.yaw -= dx * 0.006; V3.cam.pitch = Math.max(-1.5, Math.min(1.5, V3.cam.pitch + dy * 0.006)); }
@@ -4246,7 +4845,7 @@ cv.addEventListener('wheel', e => {
   e.preventDefault(); FLY.on = false;
   if (S.sky.on) { S.sky.fov = Math.min(110, Math.max(0.6, S.sky.fov * Math.exp(e.deltaY * (e.deltaMode === 1 ? 16 : 1) * 0.0016))); return; }
   const p = localXY(e), k = e.deltaMode === 1 ? 16 : 1, base = S.zoomGoal ? S.zoomGoal.s : S.scale;
-  S.zoomGoal = { s: Math.min(SMAX, Math.max(SMIN, base * Math.exp(e.deltaY * k * 0.0016))), px: p[0], py: p[1] };
+  S.zoomGoal = { s: Math.min(SMAX, Math.max(sminF(), base * Math.exp(e.deltaY * k * 0.0016))), px: p[0], py: p[1] };
 }, { passive: false });
 let lastTap = null;
 function dblAt(p, tol) {
