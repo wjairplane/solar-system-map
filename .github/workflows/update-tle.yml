@@ -1,0 +1,59 @@
+# Once a day, copy current satellite orbits (TLE) from CelesTrak to the `tle-data` branch, which the page reads from
+# raw.githubusercontent.com. The branch is replaced each time (one commit, no history), so the repository does not grow.
+name: Update satellite orbits
+
+on:
+  schedule:
+    - cron: '17 5 * * *'   # every day at 05:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-tle
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download from CelesTrak
+        shell: bash
+        run: |
+          set -u
+          mkdir -p out
+          # keep yesterday's copy of any group that fails today
+          git init -q prev && cd prev
+          if git fetch -q --depth 1 "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" tle-data 2>/dev/null; then
+            git checkout -q FETCH_HEAD -- . && cp -f *.tle ../out/ 2>/dev/null || true
+          fi
+          cd ..
+          ok=0; failed=""
+          for g in stations science resource goes starlink oneweb gps-ops glo-ops galileo beidou geo; do
+            if curl -sS --fail --retry 3 --retry-delay 10 -m 120 \
+                 -A "solar-system-map daily mirror (github.com/${{ github.repository }})" \
+                 -o "tmp.tle" "https://celestrak.org/NORAD/elements/gp.php?GROUP=${g}&FORMAT=tle" \
+               && grep -q '^1 ' tmp.tle && grep -q '^2 ' tmp.tle; then
+              mv tmp.tle "out/${g}.tle"; ok=$((ok+1))
+            else
+              echo "::warning::CelesTrak group ${g} failed; keeping the previous copy if there is one"; failed="${failed} ${g}"
+            fi
+            sleep 2
+          done
+          echo "downloaded ${ok} groups"
+          if [ "$ok" -eq 0 ]; then echo "::error::nothing downloaded"; exit 1; fi
+          printf '{"updated":"%s","source":"https://celestrak.org/","failed":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${failed# }" > out/meta.json
+          printf 'Satellite element sets (TLE) copied daily from CelesTrak (https://celestrak.org) for the page in the main branch.\nThis branch is replaced on every run.\n' > out/README.md
+
+      - name: Publish to the tle-data branch
+        shell: bash
+        run: |
+          cd out
+          git init -q -b tle-data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Satellite orbits from CelesTrak, $(date -u +%Y-%m-%d)"
+          git push -q --force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" tle-data

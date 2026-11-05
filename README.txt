@@ -5,7 +5,9 @@ Mac/Linux: run start-mac-linux.command (needs Python 3)
 
 It opens http://localhost:8765/ in your browser. The page loads its fonts and two code libraries (three.js and
 satellite.js) from public CDNs, and, the first time Earth's satellites are on screen, current satellite orbits
-from celestrak.org (at most once every six hours; a copy is kept in your browser). Nothing else goes over the internet.
+from a daily copy on GitHub (raw.githubusercontent.com,
+kept up to date by .github/workflows/update-tle.yml) or, failing that, from celestrak.org directly (at most once every
+six hours; a copy is kept in your browser). Nothing else goes over the internet.
 Double-clicking index.html directly also works, but without deep zoom and the 8k Milky Way,
 because browsers block image tiles loaded from plain files.
 
