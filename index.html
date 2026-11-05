@@ -447,7 +447,7 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
 
     <details class="more about"><summary>About this model</summary>
       <p class="fine">Beyond the stars: the Milky Way is a model built from measured sizes (bar, arms, Orion Spur; Sun 26,670 light years from the centre, GRAVITY 2019). Other galaxies: measured distances (Updated Nearby Galaxy Catalog, Karachentsev et al. 2013, via HEASARC; orientations from RC3). Large-scale structure: the 6dF Galaxy Survey (Jones et al. 2009) and the SDSS main galaxy sample (DR7, via MPA-JHU) for the nearer universe and SDSS-III BOSS DR12 for the far, with redshifts turned into distances for a flat universe with H₀ = 70 and Ωm = 0.3. The edge of the observable universe is drawn at 46.5 billion light years, wearing the WMAP map of the cosmic microwave background.</p>
-      <p class="fine">Stars: HYG database v4.1 (Hipparcos, Yale, Gliese; CC BY-SA 4.0). Radii are estimates from brightness and colour. Satellites: current element sets from CelesTrak (celestrak.org), propagated with SGP4 by satellite.js; for dates far from the download, or offline, real orbit sizes and tilts with illustrative positions. The Oort cloud is drawn as theory describes it; none of its bodies has been seen there. Sky maps: Haslam 408 MHz (Remazeilles 2015), WMAP 9-year ILC, IRAS/IRIS 100 µm, Finkbeiner 2003 H-alpha (all via NASA LAMBDA), ROSAT All-Sky Survey (Snowden 1997) and Fermi LAT (both via NASA SkyView).</p>
+      <p class="fine">Stars: HYG database v4.1 (Hipparcos, Yale, Gliese; CC BY-SA 4.0). Radii are estimates from brightness and colour. Satellites: current element sets from CelesTrak (celestrak.org), copied daily to this project's tle-data branch on GitHub, propagated with SGP4 by satellite.js; for dates far from the download, or offline, real orbit sizes and tilts with illustrative positions. The Oort cloud is drawn as theory describes it; none of its bodies has been seen there. Sky maps: Haslam 408 MHz (Remazeilles 2015), WMAP 9-year ILC, IRAS/IRIS 100 µm, Finkbeiner 2003 H-alpha (all via NASA LAMBDA), ROSAT All-Sky Survey (Snowden 1997) and Fermi LAT (both via NASA SkyView).</p>
       <p class="fine">Years run from −3000 to 3000. Year 0 is 1 BC, and −43 is 44 BC. Dates use the Gregorian calendar and UT. Positions are most exact from 1800 to 2050.</p>
       <p class="fine">Planet positions use the VSOP87 theory (about 0.1 arcsecond for the planets across the whole date range), and the Moon uses the full main series of lunar theory. The 46 moons use JPL mean orbital elements. Eclipses come from the shadow cones of the Sun, Moon and Earth. Planet maps are real imagery. Zoom close in 3D and Earth, the Moon, Mars and Mercury load sharper map tiles for the area in view: NASA Blue Marble and Black Marble for Earth (to about 0.6 km per pixel), the NASA LRO camera mosaic with LOLA terrain for the Moon, the USGS Viking color mosaic for Mars and the MESSENGER mosaic for Mercury. The Sun and the other planets use maps from Solar System Scope (NASA and USGS data, CC BY 4.0), with Pluto from New Horizons. Saturn's rings are drawn from their measured structure. Moon maps for the larger moons come from the Stellarium project. Spacecraft paths are NASA JPL Horizons state vectors, and the dark spots on Jupiter are the real shadows of its moons. Constellation lines, names and Messier objects come from the d3-celestial data set (Olaf Frohn, BSD-3), and the place names are placed by hand from the IAU and USGS gazetteers. Stars are the HYG catalogue (Hipparcos, Yale and Gliese), about 83,000 down to magnitude 9, with their real colours; the Milky Way is NASA's all-sky star map. The Galilean moons use USGS Voyager and Galileo mosaics. In 3D each planet turns at its real rate on its real tilt, and Earth shows the correct day and night for the date. Dwarf planets and large asteroids use JPL Small-Body Database elements advanced as two-body orbits, so they are most exact within a few centuries of today. Small moons without a measured size are not drawn.</p>
     </details>
@@ -1254,12 +1254,21 @@ const Ext = (function () {
      Your browser downloads them the first time Earth's satellites are on screen, at most once every six hours, and keeps a copy in
      local storage. They are accurate for days to weeks around each element set's epoch; further away in time, or with no copy at all,
      the illustrative orbits below are used instead. */
-  const LIVE = { state: 'idle', named: {}, cloud: null, ver: 0, when: 0, stale: false, msg: '' };
+  const LIVE = { via: {}, state: 'idle', named: {}, cloud: null, ver: 0, when: 0, stale: false, msg: '' };
   const LIVE_WIN = 45; // days either side of an element set's epoch
   const LIVE_CAT = { 25544: 'iss', 48274: 'tiangong', 20580: 'hubble', 49260: 'landsat9', 60133: 'goes19' };
   const LIVE_GROUPS = [['stations'], ['science'], ['resource'], ['goes'], ['starlink', [0.78, 0.86, 1.0]], ['oneweb', [0.9, 0.78, 1.0]], ['gps-ops', [1.0, 0.82, 0.42]],
     ['glo-ops', [1.0, 0.6, 0.5]], ['galileo', [0.6, 0.9, 1.0]], ['beidou', [1.0, 0.95, 0.6]], ['geo', [0.55, 1.0, 0.85]]];
-  const TLE_URL = g => 'https://celestrak.org/NORAD/elements/gp.php?GROUP=' + g + '&FORMAT=tle', TLE_MAX_AGE = 6 * 3600e3;
+  // first the daily copy that this project's GitHub Action keeps (served with CORS by raw.githubusercontent.com), then CelesTrak itself
+  const TLE_SRC = [g => 'https://raw.githubusercontent.com/wjairplane/solar-system-map/tle-data/' + g + '.tle', g => 'https://celestrak.org/NORAD/elements/gp.php?GROUP=' + g + '&FORMAT=tle'], TLE_MAX_AGE = 6 * 3600e3;
+  async function fetchTLE(g) {
+    let err = null;
+    for (let k = 0; k < TLE_SRC.length; k++) {
+      try { const r = await fetch(TLE_SRC[k](g), { cache: 'no-store' }); if (!r.ok) throw new Error('HTTP ' + r.status); const txt = await r.text(); if (!/^1 /m.test(txt)) throw new Error('no element sets'); LIVE.via[k ? 'celestrak' : 'mirror'] = true; return txt; }
+      catch (e) { err = e; }
+    }
+    throw err || new Error('no source');
+  }
   function parseTLE(txt) {
     const L = txt.split(/\r?\n/), out = [];
     for (let i = 0; i < L.length - 1; i++) if (L[i].startsWith('1 ') && L[i + 1].startsWith('2 ') && L[i].length >= 64) {
@@ -1272,8 +1281,7 @@ const Ext = (function () {
     try { c = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { c = null; }
     if (c && c.txt && Date.now() - c.t < TLE_MAX_AGE) return c;
     try {
-      const r = await fetch(TLE_URL(g), { cache: 'no-store' }); if (!r.ok) throw new Error('HTTP ' + r.status);
-      const txt = await r.text(); if (!/^1 /m.test(txt)) throw new Error('no element sets');
+      const txt = await fetchTLE(g);
       const v = { t: Date.now(), txt };
       try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) { /* storage full or blocked: keep it for this visit only */ }
       return v;
@@ -1296,7 +1304,7 @@ const Ext = (function () {
           if (cc && !seen.has(cat)) { seen.add(cat); recs.push(sr); col.push(cc[0], cc[1], cc[2]); }
         });
       });
-      if (!ok) { LIVE.state = 'failed'; LIVE.msg = 'Could not reach CelesTrak, so positions along the orbits are illustrative.'; return; }
+      if (!ok) { LIVE.state = 'failed'; LIVE.msg = 'Could not download current orbits (neither the daily copy on GitHub nor CelesTrak answered), so positions along the orbits are illustrative.'; return; }
       if (recs.length) { const ep = recs.map(r => r.jdsatepoch).sort((a, b) => a - b); LIVE.cloud = { n: recs.length, recs, col: new Float32Array(col), epoch: ep[ep.length >> 1], i: 0 }; }
       LIVE.state = 'ready'; LIVE.when = oldest; LIVE.stale = stale; LIVE.ver++;
     });
@@ -1325,7 +1333,7 @@ const Ext = (function () {
   function liveStatus() {
     if (LIVE.state === 'ready') {
       const h = (Date.now() - LIVE.when) / 3600e3, ago = h < 1 ? 'less than an hour ago' : h < 48 ? Math.round(h) + (Math.round(h) === 1 ? ' hour ago' : ' hours ago') : Math.round(h / 24) + ' days ago';
-      return 'Live orbits from CelesTrak for ' + (LIVE.cloud ? LIVE.cloud.n.toLocaleString('en-US') : 0) + ' satellites, downloaded ' + ago + (LIVE.stale ? ' (CelesTrak could not be reached, so this is the saved copy)' : '') + '. Positions are exact for dates within about six weeks of that; further away they are illustrative.';
+      return 'Live orbits ' + (LIVE.via.mirror ? '(CelesTrak data, via the daily copy on GitHub' + (LIVE.via.celestrak ? ' and CelesTrak itself' : '') + ')' : 'from CelesTrak') + ' for ' + (LIVE.cloud ? LIVE.cloud.n.toLocaleString('en-US') : 0) + ' satellites, downloaded ' + ago + (LIVE.stale ? ' (no source could be reached, so this is the saved copy)' : '') + '. Positions are exact for dates within about six weeks of that; further away they are illustrative.';
     }
     return LIVE.msg || 'Current orbits download from CelesTrak the first time Earth’s satellites are on screen. Until then, and for dates far from today, positions along the orbits are illustrative.';
   }
