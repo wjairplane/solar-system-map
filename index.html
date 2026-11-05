@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/5.0.0/satellite.min.js"></script>
 <style>
 /* Layout: full-bleed 2D stage on the left (top-down, north ecliptic pole), instrument column on the right; stacks on phones.
    Palette: blue-black ground, cool grey text, one warm accent (sunlight) reserved for alignments, eclipses and the Sun. */
@@ -285,7 +286,7 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
         <details class="group fold" id="placesFold" hidden><summary><h2>Places <span class="count" id="placesCount"></span></h2></summary><div class="chips" id="placesChips"></div></details>
         <details class="group fold" id="astFold"><summary><h2>Asteroids and dwarf planets <span class="count" id="astCount"></span></h2></summary><div class="chips" id="astChips"></div></details>
         <details class="group fold" id="craftFold"><summary><h2>Spacecraft <span class="count" id="craftCount"></span></h2></summary><div class="chips" id="craftChips"></div><p class="hint">Double-click a spacecraft twice to see a model of it at true size.</p></details>
-        <details class="group fold" id="satFold"><summary><h2>Earth satellites <span class="count" id="satCount"></span></h2></summary><div class="chips" id="satChips"></div><p class="hint">Their orbits are real; where each one is along its orbit is illustrative, not live tracking. The dots around Earth show Starlink, OneWeb, GPS, GLONASS, Galileo, BeiDou and the geostationary belt.</p></details>
+        <details class="group fold" id="satFold"><summary><h2>Earth satellites <span class="count" id="satCount"></span></h2></summary><div class="chips" id="satChips"></div><p class="hint" id="satHint"></p><p class="hint">The dots around Earth are Starlink, OneWeb, GPS, GLONASS, Galileo, BeiDou and the geostationary belt.</p></details>
         <details class="group fold" id="starFold"><summary><h2>Stars <span class="count" id="starCount"></span></h2></summary><div class="sublabel">Brightest in the sky</div><div class="chips" id="starChips"></div><div class="sublabel" style="margin-top:8px">Nearest to the Sun</div><div class="chips" id="nearChips"></div><p class="hint">In the sky view, click any named star. In 3D, zoom far out to see the nearest stars at their real distances.</p></details>
       </section>
 
@@ -443,7 +444,7 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
     </div>
 
     <details class="more about"><summary>About this model</summary>
-      <p class="fine">Stars: HYG database v4.1 (Hipparcos, Yale, Gliese; CC BY-SA 4.0). Radii are estimates from brightness and colour. Satellites: real orbit sizes and tilts with the drift of each orbit plane; positions along the orbits are illustrative. The Oort cloud is drawn as theory describes it; none of its bodies has been seen there. Sky maps: Haslam 408 MHz (Remazeilles 2015), WMAP 9-year ILC, IRAS/IRIS 100 µm, Finkbeiner 2003 H-alpha (all via NASA LAMBDA), ROSAT All-Sky Survey (Snowden 1997) and Fermi LAT (both via NASA SkyView).</p>
+      <p class="fine">Stars: HYG database v4.1 (Hipparcos, Yale, Gliese; CC BY-SA 4.0). Radii are estimates from brightness and colour. Satellites: current element sets from CelesTrak (celestrak.org), propagated with SGP4 by satellite.js; for dates far from the download, or offline, real orbit sizes and tilts with illustrative positions. The Oort cloud is drawn as theory describes it; none of its bodies has been seen there. Sky maps: Haslam 408 MHz (Remazeilles 2015), WMAP 9-year ILC, IRAS/IRIS 100 µm, Finkbeiner 2003 H-alpha (all via NASA LAMBDA), ROSAT All-Sky Survey (Snowden 1997) and Fermi LAT (both via NASA SkyView).</p>
       <p class="fine">Years run from −3000 to 3000. Year 0 is 1 BC, and −43 is 44 BC. Dates use the Gregorian calendar and UT. Positions are most exact from 1800 to 2050.</p>
       <p class="fine">Planet positions use the VSOP87 theory (about 0.1 arcsecond for the planets across the whole date range), and the Moon uses the full main series of lunar theory. The 46 moons use JPL mean orbital elements. Eclipses come from the shadow cones of the Sun, Moon and Earth. Planet maps are real imagery. Zoom close in 3D and Earth, the Moon, Mars and Mercury load sharper map tiles for the area in view: NASA Blue Marble and Black Marble for Earth (to about 0.6 km per pixel), the NASA LRO camera mosaic with LOLA terrain for the Moon, the USGS Viking color mosaic for Mars and the MESSENGER mosaic for Mercury. The Sun and the other planets use maps from Solar System Scope (NASA and USGS data, CC BY 4.0), with Pluto from New Horizons. Saturn's rings are drawn from their measured structure. Moon maps for the larger moons come from the Stellarium project. Spacecraft paths are NASA JPL Horizons state vectors, and the dark spots on Jupiter are the real shadows of its moons. Constellation lines, names and Messier objects come from the d3-celestial data set (Olaf Frohn, BSD-3), and the place names are placed by hand from the IAU and USGS gazetteers. Stars are the HYG catalogue (Hipparcos, Yale and Gliese), about 83,000 down to magnitude 9, with their real colours; the Milky Way is NASA's all-sky star map. The Galilean moons use USGS Voyager and Galileo mosaics. In 3D each planet turns at its real rate on its real tilt, and Earth shows the correct day and night for the date. Dwarf planets and large asteroids use JPL Small-Body Database elements advanced as two-body orbits, so they are most exact within a few centuries of today. Small moons without a measured size are not drawn.</p>
     </details>
@@ -1226,6 +1227,7 @@ const Ext = (function () {
       geo: geo === undefined ? null : geo, n, dO: -1.5 * n * k * ci, du: n * (1 + 0.75 * k * (8 * ci * ci - 2)), periodMin: 2 * Math.PI / n * 1440 };
   });
   function satGeo(s, jd, out) { // geocentric, ecliptic J2000, km
+    if (jd >= s.t0 && liveGeo(LIVE.named[s.key], jd, out)) return out;
     let x, y, z;
     if (s.geo !== null) { const th = gmstE(jd) + s.geo * D2R; x = s.a * Math.cos(th); y = s.a * Math.sin(th); z = 0; }
     else {
@@ -1236,9 +1238,89 @@ const Ext = (function () {
   }
   const satLive = (s, jd) => jd >= s.t0;
   function satSub(s, jd) { // the point on Earth below it
+    if (satIsLive(s, jd)) { const pv = livePV(LIVE.named[s.key], jd); if (pv) { const g = satellite.eciToGeodetic(pv.position, satellite.gstime(_ld)); return { lat: g.latitude / D2R, lon: ((g.longitude / D2R) % 360 + 540) % 360 - 180, h: g.height, live: true }; } }
     const o = satGeo(s, jd, [0, 0, 0]), eps = 23.4392911 * D2R, x = o[0], y = o[1] * Math.cos(eps) - o[2] * Math.sin(eps), z = o[1] * Math.sin(eps) + o[2] * Math.cos(eps);
     let lon = (Math.atan2(y, x) - gmstE(jd)) / D2R; lon = ((lon % 360) + 540) % 360 - 180;
     return { lat: Math.asin(z / Math.hypot(x, y, z)) / D2R, lon };
+  }
+  /* ---------- live orbits: CelesTrak element sets (TLE), propagated with SGP4 by satellite.js ----------
+     Your browser downloads them the first time Earth's satellites are on screen, at most once every six hours, and keeps a copy in
+     local storage. They are accurate for days to weeks around each element set's epoch; further away in time, or with no copy at all,
+     the illustrative orbits below are used instead. */
+  const LIVE = { state: 'idle', named: {}, cloud: null, ver: 0, when: 0, stale: false, msg: '' };
+  const LIVE_WIN = 45; // days either side of an element set's epoch
+  const LIVE_CAT = { 25544: 'iss', 48274: 'tiangong', 20580: 'hubble', 49260: 'landsat9', 60133: 'goes19' };
+  const LIVE_GROUPS = [['stations'], ['science'], ['resource'], ['goes'], ['starlink', [0.78, 0.86, 1.0]], ['oneweb', [0.9, 0.78, 1.0]], ['gps-ops', [1.0, 0.82, 0.42]],
+    ['glo-ops', [1.0, 0.6, 0.5]], ['galileo', [0.6, 0.9, 1.0]], ['beidou', [1.0, 0.95, 0.6]], ['geo', [0.55, 1.0, 0.85]]];
+  const TLE_URL = g => 'https://celestrak.org/NORAD/elements/gp.php?GROUP=' + g + '&FORMAT=tle', TLE_MAX_AGE = 6 * 3600e3;
+  function parseTLE(txt) {
+    const L = txt.split(/\r?\n/), out = [];
+    for (let i = 0; i < L.length - 1; i++) if (L[i].startsWith('1 ') && L[i + 1].startsWith('2 ') && L[i].length >= 64) {
+      const nm = i > 0 && !L[i - 1].startsWith('1 ') && !L[i - 1].startsWith('2 ') ? L[i - 1].trim() : ''; out.push([nm, L[i], L[i + 1]]); i++;
+    }
+    return out;
+  }
+  async function getGroup(g) {
+    const key = 'tle:' + g; let c = null;
+    try { c = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { c = null; }
+    if (c && c.txt && Date.now() - c.t < TLE_MAX_AGE) return c;
+    try {
+      const r = await fetch(TLE_URL(g), { cache: 'no-store' }); if (!r.ok) throw new Error('HTTP ' + r.status);
+      const txt = await r.text(); if (!/^1 /m.test(txt)) throw new Error('no element sets');
+      const v = { t: Date.now(), txt };
+      try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) { /* storage full or blocked: keep it for this visit only */ }
+      return v;
+    } catch (e) { if (c && c.txt) return Object.assign({ stale: true }, c); throw e; }
+  }
+  function loadLive() {
+    if (LIVE.state !== 'idle') return;
+    if (typeof satellite === 'undefined' || typeof fetch !== 'function') { LIVE.state = 'failed'; LIVE.msg = 'The orbit library could not be loaded, so positions along the orbits are illustrative.'; return; }
+    LIVE.state = 'loading'; LIVE.msg = 'Downloading current orbits from CelesTrak…';
+    Promise.allSettled(LIVE_GROUPS.map(([g]) => getGroup(g))).then(res => {
+      const recs = [], col = [], seen = new Set(); let ok = 0, oldest = Infinity, stale = false;
+      res.forEach((r, k) => {
+        if (r.status !== 'fulfilled') return; ok++; oldest = Math.min(oldest, r.value.t); stale = stale || !!r.value.stale;
+        const cc = LIVE_GROUPS[k][1];
+        parseTLE(r.value.txt).forEach(([, l1, l2]) => {
+          const cat = parseInt(l1.slice(2, 7), 10); let sr = null;
+          try { sr = satellite.twoline2satrec(l1, l2); } catch (e) { sr = null; }
+          if (!sr || sr.error || !isFinite(sr.jdsatepoch)) return;
+          if (LIVE_CAT[cat]) LIVE.named[LIVE_CAT[cat]] = sr;
+          if (cc && !seen.has(cat)) { seen.add(cat); recs.push(sr); col.push(cc[0], cc[1], cc[2]); }
+        });
+      });
+      if (!ok) { LIVE.state = 'failed'; LIVE.msg = 'Could not reach CelesTrak, so positions along the orbits are illustrative.'; return; }
+      if (recs.length) { const ep = recs.map(r => r.jdsatepoch).sort((a, b) => a - b); LIVE.cloud = { n: recs.length, recs, col: new Float32Array(col), epoch: ep[ep.length >> 1], i: 0 }; }
+      LIVE.state = 'ready'; LIVE.when = oldest; LIVE.stale = stale; LIVE.ver++;
+    });
+  }
+  // TEME (true equator of date) -> ecliptic of date -> back to the J2000 equinox, the frame every other body here uses
+  function temeToEcl(p, jd, out) {
+    const T = (jd - J2000) / 36525, eps = (23.4392911 - 0.0130042 * T) * D2R, ce = Math.cos(eps), se = Math.sin(eps), dl = 1.3969713 * T * D2R, c = Math.cos(-dl), s = Math.sin(-dl);
+    const x = p.x, y = p.y * ce + p.z * se, z = -p.y * se + p.z * ce;
+    out[0] = x * c - y * s; out[1] = x * s + y * c; out[2] = z; return out;
+  }
+  const _ld = new Date(0);
+  const liveOk = (sr, jd) => sr && !sr.error && Math.abs(jd - sr.jdsatepoch) <= LIVE_WIN;
+  function livePV(sr, jd) { _ld.setTime((jd - 2440587.5) * 864e5); let pv = null; try { pv = satellite.propagate(sr, _ld); } catch (e) { pv = null; } return pv && pv.position && isFinite(pv.position.x) ? pv : null; }
+  function liveGeo(sr, jd, out) { if (!liveOk(sr, jd)) return null; const pv = livePV(sr, jd); return pv ? temeToEcl(pv.position, jd, out) : null; }
+  const satIsLive = (s, jd) => liveOk(LIVE.named[s.key], jd);
+  const cloudLive = jd => !!(LIVE.cloud && Math.abs(jd - LIVE.cloud.epoch) <= LIVE_WIN);
+  // a slice of the live cloud per call (all of it when full), so ten thousand satellites never cost more than a few ms in one frame
+  function cloudLivePositions(jd, out, full) {
+    const C = LIVE.cloud, n = C.n, cnt = full ? n : Math.min(n, 1500), o = [0, 0, 0];
+    for (let k = 0; k < cnt; k++) {
+      const i = C.i; C.i = (C.i + 1) % n; const sr = C.recs[i];
+      if (liveGeo(sr, jd, o)) { out[i * 3] = o[0]; out[i * 3 + 1] = o[1]; out[i * 3 + 2] = o[2]; } else { out[i * 3] = out[i * 3 + 1] = out[i * 3 + 2] = 0; }
+    }
+    return out;
+  }
+  function liveStatus() {
+    if (LIVE.state === 'ready') {
+      const h = (Date.now() - LIVE.when) / 3600e3, ago = h < 1 ? 'less than an hour ago' : h < 48 ? Math.round(h) + (Math.round(h) === 1 ? ' hour ago' : ' hours ago') : Math.round(h / 24) + ' days ago';
+      return 'Live orbits from CelesTrak for ' + (LIVE.cloud ? LIVE.cloud.n.toLocaleString('en-US') : 0) + ' satellites, downloaded ' + ago + (LIVE.stale ? ' (CelesTrak could not be reached, so this is the saved copy)' : '') + '. Positions are exact for dates within about six weeks of that; further away they are illustrative.';
+    }
+    return LIVE.msg || 'Current orbits download from CelesTrak the first time Earth’s satellites are on screen. Until then, and for dates far from today, positions along the orbits are illustrative.';
   }
   // The big constellations as evenly phased (Walker) patterns of their real orbit shells: a picture of how crowded each orbit is, not a catalogue.
   // [label, altitude km, inclination, planes, per plane, phasing, colour, first launch JD]
@@ -1290,7 +1372,7 @@ const Ext = (function () {
     return st;
   }
   const byParent = {}; MOONS.forEach(m => (byParent[m.parent] = byParent[m.parent] || []).push(m));
-  return { MOONS, NAMED, COMETS, CRAFT, craftLive, craftState, craftPath, GROUPS, BODIES, byParent, moonOffset, moonOrbit, beltPositions, cometPos, smallOrbit, augment, KIND_COLOR, STARS: STARLIST, SATS, satGeo, satLive, satSub, CLOUD, cloudPositions, LY };
+  return { MOONS, NAMED, COMETS, CRAFT, craftLive, craftState, craftPath, GROUPS, BODIES, byParent, moonOffset, moonOrbit, beltPositions, cometPos, smallOrbit, augment, KIND_COLOR, STARS: STARLIST, SATS, satGeo, satLive, satSub, CLOUD, cloudPositions, LIVE, loadLive, satIsLive, cloudLive, cloudLivePositions, liveStatus, LY };
 })();
 (function () {
 "use strict";
@@ -1555,13 +1637,15 @@ function renderInfo(st) {
     add('Luminosity', (b.lum >= 10 ? fmtN(b.lum) : b.lum >= 0.01 ? b.lum.toFixed(2) : b.lum.toPrecision(2)) + '× the Sun (visible light)');
     add('Radius (estimate)', (b.radius / 695700 >= 10 ? fmtN(b.radius / 695700) : (b.radius / 695700).toFixed(b.radius / 695700 < 0.1 ? 3 : 2)) + '× the Sun');
   } else if (b.kind === 'sat') {
-    const o = Ext.satSub(b, S.jd), live = Ext.satLive(b, S.jd);
+    Ext.loadLive();
+    const o = Ext.satSub(b, S.jd), live = Ext.satLive(b, S.jd), real = live && o.live;
     if (!live) add('Status', 'Not yet launched');
-    add('Height', fmtN(b.alt) + ' km');
+    add('Height', fmtN(real ? o.h : b.alt) + ' km');
     add('Orbit tilt', b.inc.toFixed(1) + '° to the equator');
     add('One orbit', b.periodMin < 200 ? fmtN(b.periodMin, 1) + ' minutes' : fmtN(b.periodMin / 60, 1) + ' hours');
     add('Speed', fmtN(Math.sqrt(398600.4418 / b.a), 2) + ' km/s');
-    if (live) add('Above', Math.abs(o.lat).toFixed(1) + '°' + (o.lat >= 0 ? 'N' : 'S') + ' ' + Math.abs(o.lon).toFixed(1) + '°' + (o.lon >= 0 ? 'E' : 'W') + (b.geo === null ? ' (illustrative)' : ''));
+    if (live) add('Above', Math.abs(o.lat).toFixed(1) + '°' + (o.lat >= 0 ? 'N' : 'S') + ' ' + Math.abs(o.lon).toFixed(1) + '°' + (o.lon >= 0 ? 'E' : 'W') + (real || b.geo !== null ? '' : ' (illustrative)'));
+    if (live) add('Position', real ? 'live orbit from CelesTrak, elements of ' + fmtDate(Ext.LIVE.named[b.key].jdsatepoch) : 'illustrative (no live orbit for this date)');
     add('In orbit since', fmtDate(b.t0));
     add('', b.blurb);
   } else if (b.kind === 'asteroid' || b.kind === 'comet') {
@@ -1671,6 +1755,7 @@ function buildUI() {
   $('craftCount').textContent = Ext.CRAFT.length;
   Ext.SATS.forEach(c => chip(c.id, c.name, c.color, $('satChips'), () => goTo(c)).classList.add('small'));
   $('satCount').textContent = Ext.SATS.length;
+  { const sh = () => { const t = Ext.liveStatus(); if ($('satHint').textContent !== t) $('satHint').textContent = t; }; sh(); setInterval(sh, 1000); }
   Ext.STARS.slice().sort((a, c) => a.mag - c.mag).slice(0, 30).forEach(s => chip(s.id, s.name, s.color, $('starChips'), () => goTo(s)).classList.add('small'));
   Ext.STARS.filter(s => s.near).sort((a, c) => a.ly - c.ly).filter((s, i, a) => i === 0 || Math.abs(s.ly - a[i - 1].ly) > 0.02 || s.mag < 6).slice(0, 26).forEach(s => chip(s.id, s.name, s.color, $('nearChips'), () => goTo(s)).classList.add('small'));
   $('starCount').textContent = Ext.STARS.length;
@@ -3800,7 +3885,12 @@ void main(){
     // satellites around Earth
     { const er = sc.earth && sc.earth.r, on = S.show.sats && !sky && er > 2.5 && sc.earth.front;
       X.sats.visible = !!on;
-      if (on) { Ext.cloudPositions(S.jd, X.satBuf); const a = X.sats.geometry.attributes.position.array, b = X.satBuf; for (let i = 0; i < a.length; i += 3) { a[i] = b[i] / KU; a[i + 1] = b[i + 2] / KU; a[i + 2] = -b[i + 1] / KU; } X.sats.geometry.attributes.position.needsUpdate = true; X.sats.position.copy(F(st.pos.earth)); X.sats.material.size = er > 200 ? 2.0 : 1.3; } }
+      if (on) Ext.loadLive();
+      if (on) { const live = Ext.cloudLive(S.jd), key = live ? 'L' + Ext.LIVE.ver : 'D';
+        if (key !== X.satKey) { const n = live ? Ext.LIVE.cloud.n : Ext.CLOUD.n, g = X.sats.geometry; X.satKey = key; X.satBuf = new Float32Array(n * 3);
+          g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('color', new THREE.BufferAttribute(live ? Ext.LIVE.cloud.col : Ext.CLOUD.col, 3)); X.satFull = true; }
+        if (live) { Ext.cloudLivePositions(S.jd, X.satBuf, X.satFull); X.satFull = false; } else Ext.cloudPositions(S.jd, X.satBuf); }
+      if (on) { const a = X.sats.geometry.attributes.position.array, b = X.satBuf; for (let i = 0; i < a.length; i += 3) { a[i] = b[i] / KU; a[i + 1] = b[i + 2] / KU; a[i + 2] = -b[i + 1] / KU; } X.sats.geometry.attributes.position.needsUpdate = true; X.sats.position.copy(F(st.pos.earth)); X.sats.material.size = er > 200 ? 2.0 : 1.3; } }
     updateModels(st, F, camPos, sky);
     // day-night line on every world big enough to see it on
     [E.SUN, ...PLAN, E.MOON].forEach(b => {
