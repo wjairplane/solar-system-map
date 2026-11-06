@@ -4347,7 +4347,21 @@ void main(){
     }
     try { ctx.letterSpacing = '0px'; } catch (e) {}
     // "you are here"
-    if (ly > 300) { const s = sp(F([0, 0, 0])); if (s) { ctx.beginPath(); ctx.arc(s.x, s.y, 4, 0, 6.2832); ctx.strokeStyle = 'rgba(' + GOLD + ',0.95)'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.font = '600 12px ' + FONT; ctx.fillStyle = 'rgb(' + GOLD + ')'; lblDraw(ctx, 'Sun · you are here', lblPlace(ctx, 'Sun · you are here', s.x, s.y, 9, true)); } }
+    if (ly > 2) { const c = toScreen(F([0, 0, 0])); if (c.z < -camera.near) { const s = proj(c); if (s.x > -20 && s.x < W + 20 && s.y > -20 && s.y < H + 20) {
+      // a callout that stays readable on top of a dense star field: a ring on the Sun, a leader line, and a label on a dark card
+      const right = s.x < W - 300, up = s.y > 150, bx = s.x + (right ? 46 : -46), by = s.y + (up ? -58 : 58);
+      const l1 = 'You are here', l2 = 'the Sun, Earth and all the planets', l3 = ly < 2e4 ? 'out to Neptune, only 0.001 light years across' : 'inside the Orion Spur of the Milky Way';
+      ctx.shadowBlur = 0; ctx.font = '600 13px ' + FONT; const w1 = ctx.measureText(l1).width; ctx.font = '500 11px ' + FONT; const w = Math.max(w1, ctx.measureText(l2).width, ctx.measureText(l3).width) + 20, h = 52;
+      const x0 = right ? bx : bx - w, y0 = up ? by - h : by;
+      ctx.beginPath(); ctx.arc(s.x, s.y, 7, 0, 6.2832); ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(7,10,18,0.9)'; ctx.stroke(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgb(' + GOLD + ')'; ctx.stroke();
+      ctx.beginPath(); ctx.arc(s.x, s.y, 1.8, 0, 6.2832); ctx.fillStyle = 'rgb(' + GOLD + ')'; ctx.fill();
+      const ex = right ? x0 : x0 + w, ey = up ? y0 + h : y0, sx = s.x + (bx - s.x) * 7 / Math.hypot(bx - s.x, by - s.y), sy = s.y + (by - s.y) * 7 / Math.hypot(bx - s.x, by - s.y);
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(7,10,18,0.9)'; ctx.stroke(); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgb(' + GOLD + ')'; ctx.stroke();
+      ctx.fillStyle = 'rgba(7,10,18,0.88)'; ctx.strokeStyle = 'rgba(' + GOLD + ',0.9)'; ctx.lineWidth = 1; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x0, y0, w, h, 7); else ctx.rect(x0, y0, w, h); ctx.fill(); ctx.stroke();
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = '600 13px ' + FONT; ctx.fillStyle = 'rgb(' + GOLD + ')'; ctx.fillText(l1, x0 + 10, y0 + 13);
+      ctx.font = '500 11px ' + FONT; ctx.fillStyle = 'rgba(236,230,214,0.95)'; ctx.fillText(l2, x0 + 10, y0 + 28); ctx.fillStyle = 'rgba(200,206,222,0.75)'; ctx.fillText(l3, x0 + 10, y0 + 42);
+      LBL.boxes.push([x0 - 4, y0 - 4, x0 + w + 4, y0 + h + 4]); lblBlock(s.x, s.y, 10); ctx.shadowBlur = 4;
+    } } }
     // galaxies: the selected one always; others when big enough on screen or bright for this zoom
     if (CX.k.gal > 0.2 || CX.k.mw > 0.2) {
       const cand = [];
@@ -4651,7 +4665,7 @@ void main(){
       return tca - Math.sqrt(R * R - d2) < L;
     };
     const farOut = !sky && sc.sun.dist > 3e5;
-    const hidden = id => (farOut && (id !== 'sun' || X.viewKm > 2.8e15)) || occl(sc[id].p, id) || sky && (id === 'earth' || (S.show.ground && sc[id].p.clone().sub(camera.position).normalize().dot(skyUp) < -0.002) || ((sunUp > -0.06 && skyObs < 0.97) && id !== 'sun' && id !== 'moon' && id !== 'venus') || (sunUp > 0.02 && id === 'venus'));
+    const hidden = id => (farOut && (id !== 'sun' || X.viewKm > 1.9e13)) || occl(sc[id].p, id) || sky && (id === 'earth' || (S.show.ground && sc[id].p.clone().sub(camera.position).normalize().dot(skyUp) < -0.002) || ((sunUp > -0.06 && skyObs < 0.97) && id !== 'sun' && id !== 'moon' && id !== 'venus') || (sunUp > 0.02 && id === 'venus'));
     [E.SUN, ...PLAN, E.MOON].forEach(b => { const s = sc[b.id]; scr[b.id] = Object.assign(s.front ? proj(s.c) : { x: -1e5, y: -1e5 }, { r: s.r, front: s.front }); });
     const showMoon = sky || sc.moon.front && Math.hypot(scr.moon.x - scr.earth.x, scr.moon.y - scr.earth.y) > 10;
 
