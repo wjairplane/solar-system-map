@@ -45,3 +45,11 @@ Data credits
   P. Sloan Foundation, the Participating Institutions, the National Science Foundation, and the U.S. Department of
   Energy Office of Science. http://www.sdss.org/ and http://www.sdss3.org/
 - Redshifts become distances for a flat universe with H0 = 70 km/s/Mpc and Omega_m = 0.3 (comoving distance).
+
+The scale journey (button "Quark to universe", or View > Go to)
+- Zooms out one power of ten at a time from 10^-16 m, around a quark, to 10^27 m, the whole observable universe.
+- Below a few kilometres the scenes are drawn illustrations, each nested in the next: quarks, a proton, a carbon
+  nucleus, a carbon atom, DNA, a chromosome, a cell, skin, a person, a park. From there the real 3D view takes over,
+  directly above the place set for the sky view (Seoul unless you change it), at local noon.
+- Pause, scrub, change the speed or exit with the controls; scrolling moves through the scales; Esc exits and puts
+  the date back.
