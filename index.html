@@ -5308,6 +5308,10 @@ const JR = (function () {
   }
   // a chromosome's coiled fibre: [position along (-1..1), across (-1..1), loop radius m, shade], alternating between the two chromatids
   const CHROMO = (() => { const r = rnd(17), a = []; for (let i = 0; i < 1800; i++) a.push([2 * r() - 1, gaussR(r) * 0.45, (0.05 + r() * 0.08) * 1e-6, r()]); return a; })();
+  // grass round the person: [x, y, screen angle, length m, shade, kind: 0 blade, 1 clover, 2 flower]
+  const GRASS = (() => { const r = rnd(71), a = []; for (let i = 0; i < 5200; i++) { const x = -2.6 + r() * 3.8, y = -1.7 + r() * 3.0, q = r(); a.push([x, y, -1.2 - r() * 0.8, 0.03 + r() * 0.06, r(), q < 0.04 ? 1 : q < 0.055 ? 2 : 0]); } return a; })();
+  const CYTO = (() => { const r = rnd(29), a = []; for (let i = 0; i < 44; i++) a.push([r() * 6.2832, (r() - 0.5) * 0.5]); return a; })();
+  const VES = (() => { const r = rnd(13), a = []; while (a.length < 34) { const t = r() * 6.283, d = (0.4 + r() * 0.52) * 1e-5, x = 1.8e-6 + Math.cos(t) * d, y = -1.2e-6 + Math.sin(t) * d; if (Math.hypot(x, y) < 3.8e-6) continue; a.push([x, y, (0.12 + r() * 0.22) * 1e-6, r() < 0.4 ? '170,120,220' : r() < 0.6 ? '120,200,170' : '236,196,120']); } return a; })();
   const CELL_C = [1.8e-6, -1.2e-6], CELL_R = 1e-5;
   const MITO = (() => { const r = rnd(5), a = []; while (a.length < 14) { const t = r() * 6.283, d = (0.42 + r() * 0.48) * CELL_R; a.push([CELL_C[0] + Math.cos(t) * d, CELL_C[1] + Math.sin(t) * d, r() * 3.14, 0.7e-6 + r() * 0.6e-6]); } return a; })();
   const TISSUE = (() => { const a = [], r = rnd(9), s = 2.1e-5; for (let i = -22; i <= 22; i++) for (let j = -22; j <= 22; j++) { const x = CELL_C[0] + (i + (j % 2) * 0.5) * s + (r() - 0.5) * 4e-6, y = CELL_C[1] + j * s * 0.87 + (r() - 0.5) * 4e-6; if ((i || j) && Math.hypot(x, y) < 4.6e-4) a.push([x, y, 0.8 + r() * 0.35, r() * 6.28]); } return a; })();
@@ -5321,6 +5325,9 @@ const JR = (function () {
     const BG = [[-16, [5, 5, 12]], [-11, [5, 5, 12]], [-9.4, [10, 14, 30]], [-8.2, [24, 18, 48]], [-6.6, [62, 46, 104]], [-5.6, [62, 46, 104]], [-5.0, [236, 208, 212]], [-4.2, [222, 182, 168]], [-3.4, [214, 166, 140]], [-0.9, [214, 166, 140]], [-0.35, [86, 128, 62]], [9, [86, 128, 62]]];
     let bg = BG[0][1]; for (let i = 1; i < BG.length; i++) if (e <= BG[i][0]) { const a = BG[i - 1], b = BG[i], u = ss(a[0], b[0], e); bg = a[1].map((v, j) => Math.round(v + (b[1][j] - v) * u)); break; }
     g.fillStyle = 'rgb(' + bg + ')'; g.fillRect(0, 0, W, H);
+    const lighter = f => { g.globalCompositeOperation = 'lighter'; f(); g.globalCompositeOperation = 'source-over'; };
+    const glowAt = (x, y, r, c, al) => { if (r < 0.4 || al <= 0) return; if (r > 4 * (W + H)) { const d = Math.min(1, Math.hypot(x - cx, y - cy) / r); g.fillStyle = 'rgba(' + c + ',' + (al * (1 - d) * (1 - d)) + ')'; g.fillRect(0, 0, W, H); return; }
+      const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(' + c + ',' + al + ')'); gr.addColorStop(0.35, 'rgba(' + c + ',' + (al * 0.45) + ')'); gr.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); };
     // the park, and the person lying in it (origin: the palm of the right hand)
     { const a = on(900 * k, 3, 60 * H); if (a > 0.01) { g.globalAlpha = a;
         PARK.blobs.forEach(([x, y, r, light]) => { g.fillStyle = light ? 'rgba(120,160,80,0.35)' : 'rgba(60,96,44,0.35)'; g.beginPath(); g.arc(X(x), Y(y), r * k, 0, 6.2832); g.fill(); });
@@ -5329,38 +5336,99 @@ const JR = (function () {
         blob(X(90), Y(-70), 38, k, 4); g.fillStyle = 'rgb(70,120,150)'; g.fill(); g.strokeStyle = 'rgba(200,220,230,0.5)'; g.lineWidth = Math.max(1, 1.2 * k); g.stroke();
         PARK.trees.forEach(([x, y, r]) => { g.fillStyle = 'rgba(20,40,16,0.45)'; g.beginPath(); g.arc(X(x + r * 0.35), Y(y - r * 0.35), r * k, 0, 6.2832); g.fill(); const gr = g.createRadialGradient(X(x - r * 0.3), Y(y + r * 0.3), 0, X(x), Y(y), Math.max(1, r * k)); gr.addColorStop(0, 'rgb(84,140,60)'); gr.addColorStop(1, 'rgb(36,78,34)'); g.fillStyle = gr; g.beginPath(); g.arc(X(x), Y(y), Math.max(0.8, r * k), 0, 6.2832); g.fill(); });
         g.globalAlpha = 1; } }
-    { const a = on(1.8 * k, 3, 200 * H); if (a > 0.01) { g.globalAlpha = a; const sk = 'rgb(214,166,140)', lw = (w) => Math.max(1, w * k);
-        const limb = (pts, w, col) => { g.strokeStyle = col; g.lineWidth = lw(w); g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(X(p[0]), Y(p[1])) : g.moveTo(X(p[0]), Y(p[1]))); g.stroke(); };
-        g.save(); g.translate(0.06 * k, -0.06 * k); g.globalAlpha = a * 0.25; limb([[-0.62, 0.33], [-0.33, 0.18], [0, 0]], 0.13, '#000'); limb([[-0.85, 0.3], [-0.85, -0.25]], 0.5, '#000'); limb([[-0.95, -0.15], [-1.05, -0.95]], 0.15, '#000'); limb([[-0.75, -0.15], [-0.62, -0.95]], 0.15, '#000'); g.restore(); g.globalAlpha = a;
-        limb([[-0.95, -0.15], [-1.0, -0.55], [-1.05, -0.92]], 0.15, 'rgb(46,58,92)'); limb([[-0.75, -0.15], [-0.7, -0.55], [-0.62, -0.92]], 0.15, 'rgb(46,58,92)');
-        limb([[-1.06, -0.93], [-1.07, -1.02]], 0.1, 'rgb(240,240,240)'); limb([[-0.62, -0.93], [-0.6, -1.02]], 0.1, 'rgb(240,240,240)');
-        limb([[-0.62, 0.33], [-0.33, 0.2]], 0.12, 'rgb(196,72,64)'); limb([[-0.33, 0.2], [-0.07, 0.04]], 0.085, sk); limb([[-1.08, 0.33], [-1.3, 0.12]], 0.12, 'rgb(196,72,64)'); limb([[-1.3, 0.12], [-1.38, -0.12]], 0.085, sk);
-        g.fillStyle = sk; g.beginPath(); g.ellipse(X(0), Y(0), 0.095 * k, 0.055 * k, 0.5, 0, 6.2832); g.fill(); g.beginPath(); g.ellipse(X(-1.39), Y(-0.2), 0.05 * k, 0.09 * k, 0.2, 0, 6.2832); g.fill();
-        g.fillStyle = 'rgb(196,72,64)'; g.beginPath(); if (g.roundRect) g.roundRect(X(-1.09), Y(0.4), 0.48 * k, 0.6 * k, 0.12 * k); else g.rect(X(-1.09), Y(0.4), 0.48 * k, 0.6 * k); g.fill();
-        g.fillStyle = sk; g.beginPath(); g.arc(X(-0.85), Y(0.56), 0.11 * k, 0, 6.2832); g.fill(); g.fillStyle = 'rgb(54,36,28)'; g.beginPath(); g.arc(X(-0.85), Y(0.6), 0.115 * k, Math.PI * 0.05, Math.PI * 0.95); g.fill();
+    // grass at the person's scale: blades, clover and a few small flowers (they only show while each blade is a few pixels long)
+    { const a = on(0.06 * k, 1.5) * (1 - ss(1.2, 1.9, e)); if (a > 0.01) { g.globalAlpha = a; const x0 = (-cx - 20) / k, x1 = (W - cx + 20) / k, y0 = (cy - H - 20) / k, y1 = (cy + 20) / k;
+        GRASS.forEach(([x, y, an, L, sh, kind]) => { if (x < x0 || x > x1 || y < y0 || y > y1) return; const px = X(x), py = Y(y), lp = L * k;
+          if (kind === 1) { if (lp < 2) return; g.fillStyle = 'rgba(70,128,54,0.9)'; for (let q = 0; q < 3; q++) { const aa = an + q * 2.09; g.beginPath(); g.arc(px + Math.cos(aa) * lp * 0.3, py + Math.sin(aa) * lp * 0.3, lp * 0.3, 0, 6.2832); g.fill(); } return; }
+          if (kind === 2) { const r = Math.max(1, lp * 0.18); g.fillStyle = sh > 0.5 ? 'rgba(255,255,245,0.95)' : 'rgba(250,215,80,0.95)'; g.beginPath(); g.arc(px, py, r, 0, 6.2832); g.fill(); if (r > 2) { g.fillStyle = 'rgba(240,190,60,1)'; g.beginPath(); g.arc(px, py, r * 0.35, 0, 6.2832); g.fill(); } return; }
+          if (lp < 1.2) return; const c = Math.round(60 + 70 * sh); g.strokeStyle = 'rgb(' + Math.round(c * 0.65) + ',' + (c + 40) + ',' + Math.round(c * 0.45) + ')'; g.lineWidth = Math.max(0.6, 0.004 * k); g.lineCap = 'round';
+          g.beginPath(); g.moveTo(px, py); g.quadraticCurveTo(px + Math.cos(an) * lp * 0.5, py + Math.sin(an) * lp * 0.5 - lp * 0.15, px + Math.cos(an + 0.3) * lp, py + Math.sin(an + 0.3) * lp); g.stroke(); });
         g.globalAlpha = 1; } }
-    // skin: the palm's creases
-    { const a = on(0.05 * k, 3, 40 * H); if (a > 0.01) { g.globalAlpha = a * 0.55; g.strokeStyle = 'rgb(160,108,90)'; g.lineWidth = Math.max(1, 0.0009 * k); const r = rnd(21);
-        for (let i = 0; i < 40; i++) { const x0 = (r() - 0.5) * 0.06, y0 = (r() - 0.5) * 0.06, L = 0.004 + r() * 0.03, an = r() * 3.14; g.beginPath(); g.moveTo(X(x0), Y(y0)); g.quadraticCurveTo(X(x0 + Math.cos(an) * L * 0.5 + 0.002), Y(y0 + Math.sin(an) * L * 0.5), X(x0 + Math.cos(an) * L), Y(y0 + Math.sin(an) * L)); g.stroke(); }
+    // the person, lying on the grass, palm up (the origin is the middle of the right palm)
+    { const a = on(1.8 * k, 3, 200 * H); if (a > 0.01) { g.globalAlpha = a; const SK = [226, 178, 150], SH = [196, 68, 62], JE = [52, 66, 104], lw = w => Math.max(1, w * k), rgb = (c, f) => 'rgb(' + c.map(v => Math.min(255, Math.round(v * f))).join(',') + ')';
+        const limb = (pts, w, c) => { g.lineCap = 'round'; g.lineJoin = 'round'; [[1, 0.62], [0.55, 1.12], [0.18, 1.32]].forEach(([wf, f], i) => { g.strokeStyle = rgb(c, f); g.lineWidth = lw(w * wf); g.beginPath(); pts.forEach((p, j) => { const ox = i ? -w * 0.12 * i : 0, oy = i ? w * 0.12 * i : 0; j ? g.lineTo(X(p[0] + ox), Y(p[1] + oy)) : g.moveTo(X(p[0] + ox), Y(p[1] + oy)); }); g.stroke(); }); };
+        const ARMR = [[-0.62, 0.33], [-0.33, 0.2]], FORR = [[-0.33, 0.2], [-0.07, 0.04]], ARML = [[-1.08, 0.33], [-1.3, 0.12]], FORL = [[-1.3, 0.12], [-1.38, -0.12]], LEGR = [[-0.75, -0.12], [-0.7, -0.55], [-0.62, -0.9]], LEGL = [[-0.95, -0.12], [-1.0, -0.55], [-1.05, -0.9]];
+        // a soft shadow on the grass
+        g.save(); try { g.filter = 'blur(' + Math.min(30, Math.max(1, 0.035 * k)).toFixed(1) + 'px)'; } catch (e) {} g.globalAlpha = a * 0.3; g.translate(0.05 * k, 0.05 * k); g.strokeStyle = '#0d1a08'; g.lineCap = 'round'; g.lineJoin = 'round';
+        [[ARMR.concat(FORR, [[0.03, -0.02]]), 0.13], [ARML.concat(FORL, [[-1.4, -0.22]]), 0.13], [LEGR, 0.17], [LEGL, 0.17], [[[-0.85, 0.32], [-0.85, -0.12]], 0.5], [[[-0.85, 0.56], [-0.85, 0.57]], 0.24]].forEach(([p, w]) => { g.lineWidth = lw(w); g.beginPath(); p.forEach((q, i) => i ? g.lineTo(X(q[0]), Y(q[1])) : g.moveTo(X(q[0]), Y(q[1]))); g.stroke(); });
+        g.restore(); g.globalAlpha = a;
+        // legs and shoes
+        limb(LEGL, 0.16, JE); limb(LEGR, 0.16, JE);
+        if (k > 60) { g.strokeStyle = 'rgba(200,170,90,0.6)'; g.lineWidth = lw(0.004); [LEGL, LEGR].forEach(L => { g.beginPath(); L.forEach((p, i) => i ? g.lineTo(X(p[0] + 0.05), Y(p[1])) : g.moveTo(X(p[0] + 0.05), Y(p[1]))); g.stroke(); }); }
+        [[-1.05, -0.92, -0.08], [-0.62, -0.92, 0.12]].forEach(([x, y, tilt]) => { g.save(); g.translate(X(x), Y(y)); g.rotate(tilt); const gr = g.createLinearGradient(-0.06 * k, 0, 0.06 * k, 0); gr.addColorStop(0, '#d8d8d8'); gr.addColorStop(0.5, '#ffffff'); gr.addColorStop(1, '#c4c4c4'); g.fillStyle = gr; g.beginPath(); g.ellipse(0, 0.06 * k, 0.055 * k, 0.11 * k, 0, 0, 6.2832); g.fill(); g.fillStyle = 'rgba(60,60,70,0.7)'; g.beginPath(); g.ellipse(0, 0.12 * k, 0.05 * k, 0.03 * k, 0, 0, 6.2832); g.fill(); g.restore(); });
+        // torso: a T-shirt with soft folds
+        { const x0 = X(-1.09), y0 = Y(0.4), w = 0.48 * k, h = 0.58 * k, gr = g.createLinearGradient(x0, 0, x0 + w, 0); gr.addColorStop(0, rgb(SH, 0.7)); gr.addColorStop(0.45, rgb(SH, 1.12)); gr.addColorStop(1, rgb(SH, 0.68)); g.fillStyle = gr; g.beginPath(); if (g.roundRect) g.roundRect(x0, y0, w, h, 0.14 * k); else g.rect(x0, y0, w, h); g.fill();
+          if (k > 40) { g.strokeStyle = rgb(SH, 0.62); g.lineWidth = lw(0.006); g.lineCap = 'round'; [[-1.0, 0.25, -0.93, 0.05], [-0.72, 0.28, -0.78, 0.02], [-0.9, -0.05, -0.8, -0.1]].forEach(([a1, b1, a2, b2]) => { g.beginPath(); g.moveTo(X(a1), Y(b1)); g.quadraticCurveTo(X((a1 + a2) / 2 + 0.03), Y((b1 + b2) / 2), X(a2), Y(b2)); g.stroke(); }); } }
+        // arms: sleeves, then skin
+        limb(ARMR, 0.13, SH); limb(ARML, 0.13, SH); limb(FORR, 0.085, SK); limb(FORL, 0.085, SK);
+        // hands; the right one palm up, with fingers
+        const hand = (cx0, cy0, dir, palmUp) => { const ux = Math.cos(dir), uy = Math.sin(dir), vx = -uy, vy = ux;
+          [-1.5, -0.5, 0.5, 1.5].forEach((q, i) => { const bx = cx0 + ux * 0.035 + vx * q * 0.018, by = cy0 + uy * 0.035 + vy * q * 0.018, L = [0.065, 0.078, 0.075, 0.06][i]; limb([[bx, by], [bx + ux * L, by + uy * L]], 0.018, SK); });
+          limb([[cx0 + vx * 0.04 - ux * 0.01, cy0 + vy * 0.04 - uy * 0.01], [cx0 + vx * 0.07 + ux * 0.03, cy0 + vy * 0.07 + uy * 0.03]], 0.022, SK);
+          const gr = g.createRadialGradient(X(cx0 - ux * 0.01), Y(cy0 - uy * 0.01), 0.01 * k, X(cx0), Y(cy0), 0.07 * k); gr.addColorStop(0, palmUp ? 'rgb(238,192,168)' : rgb(SK, 1.04)); gr.addColorStop(1, palmUp ? 'rgb(214,160,138)' : rgb(SK, 0.88)); g.fillStyle = gr; g.beginPath(); g.ellipse(X(cx0), Y(cy0), 0.06 * k, 0.045 * k, -dir, 0, 6.2832); g.fill();
+          if (palmUp && 0.06 * k > 12 && 0.05 * k < 0.95 * H) { g.save(); g.beginPath(); g.ellipse(X(cx0), Y(cy0), 0.06 * k, 0.045 * k, -dir, 0, 6.2832); g.clip(); g.strokeStyle = 'rgba(150,90,76,0.6)'; g.lineWidth = Math.max(0.8, 0.0012 * k); g.lineCap = 'round';
+            [[[-0.04, 0.025], [0.0, 0.01], [0.045, 0.02]], [[-0.045, -0.002], [0.0, -0.015], [0.045, -0.01]], [[-0.025, 0.04], [-0.02, 0.0], [-0.008, -0.045]]].forEach(P => { const T = q => [cx0 + q[0] * ux - q[1] * uy, cy0 + q[0] * uy + q[1] * ux]; const p0 = T(P[0]), p1 = T(P[1]), p2 = T(P[2]); g.beginPath(); g.moveTo(X(p0[0]), Y(p0[1])); g.quadraticCurveTo(X(p1[0]), Y(p1[1]), X(p2[0]), Y(p2[1])); g.stroke(); }); g.restore(); } };
+        hand(0, 0, -0.52, true); hand(-1.39, -0.19, -1.75, false);
+        // head: hair, face, closed eyes
+        { const hx = X(-0.85), hy = Y(0.56), r = 0.105 * k; g.fillStyle = 'rgb(48,32,24)'; g.beginPath(); g.ellipse(hx, hy - r * 0.18, r * 1.08, r * 1.1, 0, 0, 6.2832); g.fill();
+          const gr = g.createRadialGradient(hx - r * 0.3, hy - r * 0.1, r * 0.1, hx, hy + r * 0.1, r * 1.05); gr.addColorStop(0, rgb(SK, 1.12)); gr.addColorStop(1, rgb(SK, 0.8)); g.fillStyle = gr; g.beginPath(); g.ellipse(hx, hy + r * 0.12, r * 0.86, r * 0.98, 0, 0, 6.2832); g.fill();
+          g.fillStyle = 'rgb(48,32,24)'; g.beginPath(); g.ellipse(hx, hy - r * 0.62, r * 0.92, r * 0.42, 0, Math.PI, 2 * Math.PI); g.fill();
+          if (r > 14) { g.strokeStyle = 'rgba(90,50,40,0.8)'; g.lineWidth = Math.max(1, r * 0.04); g.lineCap = 'round'; [-1, 1].forEach(s => { g.beginPath(); g.arc(hx + s * r * 0.33, hy + r * 0.02, r * 0.16, 0.2, Math.PI - 0.2); g.stroke(); });
+            g.fillStyle = 'rgba(150,90,70,0.35)'; g.beginPath(); g.ellipse(hx + r * 0.05, hy + r * 0.3, r * 0.1, r * 0.17, 0, 0, 6.2832); g.fill(); g.strokeStyle = 'rgba(170,80,80,0.8)'; g.beginPath(); g.arc(hx, hy + r * 0.48, r * 0.2, 0.3, Math.PI - 0.3); g.stroke(); } }
         g.globalAlpha = 1; } }
-    // tissue: neighbouring cells
+    // skin: the palm's friction ridges, their sweat pores, and the deep creases
+    { const a = on(0.05 * k, 3, 40 * H); if (a > 0.01) { g.globalAlpha = a;
+        // soft mottling
+        lighter(() => { const r = rnd(5); for (let i = 0; i < 18; i++) { const x = (r() - 0.5) * 0.08, y = (r() - 0.5) * 0.08; glowAt(X(x), Y(y), (0.006 + r() * 0.015) * k, r() < 0.5 ? '40,20,10' : '30,10,20', 0.05); } });
+        const sp = 0.45e-3, spx = sp * k, ra = ss(2.2, 6, spx) * (1 - 0.75 * ss(60, 220, spx));
+        if (ra > 0.01) { const ylo = (cy - H - 20) / k, yhi = (cy + 20) / k, xlo = (-cx - 20) / k, xhi = (W - cx + 20) / k, ridge = (c, x) => c + 0.0016 * Math.sin(x / 0.006 + c * 140) + 0.0008 * Math.sin(x / 0.0021 + c * 37);
+          const n0 = Math.floor((ylo - 0.003) / sp), n1 = Math.ceil((yhi + 0.003) / sp), step = Math.max(sp * 0.3, 3 / k);
+          for (let n = n0; n <= n1; n++) { const c = n * sp; g.globalAlpha = a * ra;
+            g.strokeStyle = 'rgba(150,96,80,0.55)'; g.lineWidth = Math.min(16, Math.max(0.7, spx * 0.32)); g.beginPath(); for (let x = xlo; x <= xhi; x += step) { const y = ridge(c + sp * 0.5, x); x === xlo ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke();
+            g.strokeStyle = 'rgba(246,206,184,0.5)'; g.lineWidth = Math.min(10, Math.max(0.6, spx * 0.22)); g.beginPath(); for (let x = xlo; x <= xhi; x += step) { const y = ridge(c, x) + sp * 0.06; x === xlo ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke();
+            if (spx > 9) { g.fillStyle = 'rgba(110,64,56,' + (0.7 * (1 - 0.7 * ss(40, 160, spx))) + ')'; const pr = rnd(n * 13 + 7); for (let x = Math.ceil(xlo / 0.0005) * 0.0005; x <= xhi; x += 0.0005) { const jx = x + (pr() - 0.5) * 0.0002; g.beginPath(); g.arc(X(jx), Y(ridge(c, jx)), Math.max(0.8, 0.045e-3 * k), 0, 6.2832); g.fill(); } } } }
+        g.globalAlpha = a * ss(0.55 * H, 0.95 * H, 0.05 * k); g.lineCap = 'round';
+        [[[-0.05, 0.03], [0.0, 0.012], [0.05, 0.022]], [[-0.05, -0.005], [0.0, -0.018], [0.05, -0.012]], [[-0.03, 0.05], [-0.022, 0.0], [-0.01, -0.06]]].forEach(P => {
+          [[0.0016, 'rgba(120,70,60,0.55)'], [0.0006, 'rgba(90,45,40,0.6)']].forEach(([w, col]) => { g.strokeStyle = col; g.lineWidth = Math.max(1, w * k); g.beginPath(); g.moveTo(X(P[0][0]), Y(P[0][1])); g.quadraticCurveTo(X(P[1][0]), Y(P[1][1]), X(P[2][0]), Y(P[2][1])); g.stroke(); }); });
+        g.globalAlpha = 1; } }
+    // tissue: the neighbouring cells, each shaded and a little different
     { const a = on(4.6e-4 * k, 6, 200 * H); if (a > 0.01) { TISSUE.forEach(([x, y, s, ph]) => { const R = CELL_R * s, rp = R * k; if (X(x) < -rp || X(x) > W + rp || Y(y) < -rp || Y(y) > H + rp) return; const fade = a * (1 - ss(3.2e-4, 4.6e-4, Math.hypot(x, y)));
-        g.globalAlpha = fade; if (rp < 4) { g.fillStyle = 'rgba(176,120,150,0.6)'; g.beginPath(); g.arc(X(x), Y(y), Math.max(0.6, rp * 0.4), 0, 6.2832); g.fill(); return; }
-        blob(X(x), Y(y), R, k, Math.floor(ph * 1000), 28); g.fillStyle = 'rgba(240,212,214,0.9)'; g.fill(); g.strokeStyle = 'rgba(150,90,110,0.8)'; g.lineWidth = Math.max(0.8, 0.25e-6 * k); g.stroke();
-        g.fillStyle = 'rgba(110,80,160,0.75)'; g.beginPath(); g.arc(X(x + Math.cos(ph) * 1.5e-6), Y(y + Math.sin(ph) * 1.5e-6), 3.1e-6 * s * k, 0, 6.2832); g.fill(); }); g.globalAlpha = 1; } }
-    // our cell
-    { const a = on(2 * CELL_R * k, 4, 100 * H); if (a > 0.01) { g.globalAlpha = a;
-        blob(X(CELL_C[0]), Y(CELL_C[1]), CELL_R, k, 77); g.fillStyle = 'rgb(240,212,214)'; g.fill(); g.strokeStyle = 'rgb(150,90,110)'; g.lineWidth = Math.max(1, 0.3e-6 * k); g.stroke();
-        g.strokeStyle = 'rgba(190,120,150,0.55)'; g.lineWidth = Math.max(0.8, 0.12e-6 * k); for (let i = 0; i < 5; i++) { g.beginPath(); for (let j = 0; j <= 60; j++) { const tt = j / 60 * 5.2 + i * 0.4, rr = (4.2e-6 + i * 0.55e-6) * (1 + 0.05 * Math.sin(tt * 9 + i)); const x = Math.cos(tt) * rr, y = Math.sin(tt) * rr; j ? g.lineTo(X(x), Y(y)) : g.moveTo(X(x), Y(y)); } g.stroke(); }
-        MITO.forEach(([x, y, an, L]) => { g.save(); g.translate(X(x), Y(y)); g.rotate(an); g.fillStyle = 'rgb(232,140,104)'; g.beginPath(); g.ellipse(0, 0, L * k, 0.32e-6 * k + 0.5, 0, 0, 6.2832); g.fill(); g.strokeStyle = 'rgba(150,60,40,0.7)'; g.lineWidth = Math.max(0.6, 0.06e-6 * k); g.beginPath(); for (let i = -3; i <= 3; i++) { g.moveTo(i * L * k * 0.25, -0.25e-6 * k); g.lineTo(i * L * k * 0.25 + 0.1e-6 * k, 0.25e-6 * k); } g.stroke(); g.restore(); });
-        const r = rnd(8); g.fillStyle = 'rgba(120,60,90,0.6)'; for (let i = 0; i < 260; i++) { const tt = r() * 6.283, d = (0.36 + r() * 0.6) * CELL_R; g.beginPath(); g.arc(X(CELL_C[0] + Math.cos(tt) * d), Y(CELL_C[1] + Math.sin(tt) * d), Math.max(0.6, 0.05e-6 * k), 0, 6.2832); g.fill(); }
-        g.fillStyle = 'rgb(62,46,104)'; g.beginPath(); g.arc(X(0), Y(0), 3.2e-6 * k, 0, 6.2832); g.fill(); g.strokeStyle = 'rgba(40,28,70,0.9)'; g.lineWidth = Math.max(1, 0.15e-6 * k); g.stroke();
-        g.fillStyle = 'rgba(30,20,60,0.85)'; g.beginPath(); g.arc(X(1.3e-6), Y(1.0e-6), 0.9e-6 * k, 0, 6.2832); g.fill();
+        g.globalAlpha = fade; const px = X(x), py = Y(y), tone = 0.92 + 0.12 * Math.sin(ph * 3);
+        if (rp < 4) { g.fillStyle = 'rgba(176,120,150,0.6)'; g.beginPath(); g.arc(px, py, Math.max(0.6, rp * 0.4), 0, 6.2832); g.fill(); return; }
+        blob(px, py, R, k, Math.floor(ph * 1000), 28);
+        if (rp > 10) { const gr = g.createRadialGradient(px - rp * 0.3, py - rp * 0.3, rp * 0.1, px, py, rp); gr.addColorStop(0, 'rgb(' + [250, 228, 230].map(v => Math.min(255, Math.round(v * tone))) + ')'); gr.addColorStop(1, 'rgb(' + [224, 180, 192].map(v => Math.round(v * tone)) + ')'); g.fillStyle = gr; } else g.fillStyle = 'rgba(240,212,214,0.95)';
+        g.fill(); g.strokeStyle = 'rgba(140,80,104,0.85)'; g.lineWidth = Math.max(0.8, 0.28e-6 * k); g.stroke();
+        const nr = 3.1e-6 * s * k, nx = X(x + Math.cos(ph) * 1.5e-6), ny = Y(y + Math.sin(ph) * 1.5e-6); g.drawImage(sphere('110,80,170'), nx - nr, ny - nr, 2 * nr, 2 * nr);
+        if (rp > 30) { g.fillStyle = 'rgba(232,140,104,0.8)'; for (let q = 0; q < 6; q++) { const aa = ph * 7 + q * 1.05, d = R * (0.55 + 0.25 * Math.sin(q + ph)); g.beginPath(); g.ellipse(X(x + Math.cos(aa) * d), Y(y + Math.sin(aa) * d), 0.7e-6 * k, 0.28e-6 * k, aa, 0, 6.2832); g.fill(); } } }); g.globalAlpha = 1; } }
+    // our cell: membrane, cytoplasm, rough ER with ribosomes, the Golgi, mitochondria, vesicles, the cytoskeleton, and the nucleus with its pores
+    { const a = on(2 * CELL_R * k, 4, 100 * H); if (a > 0.01) { g.globalAlpha = a; const ccx = X(CELL_C[0]), ccy = Y(CELL_C[1]), cr = CELL_R * k;
+        blob(ccx, ccy, CELL_R, k, 77); { const gr = g.createRadialGradient(ccx - cr * 0.3, ccy - cr * 0.35, cr * 0.1, ccx, ccy, cr * 1.05); gr.addColorStop(0, 'rgb(250,232,234)'); gr.addColorStop(0.7, 'rgb(240,210,216)'); gr.addColorStop(1, 'rgb(222,174,188)'); g.fillStyle = gr; g.fill(); }
+        g.strokeStyle = 'rgb(132,74,98)'; g.lineWidth = Math.max(1.2, 0.3e-6 * k); g.stroke();
+        if (cr > 80) { g.save(); g.translate(ccx, ccy); g.scale(0.985, 0.985); blob(0, 0, CELL_R, k, 77); g.restore(); g.strokeStyle = 'rgba(255,240,245,0.75)'; g.lineWidth = Math.max(0.8, 0.12e-6 * k); g.stroke(); }
+        // cytoskeleton
+        g.strokeStyle = 'rgba(170,120,150,0.18)'; g.lineWidth = Math.max(0.5, 0.03e-6 * k); CYTO.forEach(([an, bend]) => { g.beginPath(); g.moveTo(X(Math.cos(an) * 3.4e-6), Y(Math.sin(an) * 3.4e-6)); g.quadraticCurveTo(X(Math.cos(an + bend) * 7e-6), Y(Math.sin(an + bend) * 7e-6), X(CELL_C[0] + Math.cos(an) * CELL_R * 0.95), Y(CELL_C[1] + Math.sin(an) * CELL_R * 0.95)); g.stroke(); });
+        // rough endoplasmic reticulum: folded ribbons studded with ribosomes
+        for (let i = 0; i < 5; i++) { const pts = []; for (let j = 0; j <= 70; j++) { const tt = j / 70 * 4.6 + i * 0.45 - 0.6, rr = (4.1e-6 + i * 0.55e-6) * (1 + 0.06 * Math.sin(tt * 9 + i)); pts.push([Math.cos(tt) * rr, Math.sin(tt) * rr]); }
+          g.lineCap = 'round'; g.lineJoin = 'round'; [[0.28e-6, 'rgba(206,140,170,0.7)'], [0.14e-6, 'rgba(246,214,226,0.9)']].forEach(([w, col]) => { g.strokeStyle = col; g.lineWidth = Math.max(0.8, w * k); g.beginPath(); pts.forEach((p, j) => j ? g.lineTo(X(p[0]), Y(p[1])) : g.moveTo(X(p[0]), Y(p[1]))); g.stroke(); });
+          if (0.14e-6 * k > 1.5) { g.fillStyle = 'rgba(110,50,90,0.85)'; pts.forEach((p, j) => { if (j % 2) return; const d = Math.hypot(p[0], p[1]), o = 0.16e-6; g.beginPath(); g.arc(X(p[0] * (1 + o / d)), Y(p[1] * (1 + o / d)), Math.max(0.6, 0.04e-6 * k), 0, 6.2832); g.fill(); }); } }
+        // the Golgi apparatus: a stack of curved sacs, budding vesicles
+        { const gx = 6.4e-6, gy = 2.6e-6; for (let i = 0; i < 6; i++) { const r0 = (1.3 + i * 0.22) * 1e-6; g.strokeStyle = i % 2 ? 'rgba(232,170,90,0.85)' : 'rgba(214,140,70,0.85)'; g.lineWidth = Math.max(1, 0.13e-6 * k); g.lineCap = 'round'; g.beginPath(); g.arc(X(gx - r0 * 0.9), Y(gy), r0 * k, -0.7, 0.7); g.stroke(); }
+          const vr = rnd(4); for (let i = 0; i < 9; i++) { const rr = 0.18e-6 + vr() * 0.12e-6, x = gx + 0.6e-6 + vr() * 1.4e-6, y = gy + (vr() - 0.5) * 2.4e-6, p = rr * k; g.drawImage(sphere('236,180,110'), X(x) - p, Y(y) - p, 2 * p, 2 * p); } }
+        // mitochondria
+        MITO.forEach(([x, y, an, L]) => { g.save(); g.translate(X(x), Y(y)); g.rotate(-an); const w = 0.34e-6 * k + 0.5, l = L * k; const gr = g.createLinearGradient(0, -w, 0, w); gr.addColorStop(0, 'rgb(246,170,128)'); gr.addColorStop(0.5, 'rgb(232,128,96)'); gr.addColorStop(1, 'rgb(186,86,66)'); g.fillStyle = gr; g.beginPath(); g.ellipse(0, 0, l, w, 0, 0, 6.2832); g.fill();
+          g.strokeStyle = 'rgba(140,50,40,0.85)'; g.lineWidth = Math.max(0.6, 0.05e-6 * k); g.stroke(); if (l > 8) { g.strokeStyle = 'rgba(255,214,190,0.75)'; g.lineWidth = Math.max(0.6, 0.06e-6 * k); g.beginPath(); for (let q = 0; q <= 40; q++) { const u = q / 40 * 2 - 1, xx = u * l * 0.85, yy = Math.sin(q * 1.2) * w * 0.6 * Math.sqrt(1 - u * u); q ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke(); } g.restore(); });
+        // lysosomes and vesicles
+        VES.forEach(([x, y, r, c]) => { const p = Math.max(0.8, r * k); g.drawImage(sphere(c), X(x) - p, Y(y) - p, 2 * p, 2 * p); });
+        // free ribosomes
+        { const r = rnd(8); g.fillStyle = 'rgba(120,60,90,0.6)'; for (let i = 0; i < 260; i++) { const tt = r() * 6.283, d = (0.36 + r() * 0.6) * CELL_R; g.beginPath(); g.arc(X(CELL_C[0] + Math.cos(tt) * d), Y(CELL_C[1] + Math.sin(tt) * d), Math.max(0.6, 0.05e-6 * k), 0, 6.2832); g.fill(); } }
+        // the nucleus: chromatin speckle, a double envelope with pores, a nucleolus
+        { const nr = 3.2e-6 * k, gr = g.createRadialGradient(X(-0.8e-6), Y(0.9e-6), nr * 0.1, X(0), Y(0), nr); gr.addColorStop(0, 'rgb(96,74,150)'); gr.addColorStop(0.75, 'rgb(66,48,110)'); gr.addColorStop(1, 'rgb(48,34,84)'); g.fillStyle = gr; g.beginPath(); g.arc(X(0), Y(0), nr, 0, 6.2832); g.fill();
+          if (nr > 30) { const r = rnd(66); g.fillStyle = 'rgba(150,120,210,0.35)'; for (let i = 0; i < 240; i++) { const rr = Math.sqrt(r()) * 3.0e-6, th = r() * 6.283; g.beginPath(); g.arc(X(Math.cos(th) * rr), Y(Math.sin(th) * rr), Math.max(0.6, (0.06 + r() * 0.1) * 1e-6 * k), 0, 6.2832); g.fill(); } }
+          g.strokeStyle = 'rgba(36,24,66,0.95)'; g.lineWidth = Math.max(1, 0.12e-6 * k); g.beginPath(); g.arc(X(0), Y(0), nr, 0, 6.2832); g.stroke(); g.strokeStyle = 'rgba(150,120,210,0.6)'; g.lineWidth = Math.max(0.6, 0.05e-6 * k); g.beginPath(); g.arc(X(0), Y(0), nr * 1.035, 0, 6.2832); g.stroke();
+          if (nr > 40) { g.fillStyle = 'rgba(250,236,244,0.95)'; const np = Math.min(160, Math.floor(nr * 6.28 / 10)); for (let i = 0; i < np; i++) { const th = i / np * 6.2832; g.beginPath(); g.arc(X(0) + Math.cos(th) * nr * 1.017, Y(0) + Math.sin(th) * nr * 1.017, Math.max(0.7, 0.045e-6 * k), 0, 6.2832); g.fill(); } }
+          const ox = X(1.3e-6), oy = Y(1.0e-6), orr = 0.9e-6 * k, g2 = g.createRadialGradient(ox, oy, 0, ox, oy, orr); g2.addColorStop(0, 'rgba(20,12,40,0.95)'); g2.addColorStop(0.7, 'rgba(34,22,64,0.9)'); g2.addColorStop(1, 'rgba(60,44,104,0)'); g.fillStyle = g2; g.beginPath(); g.arc(ox, oy, orr, 0, 6.2832); g.fill(); }
         g.globalAlpha = 1; } }
     // ---- the opening scales, drawn with more care: quantum foam, quarks and gluons, the nucleus, the atom's cloud, DNA, chromatin, a chromosome ----
-    const lighter = f => { g.globalCompositeOperation = 'lighter'; f(); g.globalCompositeOperation = 'source-over'; };
-    const glowAt = (x, y, r, c, al) => { if (r < 0.4 || al <= 0) return; if (r > 4 * (W + H)) { const d = Math.min(1, Math.hypot(x - cx, y - cy) / r); g.fillStyle = 'rgba(' + c + ',' + (al * (1 - d) * (1 - d)) + ')'; g.fillRect(0, 0, W, H); return; }
-      const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(' + c + ',' + al + ')'); gr.addColorStop(0.35, 'rgba(' + c + ',' + (al * 0.45) + ')'); gr.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); };
     // quantum foam: a faint, drifting shimmer behind everything smaller than the atom
     { const a = 1 - ss(-14.2, -12.8, e); if (a > 0.01) { const f = foam(), s = 640 * (1 + 0.2 * Math.sin(t * 0.21)), ox = (t * 9) % s, oy = (t * 6) % s; g.globalAlpha = 0.07 * a; lighter(() => { for (let x = -s; x < W + s; x += s) for (let y = -s; y < H + s; y += s) g.drawImage(f, x - ox, y - oy, s, s); }); g.globalAlpha = 1; } }
 
