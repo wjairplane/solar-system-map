@@ -5285,6 +5285,29 @@ const JR = (function () {
   /* ---------- the drawn scales: world units are metres, the screen centre is the quark at the origin ---------- */
   const qPos = [[0, 0, '255,90,90', 'up'], [-0.62e-15, 0.18e-15, '90,230,120', 'up'], [-0.35e-15, -0.52e-15, '100,150,255', 'down']], PC = [-0.323e-15, -0.113e-15], RN = 0.84e-15;
   const NUC = (() => { const r = rnd(12), a = [[0, 0, 0, 1]]; for (let i = 0; i < 11; i++) { const y = 1 - (i + 0.5) / 11 * 2, rr = Math.sqrt(1 - y * y), t = i * 2.39996; a.push([Math.cos(t) * rr * 1.55 * RN, y * 1.55 * RN, Math.sin(t) * rr, i < 5 ? 1 : 0]); } return a.sort((p, q) => p[2] - q[2]); })();
+  const gaussR = r => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(6.2832 * r());
+  const BASES = ['255,120,110', '110,200,255', '255,210,90', '140,230,140'];
+  // a shaded sphere, drawn once per colour and reused as a sprite
+  const SPH = {};
+  function sphere(col) {
+    if (SPH[col]) return SPH[col];
+    const c = document.createElement('canvas'); c.width = c.height = 96; const x = c.getContext('2d'), v = col.split(',').map(Number), m = f => v.map(q => Math.min(255, Math.round(q * f))).join(',');
+    const gr = x.createRadialGradient(36, 32, 3, 48, 48, 48); gr.addColorStop(0, 'rgb(' + m(1.55) + ')'); gr.addColorStop(0.25, 'rgb(' + m(1.1) + ')'); gr.addColorStop(0.75, 'rgb(' + m(0.6) + ')'); gr.addColorStop(1, 'rgb(' + m(0.28) + ')');
+    x.fillStyle = gr; x.beginPath(); x.arc(48, 48, 47, 0, 6.2832); x.fill();
+    const sp = x.createRadialGradient(33, 29, 0, 33, 29, 16); sp.addColorStop(0, 'rgba(255,255,255,0.75)'); sp.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = sp; x.beginPath(); x.arc(33, 29, 16, 0, 6.2832); x.fill();
+    const rim = x.createRadialGradient(48, 48, 38, 48, 48, 48); rim.addColorStop(0, 'rgba(255,255,255,0)'); rim.addColorStop(1, 'rgba(' + m(1.3) + ',0.35)'); x.fillStyle = rim; x.beginPath(); x.arc(48, 48, 47, 0, 6.2832); x.fill();
+    return (SPH[col] = c);
+  }
+  // quantum foam: soft blobs on a tile that wraps seamlessly
+  let FOAM = null;
+  function foam() {
+    if (FOAM) return FOAM; const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'), r = rnd(3);
+    for (let i = 0; i < 90; i++) { const px = r() * 256, py = r() * 256, rr = 6 + r() * 30, col = r() < 0.5 ? '120,140,255' : r() < 0.5 ? '255,140,200' : '140,230,255';
+      for (const dx of [-256, 0, 256]) for (const dy of [-256, 0, 256]) { const gr = x.createRadialGradient(px + dx, py + dy, 0, px + dx, py + dy, rr); gr.addColorStop(0, 'rgba(' + col + ',0.35)'); gr.addColorStop(1, 'rgba(' + col + ',0)'); x.fillStyle = gr; x.beginPath(); x.arc(px + dx, py + dy, rr, 0, 6.2832); x.fill(); } }
+    return (FOAM = c);
+  }
+  // a chromosome's coiled fibre: [position along (-1..1), across (-1..1), loop radius m, shade], alternating between the two chromatids
+  const CHROMO = (() => { const r = rnd(17), a = []; for (let i = 0; i < 1800; i++) a.push([2 * r() - 1, gaussR(r) * 0.45, (0.05 + r() * 0.08) * 1e-6, r()]); return a; })();
   const CELL_C = [1.8e-6, -1.2e-6], CELL_R = 1e-5;
   const MITO = (() => { const r = rnd(5), a = []; while (a.length < 14) { const t = r() * 6.283, d = (0.42 + r() * 0.48) * CELL_R; a.push([CELL_C[0] + Math.cos(t) * d, CELL_C[1] + Math.sin(t) * d, r() * 3.14, 0.7e-6 + r() * 0.6e-6]); } return a; })();
   const TISSUE = (() => { const a = [], r = rnd(9), s = 2.1e-5; for (let i = -22; i <= 22; i++) for (let j = -22; j <= 22; j++) { const x = CELL_C[0] + (i + (j % 2) * 0.5) * s + (r() - 0.5) * 4e-6, y = CELL_C[1] + j * s * 0.87 + (r() - 0.5) * 4e-6; if ((i || j) && Math.hypot(x, y) < 4.6e-4) a.push([x, y, 0.8 + r() * 0.35, r() * 6.28]); } return a; })();
@@ -5334,41 +5357,91 @@ const JR = (function () {
         g.fillStyle = 'rgb(62,46,104)'; g.beginPath(); g.arc(X(0), Y(0), 3.2e-6 * k, 0, 6.2832); g.fill(); g.strokeStyle = 'rgba(40,28,70,0.9)'; g.lineWidth = Math.max(1, 0.15e-6 * k); g.stroke();
         g.fillStyle = 'rgba(30,20,60,0.85)'; g.beginPath(); g.arc(X(1.3e-6), Y(1.0e-6), 0.9e-6 * k, 0, 6.2832); g.fill();
         g.globalAlpha = 1; } }
-    // chromatin fibres and a chromosome (the DNA sits at its waist)
-    { const a = on(2.4e-6 * k, 4, 80 * H); if (a > 0.01) { g.globalAlpha = a;
-        const r = rnd(41); g.strokeStyle = 'rgba(170,140,230,0.35)'; g.lineWidth = Math.max(0.6, 0.03e-6 * k); for (let i = 0; i < 70; i++) { let x = (r() - 0.5) * 6e-6, y = (r() - 0.5) * 6e-6; if (Math.hypot(x, y) > 3.1e-6) continue; g.beginPath(); g.moveTo(X(x), Y(y)); for (let j = 0; j < 12; j++) { x += (r() - 0.5) * 0.5e-6; y += (r() - 0.5) * 0.5e-6; g.lineTo(X(x), Y(y)); } g.stroke(); }
-        [0.32, -0.32].forEach(an => { g.save(); g.translate(X(0), Y(0)); g.rotate(an); const L = 1.25e-6 * k, w = 0.32e-6 * k; const gr = g.createLinearGradient(-w, 0, w, 0); gr.addColorStop(0, 'rgb(120,80,190)'); gr.addColorStop(0.5, 'rgb(190,150,250)'); gr.addColorStop(1, 'rgb(120,80,190)'); g.fillStyle = gr; g.beginPath(); if (g.roundRect) g.roundRect(-w, -L, 2 * w, 2 * L, w); else g.rect(-w, -L, 2 * w, 2 * L); g.fill();
-          g.fillStyle = 'rgba(70,40,120,0.45)'; for (let b = -5; b <= 5; b++) if (b) g.fillRect(-w, b * L / 6 - 0.03e-6 * k, 2 * w, 0.06e-6 * k + 0.5); g.restore(); });
+    // ---- the opening scales, drawn with more care: quantum foam, quarks and gluons, the nucleus, the atom's cloud, DNA, chromatin, a chromosome ----
+    const lighter = f => { g.globalCompositeOperation = 'lighter'; f(); g.globalCompositeOperation = 'source-over'; };
+    const glowAt = (x, y, r, c, al) => { if (r < 0.4 || al <= 0) return; if (r > 4 * (W + H)) { const d = Math.min(1, Math.hypot(x - cx, y - cy) / r); g.fillStyle = 'rgba(' + c + ',' + (al * (1 - d) * (1 - d)) + ')'; g.fillRect(0, 0, W, H); return; }
+      const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(' + c + ',' + al + ')'); gr.addColorStop(0.35, 'rgba(' + c + ',' + (al * 0.45) + ')'); gr.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); };
+    // quantum foam: a faint, drifting shimmer behind everything smaller than the atom
+    { const a = 1 - ss(-14.2, -12.8, e); if (a > 0.01) { const f = foam(), s = 640 * (1 + 0.2 * Math.sin(t * 0.21)), ox = (t * 9) % s, oy = (t * 6) % s; g.globalAlpha = 0.07 * a; lighter(() => { for (let x = -s; x < W + s; x += s) for (let y = -s; y < H + s; y += s) g.drawImage(f, x - ox, y - oy, s, s); }); g.globalAlpha = 1; } }
+
+    // a chromosome: two sister chromatids joined at the waist where our DNA lies, each a rod of tightly coiled fibre
+    { const a = on(2.4e-6 * k, 4, 5 * H); if (a > 0.01) { g.globalAlpha = a;
+        const L = 1.25e-6, w = 0.24e-6; lighter(() => glowAt(X(0), Y(0), 2.0e-6 * k, '150,110,255', 0.22));
+        [0.45, -0.45].forEach((an, side) => { g.save(); g.translate(X(0), Y(0)); g.rotate(-an); const Lp = L * k, wp = w * k;
+          const path = () => { g.beginPath(); if (g.roundRect) g.roundRect(-wp, -Lp, 2 * wp, 2 * Lp, wp); else g.rect(-wp, -Lp, 2 * wp, 2 * Lp); };
+          const gr = g.createLinearGradient(-wp, 0, wp, 0); gr.addColorStop(0, 'rgb(84,52,150)'); gr.addColorStop(0.45, 'rgb(170,130,240)'); gr.addColorStop(1, 'rgb(70,40,130)'); path(); g.fillStyle = gr; g.fill();
+          g.save(); path(); g.clip();
+          CHROMO.forEach(([u, v, r, sh], i) => { if ((i & 1) !== side) return; const x = Math.max(-1, Math.min(1, v * 1.6)) * wp * 0.9, y = u * Lp, rp = Math.max(0.6, r * 0.3 * k), b = 0.6 + 0.4 * sh;
+            g.strokeStyle = 'rgba(' + Math.round(215 * b) + ',' + Math.round(190 * b) + ',255,0.22)'; g.lineWidth = Math.max(0.5, rp * 0.35); g.beginPath(); g.arc(x, y, rp, sh * 6, sh * 6 + 4.2); g.stroke(); });
+          for (let b = -6; b <= 6; b++) if (b) { g.fillStyle = 'rgba(40,20,90,' + (0.18 + 0.12 * (Math.abs(b) % 2)) + ')'; g.fillRect(-wp, b * Lp / 7 - 0.035e-6 * k, 2 * wp, 0.07e-6 * k + 0.5); }
+          g.restore(); path(); g.strokeStyle = 'rgba(220,200,255,0.5)'; g.lineWidth = 1; g.stroke(); g.restore(); });
         g.globalAlpha = 1; } }
-    // DNA, with our carbon atom on the backbone at the origin
-    { const a = on(2e-9 * k, 2, 4 * H); if (a > 0.01) { g.globalAlpha = a; const P = 3.4e-9, R = 1e-9, x0 = -18e-9, x1 = 18e-9, ar = 0.075e-9 * k;
-        const y1 = x => R * Math.sin(2 * Math.PI * x / P), y2 = x => R * Math.sin(2 * Math.PI * x / P + 2.3), z1 = x => Math.cos(2 * Math.PI * x / P), z2 = x => Math.cos(2 * Math.PI * x / P + 2.3);
-        const BP = ['255,120,110', '110,200,255', '255,210,90', '140,230,140'];
-        for (let x = x0; x <= x1; x += 0.34e-9) { const i = Math.round(x / 0.34e-9) & 3; g.strokeStyle = 'rgba(' + BP[i] + ',0.75)'; g.lineWidth = Math.min(14, Math.max(1, 0.06e-9 * k)); g.beginPath(); g.moveTo(X(x), Y(y1(x))); g.lineTo(X(x), Y(y2(x))); g.stroke(); }
-        const strand = (yf, zf, col) => { if (ar < 1.5) { g.strokeStyle = 'rgb(' + col + ')'; g.lineWidth = Math.max(1, 0.2e-9 * k); g.beginPath(); for (let x = x0; x <= x1; x += 0.05e-9) x === x0 ? g.moveTo(X(x), Y(yf(x))) : g.lineTo(X(x), Y(yf(x))); g.stroke(); return; }
-          for (let x = x0; x <= x1 + 1e-12; x += 0.13e-9) { const z = zf(x), c = col.split(',').map(v => Math.round(v * (0.55 + 0.45 * (z + 1) / 2))); g.fillStyle = 'rgb(' + c + ')'; g.beginPath(); g.arc(X(x), Y(yf(x)), ar, 0, 6.2832); g.fill(); } };
-        strand(y2, z2, '120,170,255'); strand(y1, z1, '240,200,140');
+    // chromatin: DNA wrapped twice around histone spools (nucleosomes), like beads on a string; our stretch of DNA is the linker at the origin
+    { const a = on(11e-9 * k, 3, 0.7 * H) * ss(1.2, 2.6, 2.4e-6 * k / H); if (a > 0.01) { g.globalAlpha = a;
+        const pathY = x => 18e-9 * Math.sin(x / 55e-9) + 7e-9 * Math.sin(x / 17e-9 + 1);
+        g.strokeStyle = 'rgba(150,190,255,0.85)'; g.lineWidth = Math.min(4, Math.max(1, 2e-9 * k)); g.beginPath(); for (let x = -900e-9; x <= 900e-9; x += 3e-9) { const y = pathY(x) - pathY(0); x === -900e-9 ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke();
+        for (let n = -45; n <= 45; n++) { const x = (n + 0.5) * 20e-9, y = pathY(x) - pathY(0) + (n % 2 ? 4e-9 : -4e-9), R = 5.5e-9, px = X(x), py = Y(y), rp = Math.max(1, R * k);
+          if (px < -rp || px > W + rp || py < -rp || py > H + rp) continue; g.drawImage(sphere('214,150,120'), px - rp, py - rp, 2 * rp, 2 * rp);
+          if (rp > 6) { g.strokeStyle = 'rgba(150,190,255,0.9)'; g.lineWidth = Math.max(1, 2e-9 * k); g.beginPath(); g.ellipse(px, py, rp * 1.05, rp * 0.55, 0.3, 0, 6.2832); g.stroke(); g.beginPath(); g.ellipse(px, py, rp * 1.05, rp * 0.55, -0.25, 0, 6.2832); g.stroke(); } }
         g.globalAlpha = 1; } }
-    // the carbon atom: a cloud of probability around the nucleus
-    { const R = 0.7e-10, a = on(R * k, 3); if (a > 0.01) { const px = X(PC[0]), py = Y(PC[1]), rp = R * k, A = a * (1 - 0.6 * ss(3 * H, 30 * H, rp));
-        g.globalCompositeOperation = 'lighter';
-        const glow = (x, y, r, c, al) => { if (r < 0.5) return; if (r > 4 * (W + H)) { const d = Math.min(1, Math.hypot(x - cx, y - cy) / r); g.fillStyle = 'rgba(' + c + ',' + (al * (1 - d)) + ')'; g.fillRect(0, 0, W, H); return; } const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(' + c + ',' + al + ')'); gr.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); };
-        glow(px, py, rp * 0.25, '140,190,255', 0.5 * A); glow(px, py, rp * 1.1, '80,130,255', 0.18 * A);
-        [[1, 0], [0, 1]].forEach(([u, v]) => [1, -1].forEach(s => glow(px + u * s * rp * 0.48, py - v * s * rp * 0.48, rp * 0.5, '120,170,255', 0.22 * A)));
-        const r = Math.random; g.fillStyle = 'rgba(200,225,255,' + (0.7 * A) + ')'; for (let i = 0; i < 26; i++) { const rr = Math.abs(Math.sqrt(-2 * Math.log(r() + 1e-9)) * Math.cos(6.283 * r())) * rp * 0.45, th = r() * 6.283; g.beginPath(); g.arc(px + Math.cos(th) * rr, py + Math.sin(th) * rr, 1.3, 0, 6.2832); g.fill(); }
-        g.globalCompositeOperation = 'source-over'; } }
-    // the carbon nucleus: six protons, six neutrons; our proton at its centre
+    // DNA: shaded atoms, sorted by depth. Sugar–phosphate backbones outside, base pairs inside; our carbon atom sits on a backbone at the origin.
+    { const a = on(2e-9 * k, 2, 4 * H); if (a > 0.01) { g.globalAlpha = a; const P = 3.4e-9, R = 1e-9, ar = 0.075e-9 * k, x0 = Math.max(-18e-9, (-cx - 40) / k), x1 = Math.min(18e-9, (W - cx + 40) / k), w = 2 * Math.PI / P;
+        if (ar < 1.6) { // far: two ribbons and the rungs
+          const rib = (ph, col) => { g.strokeStyle = 'rgb(' + col + ')'; g.lineWidth = Math.max(1.2, 0.35e-9 * k); g.lineCap = 'round'; g.beginPath(); for (let x = x0; x <= x1; x += 0.08e-9) { const y = R * Math.sin(w * x + ph); x === x0 ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke(); };
+          for (let x = Math.ceil(x0 / 0.34e-9) * 0.34e-9; x <= x1; x += 0.34e-9) { const i = Math.round(x / 0.34e-9) & 3; g.strokeStyle = 'rgba(' + BASES[i] + ',0.8)'; g.lineWidth = Math.max(1, 0.12e-9 * k); g.beginPath(); g.moveTo(X(x), Y(R * Math.sin(w * x))); g.lineTo(X(x), Y(R * Math.sin(w * x + 2.3))); g.stroke(); }
+          rib(2.3, '110,160,240'); rib(0, '236,190,120');
+        } else { // near: every atom
+          const A = []; const push = (x, y, z, col, s) => A.push([x, y, z, col, s]);
+          for (let x = Math.ceil(x0 / 0.13e-9) * 0.13e-9; x <= x1; x += 0.13e-9) { const n = Math.round(x / 0.13e-9), c1 = n % 3 === 0 ? '235,150,80' : '245,215,160', c2 = n % 3 === 0 ? '235,150,80' : '170,200,255';
+            push(x, R * Math.sin(w * x), Math.cos(w * x), c1, 1); push(x, R * Math.sin(w * x + 2.3), Math.cos(w * x + 2.3), c2, 1); }
+          for (let x = Math.ceil(x0 / 0.34e-9) * 0.34e-9; x <= x1; x += 0.34e-9) { const i = Math.round(x / 0.34e-9) & 3, ya = R * Math.sin(w * x), yb = R * Math.sin(w * x + 2.3), za = Math.cos(w * x), zb = Math.cos(w * x + 2.3);
+            for (let s = 1; s <= 5; s++) { const u = s / 6; push(x + 0.04e-9 * Math.sin(s), ya + (yb - ya) * u, za + (zb - za) * u, s < 3 ? BASES[i] : s > 3 ? BASES[i ^ 1] : '230,230,240', 0.82); } }
+          A.sort((p, q) => p[2] - q[2]);
+          A.forEach(([x, y, z, col, s]) => { const rp = ar * s * (0.85 + 0.15 * z), px = X(x), py = Y(y); if (px < -rp || px > W + rp || py < -rp || py > H + rp) return; g.globalAlpha = a * (0.45 + 0.55 * (z + 1) / 2); g.drawImage(sphere(col), px - rp, py - rp, 2 * rp, 2 * rp); });
+          g.globalAlpha = a; lighter(() => glowAt(X(0), Y(0), ar * 2.2, '255,230,170', 0.35));
+        }
+        g.globalAlpha = 1; } }
+    // the carbon atom: 1s, 2s and 2p orbitals as glowing clouds, with electrons caught as flickers
+    { const R = 0.7e-10, a = on(R * k, 3); if (a > 0.01) { const px = X(PC[0]), py = Y(PC[1]), rp = R * k, A = a * (1 - 0.93 * ss(1.5 * H, 10 * H, rp));
+        lighter(() => {
+          glowAt(px, py, rp * 1.25, '70,110,230', 0.16 * A); glowAt(px, py, rp * 0.62, '90,190,220', 0.14 * A); glowAt(px, py, rp * 0.16, '210,230,255', 0.75 * A);
+          if (rp < 4 * (W + H)) [[0, 1.0], [Math.PI / 2, 1.0], [0.6, 0.55]].forEach(([an, sc], i) => { g.save(); g.translate(px, py); g.rotate(an + t * 0.05); g.scale(1, 0.55);
+            [1, -1].forEach(sg => { const lx = sg * rp * 0.5 * sc, gr = g.createRadialGradient(lx, 0, 0, lx, 0, rp * 0.5); gr.addColorStop(0, 'rgba(' + (i === 2 ? '170,140,255' : '120,170,255') + ',' + (0.24 * A) + ')'); gr.addColorStop(1, 'rgba(110,150,255,0)'); g.fillStyle = gr; g.beginPath(); g.arc(lx, 0, rp * 0.5, 0, 6.2832); g.fill(); }); g.restore(); });
+          const r = Math.random; for (let i = 0; i < 160; i++) { let x, y; const which = r(); if (which < 0.25) { const rr = Math.abs(gaussR(r)) * rp * 0.08, th = r() * 6.283; x = Math.cos(th) * rr; y = Math.sin(th) * rr; } else { const an = which < 0.5 ? 0 : which < 0.75 ? Math.PI / 2 : 0.6 + t * 0.05, sg = r() < 0.5 ? 1 : -1, d = rp * (0.5 + gaussR(r) * 0.17), q = gaussR(r) * rp * 0.14; x = Math.cos(an) * sg * d - Math.sin(an) * q * 0.55; y = Math.sin(an) * sg * d + Math.cos(an) * q * 0.55; }
+            const sx = px + x, sy = py + y; if (sx < -4 || sx > W + 4 || sy < -4 || sy > H + 4) continue; g.fillStyle = 'rgba(210,230,255,' + (0.55 * A * r()) + ')'; g.fillRect(sx - 0.9, sy - 0.9, 1.8, 1.8); } });
+        const nr = 2.6 * RN * k; if (nr < 3) { lighter(() => glowAt(px, py, 7, '255,200,150', 0.9 * a)); g.fillStyle = 'rgba(255,235,210,' + a + ')'; g.beginPath(); g.arc(px, py, 1.4, 0, 6.2832); g.fill(); }
+        // pointers that make the emptiness visible
+        const lab = ss(-13.6, -13.1, e) * (1 - ss(-10.9, -10.4, e)); if (lab > 0.02) { g.globalAlpha = lab; g.font = '500 12px ' + FONT; g.fillStyle = 'rgba(255,225,190,0.95)'; g.strokeStyle = 'rgba(255,225,190,0.6)'; g.lineWidth = 1;
+          g.beginPath(); g.moveTo(px + 6, py - 6); g.lineTo(px + 48, py - 48); g.stroke(); g.fillText('the nucleus: almost all the mass, in a speck', px + 52, py - 52);
+          if (rp < 0.45 * H) { g.setLineDash([3, 5]); g.strokeStyle = 'rgba(160,190,255,0.5)'; g.beginPath(); g.arc(px, py, rp, 0, 6.2832); g.stroke(); g.setLineDash([]); g.fillStyle = 'rgba(170,200,255,0.9)'; g.fillText('the electron cloud', px + rp * 0.72 + 6, py + rp * 0.72 + 14); }
+          g.globalAlpha = 1; } } }
+    // the carbon nucleus: six protons and six neutrons, quivering; our proton at its centre
     { const a = on(2.6 * RN * k, 1.5, 40 * H); if (a > 0.01) { const pd = ss(8, 40, RN * k);
-        NUC.forEach(([x, y, z, prot], i) => { if (i === NUC.length - 1 && false) return; const isC = x === 0 && y === 0; const rp = Math.max(0.6, RN * k), px = X(PC[0] + x), py = Y(PC[1] + y);
-          g.globalAlpha = a * (isC ? 1 - 0.85 * pd : 1); const gr = g.createRadialGradient(px - rp * 0.35, py - rp * 0.35, rp * 0.1, px, py, rp); const c = prot ? [232, 102, 74] : [138, 155, 184]; gr.addColorStop(0, 'rgb(' + c.map(v => Math.min(255, v + 60)) + ')'); gr.addColorStop(1, 'rgb(' + c.map(v => v * 0.45 | 0) + ')'); g.fillStyle = gr; g.beginPath(); g.arc(px, py, rp, 0, 6.2832); g.fill(); });
+        lighter(() => glowAt(X(PC[0]), Y(PC[1]), 3.4 * RN * k, '255,170,120', 0.22 * a * (1 - 0.8 * pd)));
+        NUC.forEach(([x, y, z, prot], i) => { const isC = x === 0 && y === 0, jx = isC ? 0 : 0.05 * RN * Math.sin(t * 3.1 + i * 1.7), jy = isC ? 0 : 0.05 * RN * Math.cos(t * 2.7 + i * 2.3), rp = Math.max(0.8, RN * k * (0.94 + 0.06 * z)), px = X(PC[0] + x + jx), py = Y(PC[1] + y + jy);
+          g.globalAlpha = a * (isC ? 1 - pd : 1 - 0.92 * ss(250, 900, RN * k)) * (0.7 + 0.3 * (z + 1) / 2); g.drawImage(sphere(prot ? '236,104,82' : '140,160,200'), px - rp, py - rp, 2 * rp, 2 * rp); });
         g.globalAlpha = 1; } }
-    // inside the proton: three quarks joined by gluon strings
-    { const a = ss(8, 40, RN * k); if (a > 0.01) { const P = qPos.map(([x, y, c, n], i) => [X(x + 0.035e-15 * Math.sin(t * 1.3 + i * 2)), Y(y + 0.035e-15 * Math.cos(t * 1.1 + i)), c, n]);
-        g.globalAlpha = a; const gr0 = g.createRadialGradient(X(PC[0]), Y(PC[1]), 0, X(PC[0]), Y(PC[1]), RN * k * 1.15); gr0.addColorStop(0, 'rgba(255,160,90,0.28)'); gr0.addColorStop(0.8, 'rgba(255,120,70,0.12)'); gr0.addColorStop(1, 'rgba(255,120,70,0)'); g.fillStyle = gr0; g.beginPath(); g.arc(X(PC[0]), Y(PC[1]), RN * k * 1.15, 0, 6.2832); g.fill();
-        g.strokeStyle = 'rgba(255,240,200,0.6)'; g.lineWidth = Math.min(5, Math.max(1, 0.012e-15 * k)); [[0, 1], [1, 2], [2, 0]].forEach(([i, j]) => { const A = P[i], B = P[j], dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L, amp = Math.min(22, Math.max(1.5, 0.025e-15 * k)); g.beginPath(); for (let s = 0; s <= 80; s++) { const u = s / 80, w = Math.sin(u * 40 - t * 8) * amp * Math.sin(u * Math.PI); const x = A[0] + dx * u + nx * w, y = A[1] + dy * u + ny * w; s ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); });
-        g.globalCompositeOperation = 'lighter'; P.forEach(([x, y, c]) => { const rq = Math.min(H * 0.16, Math.max(4, 0.09e-15 * k)); const gr = g.createRadialGradient(x, y, 0, x, y, rq); gr.addColorStop(0, 'rgba(255,255,255,0.95)'); gr.addColorStop(0.25, 'rgba(' + c + ',0.9)'); gr.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, rq, 0, 6.2832); g.fill(); }); g.globalCompositeOperation = 'source-over';
-        if (RN * k > 150) { g.font = '600 13px ' + FONT; g.fillStyle = 'rgba(255,255,255,0.85)'; g.textAlign = 'center'; P.forEach(([x, y, c, n]) => { const rq = Math.min(H * 0.16, Math.max(4, 0.09e-15 * k)); if (x > -50 && x < W + 50 && y > -50 && y < H + 50) g.fillText(n + ' quark', x, y + rq * 0.55 + 16); }); g.textAlign = 'left'; }
+    // inside the proton: three valence quarks in a sea of gluons and fleeting quark–antiquark pairs
+    { const a = ss(8, 40, RN * k); if (a > 0.01) { g.globalAlpha = a;
+        const pcx = X(PC[0]), pcy = Y(PC[1]), prp = RN * k;
+        lighter(() => { glowAt(pcx, pcy, prp * 1.2, '200,60,90', 0.13); glowAt(pcx, pcy, prp * 0.55, '255,170,120', 0.07); });
+        const P = qPos.map(([x, y, c, n], i) => [X(x + 0.04e-15 * Math.sin(t * 1.3 + i * 2)), Y(y + 0.04e-15 * Math.cos(t * 1.1 + i)), c, n]);
+        lighter(() => {
+          // gluon flux tubes: a few twisted strands per pair, coloured from one quark's charge to the other's
+          [[0, 1], [1, 2], [2, 0]].forEach(([i, j]) => { const A = P[i], B = P[j], dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
+            const gr = g.createLinearGradient(A[0], A[1], B[0], B[1]); gr.addColorStop(0, 'rgba(' + A[2] + ',0.55)'); gr.addColorStop(0.5, 'rgba(255,240,210,0.65)'); gr.addColorStop(1, 'rgba(' + B[2] + ',0.55)');
+            for (let s = 0; s < 3; s++) { const amp = Math.min(18, Math.max(1.5, 0.022e-15 * k)) * (0.6 + 0.4 * s), ph = s * 2.1; g.strokeStyle = gr; g.lineWidth = Math.min(3.2, Math.max(0.8, 0.006e-15 * k)) * (s ? 0.7 : 1.3); g.beginPath();
+              for (let q = 0; q <= 90; q++) { const u = q / 90, wv = Math.sin(u * 30 - t * 7 + ph) * amp * Math.sin(u * Math.PI), x = A[0] + dx * u + nx * wv, y = A[1] + dy * u + ny * wv; q ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); } });
+          // the sea: quark–antiquark pairs that appear and vanish
+          for (let i = 0; i < 14; i++) { const life = 1.6, ph = (t / life + i * 0.37) % 1, cyc = Math.floor(t / life + i * 0.37), r = rnd(cyc * 31 + i * 7), rr = Math.sqrt(r()) * 0.8 * RN, th = r() * 6.283, x0 = PC[0] + Math.cos(th) * rr, y0 = PC[1] + Math.sin(th) * rr, sep = 0.08e-15 * Math.sin(ph * Math.PI), dir = r() * 6.283, al = Math.sin(ph * Math.PI) * 0.8;
+            const cc = ['255,110,110', '110,240,140', '120,160,255'][i % 3]; [1, -1].forEach(sg => { const x = X(x0 + Math.cos(dir) * sep * sg), y = Y(y0 + Math.sin(dir) * sep * sg); glowAt(x, y, Math.max(2, 0.025e-15 * k), sg > 0 ? cc : '230,230,255', al * 0.6); }); }
+          // the valence quarks themselves
+          P.forEach(([x, y, c], i) => { const rq = Math.min(H * 0.16, Math.max(5, 0.09e-15 * k)) * (1 + 0.06 * Math.sin(t * 4 + i)); glowAt(x, y, rq * 2.2, c, 0.35); const gr = g.createRadialGradient(x, y, 0, x, y, rq); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.18, 'rgba(255,255,255,0.9)'); gr.addColorStop(0.4, 'rgba(' + c + ',0.85)'); gr.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, rq, 0, 6.2832); g.fill(); });
+        });
+        if (RN * k > 150) { g.font = '600 13px ' + FONT; g.textAlign = 'center'; g.shadowColor = 'rgba(0,0,0,0.9)'; g.shadowBlur = 6; P.forEach(([x, y, c, n]) => { const rq = Math.min(H * 0.16, Math.max(5, 0.09e-15 * k)); if (x > -50 && x < W + 50 && y > -50 && y < H + 50) { g.fillStyle = 'rgba(' + c + ',1)'; g.fillText(n + ' quark', x, y + rq * 0.45 + 18); } }); g.shadowBlur = 0; g.textAlign = 'left'; }
         g.globalAlpha = 1; } }
+    // a soft vignette, so the drawn scenes sit in the frame like the 3D view does
+    { const gr = g.createRadialGradient(cx, cy, Math.min(W, H) * 0.45, cx, cy, Math.hypot(W, H) * 0.62); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,' + (0.42 - 0.3 * ss(-4.5, -3, e)) + ')'); g.fillStyle = gr; g.fillRect(0, 0, W, H); }
   }
 
   /* ---------- controls and captions ---------- */
