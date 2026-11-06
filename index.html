@@ -288,7 +288,7 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
         <details class="group fold" id="craftFold"><summary><h2>Spacecraft <span class="count" id="craftCount"></span></h2></summary><div class="chips" id="craftChips"></div><p class="hint">Double-click a spacecraft twice to see a model of it at true size.</p></details>
         <details class="group fold" id="satFold"><summary><h2>Earth satellites <span class="count" id="satCount"></span></h2></summary><div class="chips" id="satChips"></div><p class="hint" id="satHint"></p><p class="hint">The dots around Earth are Starlink, OneWeb, GPS, GLONASS, Galileo, BeiDou and the geostationary belt.</p></details>
         <details class="group fold" id="galFold"><summary><h2>Galaxies <span class="count" id="galCount"></span></h2></summary><div class="chips" id="galChips"></div><p class="hint">Zoom far out in 3D, or use the Go to presets in View, to travel from the nearest stars to the edge of the observable universe.</p></details>
-        <details class="group fold" id="starFold"><summary><h2>Stars <span class="count" id="starCount"></span></h2></summary><div class="sublabel">Brightest in the sky</div><div class="chips" id="starChips"></div><div class="sublabel" style="margin-top:8px">Nearest to the Sun</div><div class="chips" id="nearChips"></div><p class="hint">In the sky view, click any named star. In 3D, zoom far out to see the nearest stars at their real distances.</p></details>
+        <details class="group fold" id="starFold"><summary><h2>Stars <span class="count" id="starCount"></span></h2></summary><div class="sublabel">Brightest in the sky</div><div class="chips" id="starChips"></div><div class="sublabel" style="margin-top:8px">Nearest to the Sun</div><div class="chips" id="nearChips"></div><div class="sublabel" style="margin-top:8px">Nearby star clusters</div><div class="chips" id="clusterChips"></div><p class="hint">In the sky view, click any named star. In 3D, zoom far out to see the nearest stars at their real distances.</p></details>
       </section>
 
       <section class="panel" role="tabpanel" id="p-view" aria-labelledby="tab-view" hidden>
@@ -446,6 +446,7 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
     </div>
 
     <details class="more about"><summary>About this model</summary>
+      <p class="fine">Nearby clusters: distances from Gaia-era studies, and their member stars in the Hipparcos catalogue are moved to that distance (Hipparcos put the Pleiades about 10% too close); sizes and ages approximate. The ball of stars around the Sun is every Hipparcos star within about 1,000 light years; it fades at the edge because that is where the catalogue stops, not where stars stop.</p>
       <p class="fine">Beyond the stars: the Milky Way is a model built from measured sizes (bar, arms, Orion Spur; Sun 26,670 light years from the centre, GRAVITY 2019). Other galaxies: measured distances (Updated Nearby Galaxy Catalog, Karachentsev et al. 2013, via HEASARC; orientations from RC3). Large-scale structure: the 6dF Galaxy Survey (Jones et al. 2009) and the SDSS main galaxy sample (DR7, via MPA-JHU) for the nearer universe and SDSS-III BOSS DR12 for the far, with redshifts turned into distances for a flat universe with H₀ = 70 and Ωm = 0.3. The edge of the observable universe is drawn at 46.5 billion light years, wearing the WMAP map of the cosmic microwave background.</p>
       <p class="fine">Stars: HYG database v4.1 (Hipparcos, Yale, Gliese; CC BY-SA 4.0). Radii are estimates from brightness and colour. Satellites: current element sets from CelesTrak (celestrak.org), copied daily to this project's tle-data branch on GitHub, propagated with SGP4 by satellite.js; for dates far from the download, or offline, real orbit sizes and tilts with illustrative positions. The Oort cloud is drawn as theory describes it; none of its bodies has been seen there. Sky maps: Haslam 408 MHz (Remazeilles 2015), WMAP 9-year ILC, IRAS/IRIS 100 µm, Finkbeiner 2003 H-alpha (all via NASA LAMBDA), ROSAT All-Sky Survey (Snowden 1997) and Fermi LAT (both via NASA SkyView).</p>
       <p class="fine">Years run from −3000 to 3000. Year 0 is 1 BC, and −43 is 44 BC. Dates use the Gregorian calendar and UT. Positions are most exact from 1800 to 2050.</p>
@@ -1409,7 +1410,7 @@ const COSMOS = (function () {
     const [name, ra, dec, dMly, type, dk, absmag, inc, pa] = r; if (!name || !(dMly > 0)) return;
     const key = name.toLowerCase(); if (seen.has(key) || /milky way/i.test(name)) return; seen.add(key);
     const u = eqDir(ra, dec), dist = dMly * 1e6, diam = Math.max(300, (dk || 1) * 1000);
-    list.push({ id: 'gx-' + key.replace(/[^a-z0-9]+/g, '-'), name, kind: 'galaxy', ra, dec, dist, type: type || '', diam, absmag: absmag === null || absmag === undefined ? null : absmag, inc, pa,
+    list.push({ id: 'gx-' + key.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''), name, kind: 'galaxy', ra, dec, dist, type: type || '', diam, absmag: absmag === null || absmag === undefined ? null : absmag, inc, pa,
       color: TYPE_COL(type || ''), radius: diam / 2 * LYK, u, p: at(u, dist) });
   });
   list.forEach(b => { E.BY_ID[b.id] = b; });
@@ -1422,9 +1423,25 @@ const COSMOS = (function () {
     ['Pisces–Perseus Supercluster', 25, 33, 2.5e8, 3e8, ''], ['Hercules Supercluster', 241, 17, 5e8, 3e8, ''], ['Shapley Supercluster', 202, -31, 6.5e8, 4e8, ''],
     ['Boötes Void', 218, 46, 7e8, 3.3e8, ''], ['Sloan Great Wall', 195, 2, 1.0e9, 1.4e9, '']
   ].map(([name, ra, dec, d, ext, note]) => { const u = ra === null ? null : eqDir(ra, dec); return { name, d, ext, note, p: u ? at(u, d) : null }; });
-  return { list, MW, GX, GY, GZ, R0, LYK, STRUCT, eqDir, at };
+  // The real open clusters and moving groups nearest the Sun. Distances from Gaia-era studies; radii, member counts and ages are approximate.
+  // [name, RA, Dec, distance ly, core radius ly, members, age (million years), note]
+  const CLUSTERS = [
+    ['Ursa Major moving group', 190, 56, 80, 15, 'about 20 bright stars', 414, 'Five of the Big Dipper’s seven stars are members, travelling through space together.'],
+    ['Hyades', 66.75, 15.87, 153, 10, 'several hundred', 625, 'The nearest open cluster. Its V of stars is the face of Taurus the bull (bright Aldebaran is not a member: it is in front).'],
+    ['Coma Star Cluster (Melotte 111)', 186.0, 26.1, 280, 12, 'about 150', 450, ''],
+    ['Pleiades (M45)', 56.75, 24.12, 444, 8, 'about 1,000', 110, 'The Seven Sisters: young blue stars passing through a dust cloud that reflects their light.'],
+    ['IC 2602 (Southern Pleiades)', 160.7, -64.4, 480, 6, 'about 300', 46, ''],
+    ['IC 2391', 130.1, -53.0, 490, 6, 'about 300', 50, ''],
+    ['Alpha Persei Cluster', 51.7, 49.0, 570, 12, 'about 700', 70, ''],
+    ['NGC 2451A', 115.7, -37.97, 620, 7, 'about 400', 50, ''],
+    ['Praesepe (M44, the Beehive)', 130.1, 19.67, 610, 10, 'about 1,000', 650, 'Seen by eye as a faint smudge in Cancer; Galileo was first to resolve it into stars.'],
+    ['Orion Nebula Cluster', 83.82, -5.39, 1344, 10, 'about 2,800', 2, 'Newborn: its stars are still lighting up the gas cloud they formed from.']
+  ].map(([name, ra, dec, d, rad, members, age, note]) => { const u = eqDir(ra, dec); return { id: 'cl-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''), name, kind: 'cluster', ra, dec, dist: d, rad, members, age, note,
+    color: age < 150 ? '#b9cdff' : '#ffe2b0', radius: rad * LYK, u, p: at(u, d) }; });
+  CLUSTERS.forEach(b => { E.BY_ID[b.id] = b; });
+  return { list, MW, GX, GY, GZ, R0, LYK, STRUCT, eqDir, at, CLUSTERS };
 })();
-{ const aug = Ext.augment; Ext.augment = st => { aug(st); COSMOS.list.forEach(g => { st.pos[g.id] = g.p; }); return st; }; }
+{ const aug = Ext.augment; Ext.augment = st => { aug(st); COSMOS.list.forEach(g => { st.pos[g.id] = g.p; }); COSMOS.CLUSTERS.forEach(g => { st.pos[g.id] = g.p; }); return st; }; }
 const ALL = [E.SUN, ...PLAN, E.MOON];
 const SPEEDS = [['1s', 1, '1 second'], ['1m', 60, '1 minute'], ['1h', 3600, '1 hour'], ['1d', 86400, '1 day'], ['10d', 864000, '10 days'],
   ['1mo', 2629800, '1 month'], ['1y', 31557600, '1 year'], ['10y', 315576000, '10 years'], ['100y', 3155760000, '100 years']];
@@ -1606,7 +1623,7 @@ function stepFly(now) {
 }
 const MOM = { vx: 0, vy: 0, mode: 0, t: 0 };
 function scaleFor(b) {
-  const r = b.rings ? b.rings[b.rings.length - 1][1] : b.id === 'sun' ? b.radius * 3.4 : b.radius * 3;
+  const r = b.rings ? b.rings[b.rings.length - 1][1] : b.id === 'sun' ? b.radius * 3.4 : b.kind === 'cluster' ? Math.max(b.radius * 1.6, 12 * 9.4607304725808e12) : b.radius * 3;
   return fit(Math.max(r, b.kind === 'comet' ? 4e4 : b.kind === 'asteroid' ? 40 : b.kind === 'craft' ? 3e6 : 1));
 }
 function goTo(b) {
@@ -1692,6 +1709,13 @@ function renderInfo(st) {
     add('Surface temperature', 'about ' + fmtN(Math.round(b.temp / 100) * 100) + ' K');
     add('Luminosity', (b.lum >= 10 ? fmtN(b.lum) : b.lum >= 0.01 ? b.lum.toFixed(2) : b.lum.toPrecision(2)) + '× the Sun (visible light)');
     add('Radius (estimate)', (b.radius / 695700 >= 10 ? fmtN(b.radius / 695700) : (b.radius / 695700).toFixed(b.radius / 695700 < 0.1 ? 3 : 2)) + '× the Sun');
+  } else if (b.kind === 'cluster') {
+    add('Type', /moving group/i.test(b.name) ? 'moving group: stars born together, now spread out' : b.age < 10 ? 'young open cluster, still forming' : 'open cluster');
+    add('Distance', fmtN(b.dist) + ' light years'); add('The light you see left it', 'around ' + yearLabel(E.jdToCal(S.jd).y - Math.round(b.dist)));
+    add('Size of its core', 'about ' + fmtN(b.rad * 2) + ' light years across'); add('Stars', b.members);
+    add('Age', fmtN(b.age) + ' million years (the Sun: 4,600)');
+    if (b.note) add('', b.note);
+    add('', 'The Sun is not in any cluster today. It was probably born in one that drifted apart billions of years ago.');
   } else if (b.kind === 'galaxy') {
     if (b.mw) {
       add('Type', 'barred spiral (SBbc)'); add('Stellar disc', 'about 100,000 light years across'); add('Stars', '100 to 400 billion');
@@ -1749,7 +1773,7 @@ function renderInfo(st) {
     add('Diameter vs Earth', (dKm / 12742).toFixed(2) + '×');
   }
   add('Drawn at this zoom', (px >= 10 ? fmtN(px) : px.toFixed(px < 0.1 ? 3 : 2)) + ' px wide');
-  const kindLabel = { moon: 'Moon of ' + (b.parent ? nm(b.parent) : ''), asteroid: 'Asteroid or dwarf planet', comet: 'Comet', craft: 'Spacecraft', sat: 'Earth satellite', galaxy: b.mw ? 'Our galaxy' : 'Galaxy', star: b.near ? 'Star · one of the nearest' : 'Star' }[b.kind];
+  const kindLabel = { moon: 'Moon of ' + (b.parent ? nm(b.parent) : ''), asteroid: 'Asteroid or dwarf planet', comet: 'Comet', craft: 'Spacecraft', sat: 'Earth satellite', galaxy: b.mw ? 'Our galaxy' : 'Galaxy', cluster: 'Star cluster', star: b.near ? 'Star · one of the nearest' : 'Star' }[b.kind];
   if (kindLabel) rows.unshift('<dt class="kind" style="grid-column:1/-1">' + kindLabel + '</dt>');
   $('info').innerHTML = '<div class="title"><span class="dot" style="background:' + b.color + '"></span>' + b.name + '</div>' + rows.join('');
 }
@@ -1829,7 +1853,8 @@ function buildUI() {
   $('starCount').textContent = Ext.STARS.length;
   { const G = COSMOS.list.slice(1).sort((a, c) => (a.absmag === null ? 0 : a.absmag) - (c.absmag === null ? 0 : c.absmag) || a.dist - c.dist).slice(0, 34);
     [COSMOS.MW].concat(G).forEach(g => chip(g.id, g.name, g.color, $('galChips'), () => { if (S.view === '2d' && V3.ok) setView('3d'); const gv = g.mw && V3.galaxyView ? V3.galaxyView() : {}; S.sel = g.id; S.preset = null; flyTo({ follow: g.id, scale: fit(g.radius * (g.mw ? 1.5 : 3)), yaw: gv.yaw, pitch: gv.pitch, dur: 2400 }); markChips(); markPresets(); }).classList.add('small'));
-    $('galCount').textContent = COSMOS.list.length; }
+    $('galCount').textContent = COSMOS.list.length;
+    COSMOS.CLUSTERS.forEach(c => chip(c.id, c.name, c.color, $('clusterChips'), () => { if (S.view === '2d' && V3.ok) setView('3d'); if (S.sky.on) { goTo(c); return; } S.sel = c.id; S.preset = null; flyTo({ follow: c.id, scale: fit(Math.max(c.rad * 1.6, 12) * COSMOS.LYK), dur: 2000 }); markChips(); markPresets(); }).classList.add('small')); }
   { const BN = ['', 'excellent dark site', 'truly dark site', 'rural sky', 'rural to suburban', 'suburban', 'bright suburban', 'suburban to urban', 'city sky', 'inner city'];
     const sb = () => { $('bortleOut').textContent = S.sky.bortle + ' · ' + BN[S.sky.bortle]; }; sb();
     $('bortle').addEventListener('input', e => { S.sky.bortle = +e.target.value; sb(); }); }
@@ -4207,13 +4232,32 @@ void main(){
   function buildLocalStars() {
     if (!DATA.localStars) return null;
     const u = decodeB64(DATA.localStars), dv = new DataView(u.buffer), n = u.length / 8, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), size = new Float32Array(n);
+    // Cluster members sit at their cluster's Gaia distance: Hipparcos parallaxes put some clusters (famously the Pleiades) about 10% too close.
+    // Members are the stars within the cluster's outline on the sky and within 25% of its distance; each is shifted by the same amount, keeping their spread.
+    const CL = COSMOS.CLUSTERS.map(c => { const r = c.ra * Math.PI / 180, d = c.dec * Math.PI / 180; return { c, u: [Math.cos(d) * Math.cos(r), Math.cos(d) * Math.sin(r), Math.sin(d)], cos: Math.cos(Math.atan(c.rad * 1.6 / c.dist)), sum: 0, k: 0 }; });
+    const R = new Float32Array(n * 3), memb = new Int8Array(n).fill(-1);
     for (let i = 0; i < n; i++) {
-      const o = i * 8, x = dv.getInt16(o, true) / 30, y = dv.getInt16(o + 2, true) / 30, z = dv.getInt16(o + 4, true) / 30, bv = u[o + 6] / 100 - 0.5, am = u[o + 7] / 10 - 10;
-      const e = E.equToEcl(x, y, z); pos[i * 3] = e[0]; pos[i * 3 + 1] = e[2]; pos[i * 3 + 2] = -e[1];
-      const c = bvRGB(bv), L = Math.min(1.6, Math.max(0.12, Math.pow(10, -0.4 * (am - 1.5)) * 0.5 + 0.12)); col.set([c[0] * L, c[1] * L, c[2] * L], i * 3);
-      size[i] = Math.max(1, Math.min(3.2, 2.6 - 0.18 * am));
+      const o = i * 8, x = dv.getInt16(o, true) / 30, y = dv.getInt16(o + 2, true) / 30, z = dv.getInt16(o + 4, true) / 30, r = Math.hypot(x, y, z); R[i * 3] = x; R[i * 3 + 1] = y; R[i * 3 + 2] = z;
+      CL.forEach((m, j) => { if (r > 0 && (x * m.u[0] + y * m.u[1] + z * m.u[2]) / r > m.cos && Math.abs(r - m.c.dist) < 0.25 * m.c.dist) { memb[i] = j; m.sum += r; m.k++; } });
     }
-    return cptObj(pos, col, size, true, LYU);
+    for (let i = 0; i < n; i++) {
+      let x = R[i * 3], y = R[i * 3 + 1], z = R[i * 3 + 2];
+      if (memb[i] >= 0) { const m = CL[memb[i]], r = Math.hypot(x, y, z), f = (r + m.c.dist - m.sum / m.k) / r; x *= f; y *= f; z *= f; }
+      const o = i * 8, bv = u[o + 6] / 100 - 0.5, am = u[o + 7] / 10 - 10;
+      const e = E.equToEcl(x, y, z); pos[i * 3] = e[0]; pos[i * 3 + 1] = e[2]; pos[i * 3 + 2] = -e[1];
+      // fade out toward the edge: it is where the catalogue stops, not where stars stop
+      const fd = 1 - smoothK(380, 975, Math.hypot(x, y, z)), c = bvRGB(bv); col.set([c[0] * fd, c[1] * fd, c[2] * fd], i * 3);
+      size[i] = am; // absolute magnitude: the shader works out how bright each star looks from wherever the camera is
+    }
+    const o = cptObj(pos, col, size, true, LYU);
+    o.material = new THREE.ShaderMaterial({ uniforms: { uPx: { value: 1 }, uK: { value: 1 }, uFixed: { value: 1 }, uScl: { value: 1 }, uPc: { value: 306601.4 } }, fragmentShader: CPT_FS, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: LOGV + `attribute vec3 color; attribute float aSize; uniform float uPx; uniform float uK; uniform float uPc; varying vec3 vC;
+void main(){ vec4 mv=modelViewMatrix*vec4(position,1.0); float dpc=max(-mv.z*uPc,0.01); float m=aSize+5.0*log(dpc)/2.302585-5.0;
+ float b=pow(10.0,-0.4*(m-6.0)); float base=min(1.6,max(0.12,pow(10.0,-0.4*(aSize-1.5))*0.5+0.12))*0.9; float L=max(base,min(2.6,0.06+0.55*sqrt(b)));
+ vC=color*L*uK; gl_PointSize=clamp((1.0+0.9*log(1.0+b))*uPx,1.0,8.0*uPx); gl_Position=projectionMatrix*mv;
+#include <logdepthbuf_vertex>
+}` });
+    return o;
   }
   // the Milky Way, built from what is known of its shape: a bar and bulge, an exponential disc, four main arms and the Orion Spur where the
   // Sun lives, and a halo of globular clusters. The layout is a model (no one has seen the galaxy from outside); its sizes are measured.
@@ -4379,6 +4423,15 @@ void main(){
         hits.push({ id: g.id, x: s.x, y: s.y, r: Math.max(Math.min(r, 300), 7) });
       });
     }
+    // the real star clusters near the Sun, outlined at their true size
+    if (ly > 12 && ly < 9000) COSMOS.CLUSTERS.forEach(c => {
+      const isSel = S.sel === c.id; if (!isSel && (c.dist > ly * 4 || c.dist < ly * 0.02)) return;
+      const cc = toScreen(F(c.p)); if (cc.z >= -camera.near) return; const s = proj(cc); if (s.x < -40 || s.x > W + 40 || s.y < -40 || s.y > H + 40) return;
+      const r = Math.max(6, c.rad * LYU / (Math.max(cc.length(), 1e-12) * TANH) * H / 2), col = c.age < 150 ? '170,195,255' : '255,214,160';
+      ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, 6.2832); ctx.setLineDash([4, 3]); ctx.lineWidth = isSel ? 1.8 : 1.2; ctx.strokeStyle = isSel ? 'rgba(' + GOLD + ',0.95)' : 'rgba(' + col + ',0.75)'; ctx.stroke(); ctx.setLineDash([]);
+      ctx.font = (isSel ? '600 ' : '500 ') + '11px ' + FONT; ctx.fillStyle = isSel ? '#fff' : 'rgba(' + col + ',0.95)'; lblDraw(ctx, c.name, lblPlace(ctx, c.name, s.x, s.y, r + 6, isSel)); lblBlock(s.x, s.y, Math.min(r, 30));
+      hits.push({ id: c.id, x: s.x, y: s.y, r: Math.min(r, 120) });
+    });
     // clusters, superclusters and voids
     ctx.font = caps; try { ctx.letterSpacing = '1.5px'; } catch (e) {}
     const m31 = E.BY_ID['gx-andromeda-m31'] || COSMOS.list.find(g => /M31/.test(g.name));
