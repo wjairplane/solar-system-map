@@ -4267,15 +4267,17 @@ void main(){ vec4 mv=modelViewMatrix*vec4(position,1.0); float dpc=max(-mv.z*uPc
     const R0 = COSMOS.R0, r = rngC(20260), P = [], C = [], Z = [];
     const add = (x, y, z, c, s) => { P.push(x, y, z); C.push(c[0], c[1], c[2]); Z.push(s); };
     const bar = 153 * Math.PI / 180, cb = Math.cos(bar), sb = Math.sin(bar);
-    for (let i = 0; i < 22000; i++) { const a = gaussC(r) * 5200, b = gaussC(r) * 2100, h = gaussC(r) * 1600; add(a * cb - b * sb, a * sb + b * cb, h, [1.0, 0.78, 0.52].map(v => v * 0.55), 520); }
-    for (let i = 0; i < 9000; i++) { const R = Math.abs(gaussC(r)) * 2600, t = r() * 2 * Math.PI, h = gaussC(r) * 1800; add(R * Math.cos(t), R * Math.sin(t), h, [1.0, 0.86, 0.62].map(v => v * 0.8), 420); }
-    for (let i = 0; i < 42000; i++) { const R = Math.min(60000, -8500 * Math.log(1 - r() * 0.999) + 2000), t = r() * 2 * Math.PI, h = gaussC(r) * 900 * (0.6 + R / 50000); add(R * Math.cos(t), R * Math.sin(t), h, [0.95, 0.88, 0.78].map(v => v * 0.32), 650); }
+    // the bar: about 30,000 light years end to end, at 27 degrees to the line from the Sun to the centre (Wegg et al. 2015), with old orange stars
+    for (let i = 0; i < 26000; i++) { const u = 2 * r() - 1, a = Math.sign(u) * Math.pow(Math.abs(u), 0.8) * 15500, w = 1 - 0.55 * Math.abs(a) / 15500, b = gaussC(r) * 2300 * w, h = gaussC(r) * 1000 * w; add(a * cb - b * sb, a * sb + b * cb, h, [1.0, 0.74, 0.46].map(v => v * 0.24), 240); }
+    // a small boxy bulge at the centre
+    for (let i = 0; i < 6000; i++) { const x = gaussC(r) * 2400, y = gaussC(r) * 1200, h = gaussC(r) * 1300; add(x * cb - y * sb, x * sb + y * cb, h, [1.0, 0.86, 0.62].map(v => v * 0.3), 260); }
+    for (let i = 0; i < 42000; i++) { const R = Math.min(60000, -8500 * Math.log(1 - r() * 0.999) + 2000), t = r() * 2 * Math.PI, h = gaussC(r) * 900 * (0.6 + R / 50000); add(R * Math.cos(t), R * Math.sin(t), h, [0.95, 0.88, 0.78].map(v => v * 0.32 * (0.25 + 0.75 * smoothK(4000, 14000, R))), 650); }
     MW_ARMS.forEach(([, j]) => {
-      const p0 = Math.PI + Math.log(11000 / armR(j, Math.PI)) / MW_PITCH, p1 = Math.PI + Math.log(60000 / armR(j, Math.PI)) / MW_PITCH;
-      for (let i = 0; i < 15000; i++) {
+      const major = j === -1 || j === 1, p0 = Math.PI + Math.log((major ? 15000 : 21000) / armR(j, Math.PI)) / MW_PITCH, p1 = Math.PI + Math.log(60000 / armR(j, Math.PI)) / MW_PITCH;
+      for (let i = 0, N = major ? 18000 : 10000; i < N; i++) {
         const phi = p0 + (p1 - p0) * Math.pow(r(), 0.85), R = armR(j, phi), w = 900 * Math.sqrt(R / R0), dr = gaussC(r) * w, t = phi + gaussC(r) * w * 0.6 / R, h = gaussC(r) * 380;
         const hii = r() < 0.07, c = hii ? [1.0, 0.42, 0.62] : r() < 0.5 ? [0.66, 0.78, 1.0] : [0.9, 0.92, 1.0];
-        add((R + dr) * Math.cos(t), (R + dr) * Math.sin(t), h, c.map(v => v * (hii ? 0.9 : 0.55)), hii ? 520 : 380);
+        add((R + dr) * Math.cos(t), (R + dr) * Math.sin(t), h, c.map(v => v * (hii ? 0.9 : major ? 0.55 : 0.4)), hii ? 520 : 380);
       }
     });
     for (let i = 0; i < 5000; i++) { const phi = Math.PI + (r() - 0.5) * 0.75, R = R0 * Math.exp(0.176 * (phi - Math.PI)) + gaussC(r) * 500, h = gaussC(r) * 300; add(R * Math.cos(phi), R * Math.sin(phi), h, [0.72, 0.82, 1.0].map(v => v * 0.5), 300); }
@@ -4293,6 +4295,7 @@ void main(){ vec4 mv=modelViewMatrix*vec4(position,1.0); float dpc=max(-mv.z*uPc
     for (let i = 0; i < n; i++) {
       let x, y, z, c = base, s = R * 0.09;
       if (spiral && i > n * 0.3) { const arm = i % 2, phi = r() * 3.2, rr = R * 0.18 * Math.exp(0.32 * phi) + gaussC(r) * R * 0.05, a = phi + arm * Math.PI; x = rr * Math.cos(a); y = rr * Math.sin(a); z = gaussC(r) * R * 0.02; c = r() < 0.08 ? [1.0, 0.45, 0.65] : [0.7, 0.8, 1.0]; }
+      else if (spiral && /^SB/.test(t) && i % 2) { x = (2 * r() - 1) * R * 0.38; y = gaussC(r) * R * 0.05; z = gaussC(r) * R * 0.04; c = [1.0, 0.8, 0.55]; }
       else if (spiral) { const rr = Math.abs(gaussC(r)) * R * 0.22, a = r() * 6.283; x = rr * Math.cos(a); y = rr * Math.sin(a); z = gaussC(r) * R * 0.08; c = [1.0, 0.82, 0.58]; }
       else if (irr) { const cl = Math.floor(r() * 5), ca = cl * 1.7, cr = R * 0.35 * ((cl * 37) % 7) / 7; x = cr * Math.cos(ca) + gaussC(r) * R * 0.3; y = cr * Math.sin(ca) * 0.6 + gaussC(r) * R * 0.2; z = gaussC(r) * R * 0.12; }
       else { const q = ell ? 0.75 : 0.85; x = gaussC(r) * R * 0.35; y = gaussC(r) * R * 0.35 * q; z = gaussC(r) * R * 0.3 * q; s = R * 0.12; }
@@ -4386,6 +4389,7 @@ void main(){
       const g = F(COSMOS.MW.p), q = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(sv(COSMOS.GX), sv(COSMOS.GY), sv(COSMOS.GZ)));
       const gp = (x, y) => g.clone().add(new THREE.Vector3(x, y, 0).applyQuaternion(q).multiplyScalar(LYU));
       lab(sp(g), 'GALACTIC CENTRE · SAGITTARIUS A*', 'rgba(255,214,160,0.9)', caps, false);
+      { const ba = 153 * Math.PI / 180; lab(sp(gp(-13500 * Math.cos(ba), -13500 * Math.sin(ba))), 'CENTRAL BAR', 'rgba(255,200,140,0.85)', caps, false); }
       MW_ARMS.forEach(([name, j]) => { const phi = Math.PI + (j === 2 ? 0.2 : j === -1 ? 2.2 : 0.75), R = armR(j, phi); lab(sp(gp(R * Math.cos(phi), R * Math.sin(phi))), name.toUpperCase(), 'rgba(170,195,255,0.8)', caps, false); });
       if (ly < 6e4) lab(sp(gp(-COSMOS.R0 + 600, -1800)), 'ORION SPUR', 'rgba(170,195,255,0.8)', caps, false);
     }
