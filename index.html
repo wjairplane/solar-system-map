@@ -41,6 +41,21 @@ button, input, select { font: inherit; color: inherit; }
 #cv.drag { cursor: grabbing; }
 
 .readout { position: absolute; top: 14px; left: 16px; pointer-events: none; }
+/* the scale journey */
+#jv { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+#jcap { position: absolute; top: 14px; left: 16px; max-width: min(30rem, calc(100% - 32px)); padding: 12px 16px 14px; background: rgba(7,10,18,0.78); border: 1px solid var(--line); border-radius: 12px; backdrop-filter: blur(6px); pointer-events: none; }
+#jcap[hidden], #jctl[hidden] { display: none; }
+#jcap .jpow { font: 400 clamp(2rem, 4.4vw, 3.2rem)/1 var(--display); color: var(--sun); }
+#jcap .jpow sup { font-size: 0.5em; vertical-align: 0.9em; margin-left: 1px; }
+#jcap .jlen { margin-top: 4px; font: 400 0.75rem var(--mono); color: var(--muted); }
+#jcap .jtitle { margin-top: 10px; font: 600 1.05rem var(--ui); }
+#jcap .jtext { margin-top: 4px; font-size: 0.86rem; color: var(--text); opacity: 0.88; }
+#jctl { position: absolute; left: 50%; transform: translateX(-50%); bottom: 84px; display: flex; gap: 8px; align-items: center; padding: 8px 10px; width: min(40rem, calc(100% - 24px)); background: var(--glass); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(6px); }
+#jctl input[type="range"] { flex: 1; margin: 0; }
+#jctl select { background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px; padding: 0.35rem 0.4rem; }
+body.journey-on .readout, body.journey-on .note { display: none; }
+.jstart { margin-left: 6px; }
+@media (max-width: 860px) { .jstart { font-size: 0.78rem; padding: 0.35rem 0.5rem; } #jctl { bottom: 96px; } #jcap { padding: 8px 12px 10px; } }
 .date { font: 400 clamp(1.7rem, 3.4vw, 2.7rem)/1 var(--display); letter-spacing: 0.005em; }
 .date em { font-style: italic; color: var(--muted); font-size: 0.6em; }
 .sub { margin-top: 6px; font: 400 0.72rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -242,7 +257,7 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
       <div class="sub" id="timeOut"></div>
       <div class="banner" id="banner" aria-live="polite"></div>
     </div>
-    <div class="seg viewseg" role="group" aria-label="Dimensions"><button class="btn" type="button" data-view="2d" aria-pressed="true">2D top-down</button><button class="btn" type="button" data-view="3d" aria-pressed="false">3D</button><button class="btn" type="button" data-view="sky" aria-pressed="false">From Earth</button></div>
+    <div class="seg viewseg" role="group" aria-label="Dimensions"><button class="btn" type="button" data-view="2d" aria-pressed="true">2D top-down</button><button class="btn" type="button" data-view="3d" aria-pressed="false">3D</button><button class="btn" type="button" data-view="sky" aria-pressed="false">From Earth</button><button class="btn primary jstart" type="button" id="jStart" title="Zoom out from a quark to the edge of the observable universe, one power of ten at a time">▶ Quark to universe</button></div>
     <button class="btn sidebtn" id="sideOpen" type="button" aria-label="Show the menu" title="Show the menu">☰</button>
     <div class="note" id="note">Sizes and distances share one scale. A ring around a speck marks a body smaller than 2 px.</div>
     <div class="transport">
@@ -1461,7 +1476,7 @@ const S = {
   show: { moons: true, belt: true, comets: true, craft: true, stars: true, clines: true, cnames: true, dso: true, places: true, landing: true, sats: true, oort: true, cosmos: true, wind: false, aur: true, lagr: false, roche: false, eclpath: true, term: false, agrid: false, egrid: false, ecl: false, mer: false, ground: true, refr: true }, band: 'visible', bandMsg: '', scrub: 0, scrubbing: false,
   sky: { on: false, lat: 37.57, lon: 126.98, name: 'Seoul', az: Math.PI, alt: 0.55, fov: 70, bortle: 3 }
 };
-const sminF = () => { const b = E.BY_ID[S.follow]; return b && (b.kind === 'craft' || b.kind === 'sat') && S.view !== '2d' ? 2e-6 : SMIN; };
+const sminF = () => { if (S.jField) return 1e-30; const b = E.BY_ID[S.follow]; return b && (b.kind === 'craft' || b.kind === 'sat') && S.view !== '2d' ? 2e-6 : SMIN; };
 const SMIN = 0.5, SMAX = 4e21, SMAX2D = 4e7, LMIN = Math.log(SMIN), LMAX = Math.log(SMAX);
 const scaleToT = s => Math.round((Math.log(s) - LMIN) / (LMAX - LMIN) * 1000);
 const tToScale = t => Math.exp(LMIN + t / 1000 * (LMAX - LMIN));
@@ -1874,6 +1889,8 @@ function buildUI() {
   const endScrub = () => { S.scrubbing = false; };
   $('scrub').addEventListener('change', endScrub); $('scrub').addEventListener('pointerup', endScrub); $('scrub').addEventListener('pointercancel', endScrub); $('scrub').addEventListener('blur', endScrub);
   PRESETS.forEach(p => chip(p.id, p.label, null, $('presets'), () => applyPreset(p)));
+  chip('journey', '▶ From a quark to the universe', '#f3c35a', $('presets'), () => JR.start());
+  $('jStart').addEventListener('click', () => JR.start());
   PLAN.concat([E.SUN, E.MOON]).forEach(p => chip(p.id, p.name, p.color, $('track'), () => {
     S.tracked.has(p.id) ? S.tracked.delete(p.id) : S.tracked.add(p.id); markTrack();
   }));
@@ -3632,6 +3649,7 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
 
   /* ---------- camera ---------- */
   function camDistance() {
+    if (S.jField && S.follow === 'earth') return S.jField / TANH + E.BY_ID.earth.radius; // the scale journey: the view's height is set above the ground
     const f = E.BY_ID[S.follow], rr = f.rings ? f.rings[f.rings.length - 1][1] : f.radius;
     return Math.max(S.scale * (S.h / 2) / TANH, rr * (DEEP[f.id] ? 1.035 : 1.15));
   }
@@ -4468,7 +4486,7 @@ void main(){
     const pan = S.pan, d = sky ? 1e5 : camDistance();
     const cp = Math.cos(cam.pitch), tgt = v3([pan[0], pan[1], pan[2] || 0]).multiplyScalar(1 / KU);
     camera.fov = FOV; starCam.fov = FOV;
-    camera.aspect = ASP(); camera.near = sky ? 1e-6 : Math.max(d * 8e-4, 1e-5) / KU; camera.far = Math.max(1e5, d / KU * 40); camera.updateProjectionMatrix();
+    camera.aspect = ASP(); camera.near = sky ? 1e-6 : Math.max(S.jField && S.follow === 'earth' ? Math.max(d - E.BY_ID.earth.radius, 1e-4) * 0.05 : d * 8e-4, 1e-5) / KU; camera.far = Math.max(1e5, d / KU * 40); camera.updateProjectionMatrix();
     let skyFr = null;
     if (sky) {
       skyFr = skyFrame(S.jd); skyUp.copy(skyFr.up);
@@ -4592,7 +4610,7 @@ void main(){
     // trails, relative to the followed body (so following Earth shows Mars looping)
     updateTrails();
     // shadow cones
-    const near = !sky && camDistance() < 4e6;
+    const near = !sky && !S.jField && camDistance() < 4e6;
     if (near) {
       const sh = E.shadows(st);
       [['earth', 1.6e6], ['moon', 1.0e6]].forEach(([k, L]) => {
@@ -4728,10 +4746,11 @@ void main(){
 
     // alignment lines and flashes
     const act = new Set(), lines = []; let any = false;
-    if (!sky) an.groups.forEach(g => { any = true; g.ids.forEach(i => act.add(i)); lines.push({ ids: [origin].concat(g.ids), dash: false }); });
-    an.opps.forEach(o => { any = true; o.ids.forEach(i => act.add(i)); lines.push({ ids: [o.ids[0], origin, o.ids[1]], dash: true }); });
+    if (!sky && !S.jField) an.groups.forEach(g => { any = true; g.ids.forEach(i => act.add(i)); lines.push({ ids: [origin].concat(g.ids), dash: false }); });
+    if (!S.jField) an.opps.forEach(o => { any = true; o.ids.forEach(i => act.add(i)); lines.push({ ids: [o.ids[0], origin, o.ids[1]], dash: true }); });
     if (any) act.add(origin);
-    if (eclp.solar) { act.add('sun'); act.add('moon'); act.add('earth'); lines.push({ ids: ['sun', 'moon', 'earth'], dash: false }); }
+    if (S.jField) { /* no alignment or eclipse markers during the scale journey */ }
+    else if (eclp.solar) { act.add('sun'); act.add('moon'); act.add('earth'); lines.push({ ids: ['sun', 'moon', 'earth'], dash: false }); }
     else if (eclp.lunar) { act.add('sun'); act.add('moon'); act.add('earth'); lines.push({ ids: ['sun', 'earth', 'moon'], dash: false }); }
     const nearZ = -camera.near;
     if (sky) { lines.length = 0; act.clear(); }
@@ -5172,7 +5191,7 @@ function frame(now) {
     if (S.jd > E.JD_MAX || S.jd < E.JD_MIN) { S.jd = clampJd(S.jd); setPlaying(false); }
   }
   if (jog) S.jd = clampJd(S.jd + jog * dt);
-  stepFly(now); stepInput(dt);
+  stepFly(now); stepInput(dt); JR.step(dt);
   const st = Ext.augment(E.state(S.jd)), f = st.pos[S.follow], origin = S.origin;
   lastSt = st;
   V.cx = f[0] + S.pan[0]; V.cy = f[1] + S.pan[1];
@@ -5202,11 +5221,219 @@ function frame(now) {
       draw(st, an, ecl, now);
     }
   } else draw(st, an, ecl, now);
+  JR.draw(now);
   updateReadout();
   if (now - lastSlow > 130) { lastSlow = now; renderInfo(st); renderActive(an); renderEclipse(ecl); }
   S.silent = false;
   requestAnimationFrame(frame);
 }
+
+/* ====================== the scale journey: from a quark to the edge of the observable universe ======================
+   One power of ten after another. Below a few kilometres the scenes are drawn here, each nested inside the next so the zoom never cuts:
+   quark, proton, carbon nucleus, carbon atom, DNA, chromosome, cell, skin, a person, a park. Above that the real 3D view takes over,
+   straight above the place chosen for the sky view, and keeps zooming out to the observable universe. */
+const JR = (function () {
+  const J = { on: false, playing: false, e: -16, E0: -16, E1: 27.3, speed: 1, base: 0.55, y0: 0, q0: 0, hold: 0 };
+  const jv = document.createElement('canvas'); jv.id = 'jv'; jv.setAttribute('aria-hidden', 'true'); stage.appendChild(jv);
+  const g = jv.getContext('2d');
+  const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const rnd = seed => { let s = seed >>> 0 || 1; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; };
+  const SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  const sup = n => String(n).split('').map(c => SUP[c] || c).join('');
+  function fmtLen(m) {
+    const f = (x, u) => (x >= 100 ? Math.round(x).toLocaleString('en-US') : x >= 10 ? x.toFixed(0) : x.toFixed(1)) + ' ' + u;
+    if (m < 1e-12) return f(m / 1e-15, 'femtometres'); if (m < 1e-9) return f(m / 1e-12, 'picometres'); if (m < 1e-6) return f(m / 1e-9, 'nanometres');
+    if (m < 1e-3) return f(m / 1e-6, 'micrometres'); if (m < 1e-2) return f(m * 1000, 'millimetres'); if (m < 1) return f(m * 100, 'centimetres');
+    if (m < 1e3) return f(m, 'metres'); if (m < 1e10) return f(m / 1e3, 'kilometres'); if (m < 1e15) return f(m / 1.495978707e11, 'AU (Earth–Sun distances)');
+    const ly = m / 9.4607304725808e15; if (ly < 1e6) return f(ly, 'light years'); if (ly < 1e9) return f(ly / 1e6, 'million light years'); return f(ly / 1e9, 'billion light years');
+  }
+  // [power of ten where it starts, title, text]
+  const CAP = () => [
+    [-16, 'Quarks', 'The smallest things known. No experiment has found any size to them: they are smaller than 10⁻¹⁸ m.'],
+    [-15.25, 'A proton', 'Two up quarks and a down quark, held by gluons. Most of the proton’s mass is the energy of that binding, not the quarks.'],
+    [-14.5, 'A carbon nucleus', 'Six protons and six neutrons. Nearly all the mass of the atom is packed in here.'],
+    [-13.3, 'Empty space', 'An atom is almost all emptiness: its electron cloud is about 10,000 times wider than its nucleus.'],
+    [-10.4, 'A carbon atom', 'Six electrons as a fuzzy cloud: you can only say where an electron is likely to be, never exactly where.'],
+    [-9.3, 'DNA', 'The double helix, 2 nanometres wide. Our carbon atom is one link in its sugar–phosphate backbone.'],
+    [-7.2, 'Chromatin', 'DNA wound around protein spools, then coiled again and again.'],
+    [-5.95, 'A chromosome', 'About 2 metres of DNA is packed into 46 of these in every cell of your body.'],
+    [-5.05, 'A cell', 'About 20 micrometres across: the nucleus, mitochondria and the folded membranes around them.'],
+    [-3.9, 'Tissue', 'Cells side by side. A fingertip holds hundreds of millions of them.'],
+    [-2.3, 'Skin', 'The palm of a hand, with its creases.'],
+    [-0.5, 'A person', 'About 1.7 metres tall, lying on the grass.'],
+    [1.4, 'A park', 'Paths, trees and a pond.'],
+    [3.4, 'Above ' + (S.sky.name || 'here'), 'From here on, everything is the real 3D view at true scale.'],
+    [5.2, 'A region', 'Rivers, coasts and mountains.'],
+    [6.4, 'Earth from orbit', 'The International Space Station circles about 400 km up. The dots are thousands of satellites.'],
+    [7.25, 'Earth', '12,742 km across.'],
+    [8.7, 'Earth and the Moon', 'The Moon is 384,400 km away. Its light takes 1.3 seconds to reach us.'],
+    [10.6, 'The inner solar system', 'Mercury, Venus, Earth and Mars around the Sun.'],
+    [12.4, 'The solar system', 'Neptune’s orbit is 9 billion km across: sunlight takes 4 hours to reach it.'],
+    [14.1, 'The edge of the Sun’s wind', 'The Kuiper belt of icy worlds, and the heliosphere, where the solar wind gives way to interstellar space.'],
+    [15.6, 'The Oort cloud', 'Perhaps a trillion icy bodies, reaching a good part of the way to the nearest stars.'],
+    [16.9, 'The nearest stars', 'Proxima Centauri is 4.2 light years away: 40 trillion km.'],
+    [18.6, 'The Sun’s neighbourhood', 'Every star within about 1,000 light years, and the nearest star clusters.'],
+    [20.4, 'The Milky Way', 'A barred spiral of 100 to 400 billion stars, about 100,000 light years across.'],
+    [22.4, 'The Local Group', 'The Milky Way, Andromeda, Triangulum and about 80 smaller galaxies.'],
+    [23.6, 'Nearby galaxies', 'The Virgo Cluster lies about 54 million light years away.'],
+    [24.7, 'Laniakea', 'Our supercluster: about 100,000 galaxies spread over 520 million light years.'],
+    [25.7, 'The cosmic web', 'Galaxies gather in filaments and walls around vast empty voids.'],
+    [26.7, 'The observable universe', 'Light has had 13.8 billion years to reach us, while the space it crossed stretched to 46.5 billion light years.']
+  ];
+  let CAPS = CAP();
+
+  /* ---------- the drawn scales: world units are metres, the screen centre is the quark at the origin ---------- */
+  const qPos = [[0, 0, '255,90,90', 'up'], [-0.62e-15, 0.18e-15, '90,230,120', 'up'], [-0.35e-15, -0.52e-15, '100,150,255', 'down']], PC = [-0.323e-15, -0.113e-15], RN = 0.84e-15;
+  const NUC = (() => { const r = rnd(12), a = [[0, 0, 0, 1]]; for (let i = 0; i < 11; i++) { const y = 1 - (i + 0.5) / 11 * 2, rr = Math.sqrt(1 - y * y), t = i * 2.39996; a.push([Math.cos(t) * rr * 1.55 * RN, y * 1.55 * RN, Math.sin(t) * rr, i < 5 ? 1 : 0]); } return a.sort((p, q) => p[2] - q[2]); })();
+  const CELL_C = [1.8e-6, -1.2e-6], CELL_R = 1e-5;
+  const MITO = (() => { const r = rnd(5), a = []; while (a.length < 14) { const t = r() * 6.283, d = (0.42 + r() * 0.48) * CELL_R; a.push([CELL_C[0] + Math.cos(t) * d, CELL_C[1] + Math.sin(t) * d, r() * 3.14, 0.7e-6 + r() * 0.6e-6]); } return a; })();
+  const TISSUE = (() => { const a = [], r = rnd(9), s = 2.1e-5; for (let i = -22; i <= 22; i++) for (let j = -22; j <= 22; j++) { const x = CELL_C[0] + (i + (j % 2) * 0.5) * s + (r() - 0.5) * 4e-6, y = CELL_C[1] + j * s * 0.87 + (r() - 0.5) * 4e-6; if ((i || j) && Math.hypot(x, y) < 4.6e-4) a.push([x, y, 0.8 + r() * 0.35, r() * 6.28]); } return a; })();
+  const PARK = (() => { const r = rnd(33), trees = [], blobs = []; for (let i = 0; i < 140; i++) { const x = (r() - 0.5) * 900, y = (r() - 0.5) * 900; if (Math.hypot(x, y) > 14 && Math.hypot(x - 90, y + 70) > 45 && Math.abs(y - 0.18 * x - 12) > 6) trees.push([x, y, 3 + r() * 4]); } for (let i = 0; i < 60; i++) blobs.push([(r() - 0.5) * 900, (r() - 0.5) * 900, 10 + r() * 60, r() < 0.5]); return { trees, blobs }; })();
+  function blob(cx, cy, R, k, seed, n) { const r = rnd(seed); g.beginPath(); const N = n || 48, ph = [r() * 6, r() * 6, r() * 6]; for (let i = 0; i <= N; i++) { const t = i / N * 6.2832, w = 1 + 0.06 * Math.sin(3 * t + ph[0]) + 0.04 * Math.sin(5 * t + ph[1]) + 0.03 * Math.sin(7 * t + ph[2]), x = cx + Math.cos(t) * R * w * k, y = cy + Math.sin(t) * R * w * k; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath(); }
+  function draw(now) {
+    const W = S.w, H = S.h, dpr = S.dpr, e = J.e, F = Math.pow(10, e), k = H / F, cx = W / 2, cy = H / 2, t = now / 1000;
+    const X = x => cx + x * k, Y = y => cy - y * k, on = (sz, lo, hi) => ss(lo * 0.5, lo, sz) * (hi ? 1 - ss(hi, hi * 2.5, sz) : 1);
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // background: the colour of whatever surrounds the centre at this scale
+    const BG = [[-16, [5, 5, 12]], [-11, [5, 5, 12]], [-9.4, [10, 14, 30]], [-8.2, [24, 18, 48]], [-6.6, [62, 46, 104]], [-5.6, [62, 46, 104]], [-5.0, [236, 208, 212]], [-4.2, [222, 182, 168]], [-3.4, [214, 166, 140]], [-0.9, [214, 166, 140]], [-0.35, [86, 128, 62]], [9, [86, 128, 62]]];
+    let bg = BG[0][1]; for (let i = 1; i < BG.length; i++) if (e <= BG[i][0]) { const a = BG[i - 1], b = BG[i], u = ss(a[0], b[0], e); bg = a[1].map((v, j) => Math.round(v + (b[1][j] - v) * u)); break; }
+    g.fillStyle = 'rgb(' + bg + ')'; g.fillRect(0, 0, W, H);
+    // the park, and the person lying in it (origin: the palm of the right hand)
+    { const a = on(900 * k, 3, 60 * H); if (a > 0.01) { g.globalAlpha = a;
+        PARK.blobs.forEach(([x, y, r, light]) => { g.fillStyle = light ? 'rgba(120,160,80,0.35)' : 'rgba(60,96,44,0.35)'; g.beginPath(); g.arc(X(x), Y(y), r * k, 0, 6.2832); g.fill(); });
+        g.strokeStyle = 'rgb(206,190,150)'; g.lineWidth = Math.max(1, 3 * k); g.beginPath(); for (let x = -460; x <= 460; x += 10) { const y = 0.18 * x + 12 + 18 * Math.sin(x / 70); x === -460 ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke();
+        g.beginPath(); for (let y = -460; y <= 460; y += 10) { const x = -120 + 25 * Math.sin(y / 90); y === -460 ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke();
+        blob(X(90), Y(-70), 38, k, 4); g.fillStyle = 'rgb(70,120,150)'; g.fill(); g.strokeStyle = 'rgba(200,220,230,0.5)'; g.lineWidth = Math.max(1, 1.2 * k); g.stroke();
+        PARK.trees.forEach(([x, y, r]) => { g.fillStyle = 'rgba(20,40,16,0.45)'; g.beginPath(); g.arc(X(x + r * 0.35), Y(y - r * 0.35), r * k, 0, 6.2832); g.fill(); const gr = g.createRadialGradient(X(x - r * 0.3), Y(y + r * 0.3), 0, X(x), Y(y), Math.max(1, r * k)); gr.addColorStop(0, 'rgb(84,140,60)'); gr.addColorStop(1, 'rgb(36,78,34)'); g.fillStyle = gr; g.beginPath(); g.arc(X(x), Y(y), Math.max(0.8, r * k), 0, 6.2832); g.fill(); });
+        g.globalAlpha = 1; } }
+    { const a = on(1.8 * k, 3, 200 * H); if (a > 0.01) { g.globalAlpha = a; const sk = 'rgb(214,166,140)', lw = (w) => Math.max(1, w * k);
+        const limb = (pts, w, col) => { g.strokeStyle = col; g.lineWidth = lw(w); g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(X(p[0]), Y(p[1])) : g.moveTo(X(p[0]), Y(p[1]))); g.stroke(); };
+        g.save(); g.translate(0.06 * k, -0.06 * k); g.globalAlpha = a * 0.25; limb([[-0.62, 0.33], [-0.33, 0.18], [0, 0]], 0.13, '#000'); limb([[-0.85, 0.3], [-0.85, -0.25]], 0.5, '#000'); limb([[-0.95, -0.15], [-1.05, -0.95]], 0.15, '#000'); limb([[-0.75, -0.15], [-0.62, -0.95]], 0.15, '#000'); g.restore(); g.globalAlpha = a;
+        limb([[-0.95, -0.15], [-1.0, -0.55], [-1.05, -0.92]], 0.15, 'rgb(46,58,92)'); limb([[-0.75, -0.15], [-0.7, -0.55], [-0.62, -0.92]], 0.15, 'rgb(46,58,92)');
+        limb([[-1.06, -0.93], [-1.07, -1.02]], 0.1, 'rgb(240,240,240)'); limb([[-0.62, -0.93], [-0.6, -1.02]], 0.1, 'rgb(240,240,240)');
+        limb([[-0.62, 0.33], [-0.33, 0.2]], 0.12, 'rgb(196,72,64)'); limb([[-0.33, 0.2], [-0.07, 0.04]], 0.085, sk); limb([[-1.08, 0.33], [-1.3, 0.12]], 0.12, 'rgb(196,72,64)'); limb([[-1.3, 0.12], [-1.38, -0.12]], 0.085, sk);
+        g.fillStyle = sk; g.beginPath(); g.ellipse(X(0), Y(0), 0.095 * k, 0.055 * k, 0.5, 0, 6.2832); g.fill(); g.beginPath(); g.ellipse(X(-1.39), Y(-0.2), 0.05 * k, 0.09 * k, 0.2, 0, 6.2832); g.fill();
+        g.fillStyle = 'rgb(196,72,64)'; g.beginPath(); if (g.roundRect) g.roundRect(X(-1.09), Y(0.4), 0.48 * k, 0.6 * k, 0.12 * k); else g.rect(X(-1.09), Y(0.4), 0.48 * k, 0.6 * k); g.fill();
+        g.fillStyle = sk; g.beginPath(); g.arc(X(-0.85), Y(0.56), 0.11 * k, 0, 6.2832); g.fill(); g.fillStyle = 'rgb(54,36,28)'; g.beginPath(); g.arc(X(-0.85), Y(0.6), 0.115 * k, Math.PI * 0.05, Math.PI * 0.95); g.fill();
+        g.globalAlpha = 1; } }
+    // skin: the palm's creases
+    { const a = on(0.05 * k, 3, 40 * H); if (a > 0.01) { g.globalAlpha = a * 0.55; g.strokeStyle = 'rgb(160,108,90)'; g.lineWidth = Math.max(1, 0.0009 * k); const r = rnd(21);
+        for (let i = 0; i < 40; i++) { const x0 = (r() - 0.5) * 0.06, y0 = (r() - 0.5) * 0.06, L = 0.004 + r() * 0.03, an = r() * 3.14; g.beginPath(); g.moveTo(X(x0), Y(y0)); g.quadraticCurveTo(X(x0 + Math.cos(an) * L * 0.5 + 0.002), Y(y0 + Math.sin(an) * L * 0.5), X(x0 + Math.cos(an) * L), Y(y0 + Math.sin(an) * L)); g.stroke(); }
+        g.globalAlpha = 1; } }
+    // tissue: neighbouring cells
+    { const a = on(4.6e-4 * k, 6, 200 * H); if (a > 0.01) { TISSUE.forEach(([x, y, s, ph]) => { const R = CELL_R * s, rp = R * k; if (X(x) < -rp || X(x) > W + rp || Y(y) < -rp || Y(y) > H + rp) return; const fade = a * (1 - ss(3.2e-4, 4.6e-4, Math.hypot(x, y)));
+        g.globalAlpha = fade; if (rp < 4) { g.fillStyle = 'rgba(176,120,150,0.6)'; g.beginPath(); g.arc(X(x), Y(y), Math.max(0.6, rp * 0.4), 0, 6.2832); g.fill(); return; }
+        blob(X(x), Y(y), R, k, Math.floor(ph * 1000), 28); g.fillStyle = 'rgba(240,212,214,0.9)'; g.fill(); g.strokeStyle = 'rgba(150,90,110,0.8)'; g.lineWidth = Math.max(0.8, 0.25e-6 * k); g.stroke();
+        g.fillStyle = 'rgba(110,80,160,0.75)'; g.beginPath(); g.arc(X(x + Math.cos(ph) * 1.5e-6), Y(y + Math.sin(ph) * 1.5e-6), 3.1e-6 * s * k, 0, 6.2832); g.fill(); }); g.globalAlpha = 1; } }
+    // our cell
+    { const a = on(2 * CELL_R * k, 4, 100 * H); if (a > 0.01) { g.globalAlpha = a;
+        blob(X(CELL_C[0]), Y(CELL_C[1]), CELL_R, k, 77); g.fillStyle = 'rgb(240,212,214)'; g.fill(); g.strokeStyle = 'rgb(150,90,110)'; g.lineWidth = Math.max(1, 0.3e-6 * k); g.stroke();
+        g.strokeStyle = 'rgba(190,120,150,0.55)'; g.lineWidth = Math.max(0.8, 0.12e-6 * k); for (let i = 0; i < 5; i++) { g.beginPath(); for (let j = 0; j <= 60; j++) { const tt = j / 60 * 5.2 + i * 0.4, rr = (4.2e-6 + i * 0.55e-6) * (1 + 0.05 * Math.sin(tt * 9 + i)); const x = Math.cos(tt) * rr, y = Math.sin(tt) * rr; j ? g.lineTo(X(x), Y(y)) : g.moveTo(X(x), Y(y)); } g.stroke(); }
+        MITO.forEach(([x, y, an, L]) => { g.save(); g.translate(X(x), Y(y)); g.rotate(an); g.fillStyle = 'rgb(232,140,104)'; g.beginPath(); g.ellipse(0, 0, L * k, 0.32e-6 * k + 0.5, 0, 0, 6.2832); g.fill(); g.strokeStyle = 'rgba(150,60,40,0.7)'; g.lineWidth = Math.max(0.6, 0.06e-6 * k); g.beginPath(); for (let i = -3; i <= 3; i++) { g.moveTo(i * L * k * 0.25, -0.25e-6 * k); g.lineTo(i * L * k * 0.25 + 0.1e-6 * k, 0.25e-6 * k); } g.stroke(); g.restore(); });
+        const r = rnd(8); g.fillStyle = 'rgba(120,60,90,0.6)'; for (let i = 0; i < 260; i++) { const tt = r() * 6.283, d = (0.36 + r() * 0.6) * CELL_R; g.beginPath(); g.arc(X(CELL_C[0] + Math.cos(tt) * d), Y(CELL_C[1] + Math.sin(tt) * d), Math.max(0.6, 0.05e-6 * k), 0, 6.2832); g.fill(); }
+        g.fillStyle = 'rgb(62,46,104)'; g.beginPath(); g.arc(X(0), Y(0), 3.2e-6 * k, 0, 6.2832); g.fill(); g.strokeStyle = 'rgba(40,28,70,0.9)'; g.lineWidth = Math.max(1, 0.15e-6 * k); g.stroke();
+        g.fillStyle = 'rgba(30,20,60,0.85)'; g.beginPath(); g.arc(X(1.3e-6), Y(1.0e-6), 0.9e-6 * k, 0, 6.2832); g.fill();
+        g.globalAlpha = 1; } }
+    // chromatin fibres and a chromosome (the DNA sits at its waist)
+    { const a = on(2.4e-6 * k, 4, 80 * H); if (a > 0.01) { g.globalAlpha = a;
+        const r = rnd(41); g.strokeStyle = 'rgba(170,140,230,0.35)'; g.lineWidth = Math.max(0.6, 0.03e-6 * k); for (let i = 0; i < 70; i++) { let x = (r() - 0.5) * 6e-6, y = (r() - 0.5) * 6e-6; if (Math.hypot(x, y) > 3.1e-6) continue; g.beginPath(); g.moveTo(X(x), Y(y)); for (let j = 0; j < 12; j++) { x += (r() - 0.5) * 0.5e-6; y += (r() - 0.5) * 0.5e-6; g.lineTo(X(x), Y(y)); } g.stroke(); }
+        [0.32, -0.32].forEach(an => { g.save(); g.translate(X(0), Y(0)); g.rotate(an); const L = 1.25e-6 * k, w = 0.32e-6 * k; const gr = g.createLinearGradient(-w, 0, w, 0); gr.addColorStop(0, 'rgb(120,80,190)'); gr.addColorStop(0.5, 'rgb(190,150,250)'); gr.addColorStop(1, 'rgb(120,80,190)'); g.fillStyle = gr; g.beginPath(); if (g.roundRect) g.roundRect(-w, -L, 2 * w, 2 * L, w); else g.rect(-w, -L, 2 * w, 2 * L); g.fill();
+          g.fillStyle = 'rgba(70,40,120,0.45)'; for (let b = -5; b <= 5; b++) if (b) g.fillRect(-w, b * L / 6 - 0.03e-6 * k, 2 * w, 0.06e-6 * k + 0.5); g.restore(); });
+        g.globalAlpha = 1; } }
+    // DNA, with our carbon atom on the backbone at the origin
+    { const a = on(2e-9 * k, 2, 4 * H); if (a > 0.01) { g.globalAlpha = a; const P = 3.4e-9, R = 1e-9, x0 = -18e-9, x1 = 18e-9, ar = 0.075e-9 * k;
+        const y1 = x => R * Math.sin(2 * Math.PI * x / P), y2 = x => R * Math.sin(2 * Math.PI * x / P + 2.3), z1 = x => Math.cos(2 * Math.PI * x / P), z2 = x => Math.cos(2 * Math.PI * x / P + 2.3);
+        const BP = ['255,120,110', '110,200,255', '255,210,90', '140,230,140'];
+        for (let x = x0; x <= x1; x += 0.34e-9) { const i = Math.round(x / 0.34e-9) & 3; g.strokeStyle = 'rgba(' + BP[i] + ',0.75)'; g.lineWidth = Math.min(14, Math.max(1, 0.06e-9 * k)); g.beginPath(); g.moveTo(X(x), Y(y1(x))); g.lineTo(X(x), Y(y2(x))); g.stroke(); }
+        const strand = (yf, zf, col) => { if (ar < 1.5) { g.strokeStyle = 'rgb(' + col + ')'; g.lineWidth = Math.max(1, 0.2e-9 * k); g.beginPath(); for (let x = x0; x <= x1; x += 0.05e-9) x === x0 ? g.moveTo(X(x), Y(yf(x))) : g.lineTo(X(x), Y(yf(x))); g.stroke(); return; }
+          for (let x = x0; x <= x1 + 1e-12; x += 0.13e-9) { const z = zf(x), c = col.split(',').map(v => Math.round(v * (0.55 + 0.45 * (z + 1) / 2))); g.fillStyle = 'rgb(' + c + ')'; g.beginPath(); g.arc(X(x), Y(yf(x)), ar, 0, 6.2832); g.fill(); } };
+        strand(y2, z2, '120,170,255'); strand(y1, z1, '240,200,140');
+        g.globalAlpha = 1; } }
+    // the carbon atom: a cloud of probability around the nucleus
+    { const R = 0.7e-10, a = on(R * k, 3); if (a > 0.01) { const px = X(PC[0]), py = Y(PC[1]), rp = R * k, A = a * (1 - 0.6 * ss(3 * H, 30 * H, rp));
+        g.globalCompositeOperation = 'lighter';
+        const glow = (x, y, r, c, al) => { if (r < 0.5) return; if (r > 4 * (W + H)) { const d = Math.min(1, Math.hypot(x - cx, y - cy) / r); g.fillStyle = 'rgba(' + c + ',' + (al * (1 - d)) + ')'; g.fillRect(0, 0, W, H); return; } const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(' + c + ',' + al + ')'); gr.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); };
+        glow(px, py, rp * 0.25, '140,190,255', 0.5 * A); glow(px, py, rp * 1.1, '80,130,255', 0.18 * A);
+        [[1, 0], [0, 1]].forEach(([u, v]) => [1, -1].forEach(s => glow(px + u * s * rp * 0.48, py - v * s * rp * 0.48, rp * 0.5, '120,170,255', 0.22 * A)));
+        const r = Math.random; g.fillStyle = 'rgba(200,225,255,' + (0.7 * A) + ')'; for (let i = 0; i < 26; i++) { const rr = Math.abs(Math.sqrt(-2 * Math.log(r() + 1e-9)) * Math.cos(6.283 * r())) * rp * 0.45, th = r() * 6.283; g.beginPath(); g.arc(px + Math.cos(th) * rr, py + Math.sin(th) * rr, 1.3, 0, 6.2832); g.fill(); }
+        g.globalCompositeOperation = 'source-over'; } }
+    // the carbon nucleus: six protons, six neutrons; our proton at its centre
+    { const a = on(2.6 * RN * k, 1.5, 40 * H); if (a > 0.01) { const pd = ss(8, 40, RN * k);
+        NUC.forEach(([x, y, z, prot], i) => { if (i === NUC.length - 1 && false) return; const isC = x === 0 && y === 0; const rp = Math.max(0.6, RN * k), px = X(PC[0] + x), py = Y(PC[1] + y);
+          g.globalAlpha = a * (isC ? 1 - 0.85 * pd : 1); const gr = g.createRadialGradient(px - rp * 0.35, py - rp * 0.35, rp * 0.1, px, py, rp); const c = prot ? [232, 102, 74] : [138, 155, 184]; gr.addColorStop(0, 'rgb(' + c.map(v => Math.min(255, v + 60)) + ')'); gr.addColorStop(1, 'rgb(' + c.map(v => v * 0.45 | 0) + ')'); g.fillStyle = gr; g.beginPath(); g.arc(px, py, rp, 0, 6.2832); g.fill(); });
+        g.globalAlpha = 1; } }
+    // inside the proton: three quarks joined by gluon strings
+    { const a = ss(8, 40, RN * k); if (a > 0.01) { const P = qPos.map(([x, y, c, n], i) => [X(x + 0.035e-15 * Math.sin(t * 1.3 + i * 2)), Y(y + 0.035e-15 * Math.cos(t * 1.1 + i)), c, n]);
+        g.globalAlpha = a; const gr0 = g.createRadialGradient(X(PC[0]), Y(PC[1]), 0, X(PC[0]), Y(PC[1]), RN * k * 1.15); gr0.addColorStop(0, 'rgba(255,160,90,0.28)'); gr0.addColorStop(0.8, 'rgba(255,120,70,0.12)'); gr0.addColorStop(1, 'rgba(255,120,70,0)'); g.fillStyle = gr0; g.beginPath(); g.arc(X(PC[0]), Y(PC[1]), RN * k * 1.15, 0, 6.2832); g.fill();
+        g.strokeStyle = 'rgba(255,240,200,0.6)'; g.lineWidth = Math.min(5, Math.max(1, 0.012e-15 * k)); [[0, 1], [1, 2], [2, 0]].forEach(([i, j]) => { const A = P[i], B = P[j], dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L, amp = Math.min(22, Math.max(1.5, 0.025e-15 * k)); g.beginPath(); for (let s = 0; s <= 80; s++) { const u = s / 80, w = Math.sin(u * 40 - t * 8) * amp * Math.sin(u * Math.PI); const x = A[0] + dx * u + nx * w, y = A[1] + dy * u + ny * w; s ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); });
+        g.globalCompositeOperation = 'lighter'; P.forEach(([x, y, c]) => { const rq = Math.min(H * 0.16, Math.max(4, 0.09e-15 * k)); const gr = g.createRadialGradient(x, y, 0, x, y, rq); gr.addColorStop(0, 'rgba(255,255,255,0.95)'); gr.addColorStop(0.25, 'rgba(' + c + ',0.9)'); gr.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, rq, 0, 6.2832); g.fill(); }); g.globalCompositeOperation = 'source-over';
+        if (RN * k > 150) { g.font = '600 13px ' + FONT; g.fillStyle = 'rgba(255,255,255,0.85)'; g.textAlign = 'center'; P.forEach(([x, y, c, n]) => { const rq = Math.min(H * 0.16, Math.max(4, 0.09e-15 * k)); if (x > -50 && x < W + 50 && y > -50 && y < H + 50) g.fillText(n + ' quark', x, y + rq * 0.55 + 16); }); g.textAlign = 'left'; }
+        g.globalAlpha = 1; } }
+  }
+
+  /* ---------- controls and captions ---------- */
+  const cap = document.createElement('div'); cap.id = 'jcap'; cap.hidden = true; cap.setAttribute('aria-live', 'polite');
+  cap.innerHTML = '<div class="jpow"></div><div class="jlen"></div><div class="jtitle"></div><div class="jtext"></div>'; stage.appendChild(cap);
+  const ctl = document.createElement('div'); ctl.id = 'jctl'; ctl.hidden = true;
+  ctl.innerHTML = '<button class="btn primary" type="button" id="jPlay">Pause</button><button class="btn" type="button" id="jRestart" title="Start again">⟲</button>'
+    + '<input type="range" id="jPos" min="-16" max="27.3" step="0.01" aria-label="Scale, as a power of ten in metres"><select id="jSpeed" aria-label="Speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select>'
+    + '<button class="btn" type="button" id="jExit">✕ Exit</button>';
+  stage.appendChild(ctl);
+  const $j = id => document.getElementById(id), qs = s => cap.querySelector(s);
+  let lastCap = -1;
+  function caption() {
+    const e = J.e, i = CAPS.reduce((b, c, k) => (e >= c[0] - 0.05 ? k : b), 0), F = Math.pow(10, e);
+    const n = Math.round(e); qs('.jpow').innerHTML = '10<sup>' + (n < 0 ? '−' : '') + Math.abs(n) + '</sup> m';
+    qs('.jlen').textContent = 'The view is ' + fmtLen(F) + ' tall';
+    if (i !== lastCap) { lastCap = i; qs('.jtitle').textContent = CAPS[i][1]; qs('.jtext').textContent = CAPS[i][2]; }
+    const p = $j('jPos'); if (document.activeElement !== p) p.value = e.toFixed(2);
+  }
+  function setPlay(p) { J.playing = p; $j('jPlay').textContent = p ? 'Pause' : J.e >= J.E1 - 1e-3 ? 'Replay' : 'Play'; }
+  function start() {
+    if (V3.ok) setView('3d');
+    setPlaying(false); S.show.cosmos = true; S.show.stars = true; if ($('shCosmos')) $('shCosmos').checked = true;
+    S.follow = 'earth'; S.sel = 'earth'; S.pan = [0, 0, 0]; S.preset = null; FLY.on = false; S.zoomGoal = null; MOM.vx = MOM.vy = 0; setTrail(0);
+    CAPS = CAP(); lastCap = -1; J.on = true; J.e = J.E0; J.hold = 0;
+    // local noon at the chosen place, so the ground is in daylight when the real view takes over (the date and time come back on exit)
+    J.jdBack = S.jd; { const day = Math.floor(S.jd + 0.5) - 0.5; jump(day + (12 - S.sky.lon / 15) / 24); }
+    J.aimIn = 3; J.y0 = V3.cam ? V3.cam.yaw : 0; J.q0 = 0.6;
+    document.body.classList.add('journey-on'); jv.hidden = false; cap.hidden = false; ctl.hidden = false; setPlay(true); markChips(); markPresets(); phoneClose();
+  }
+  function exit() {
+    J.on = false; J.playing = false; S.jField = null; document.body.classList.remove('journey-on'); { const glc = document.getElementById('gl'); if (glc) glc.style.visibility = ''; } jv.hidden = true; cap.hidden = true; ctl.hidden = true;
+    if (J.jdBack) { jump(J.jdBack); J.jdBack = null; }
+    if (J.e < 6.6) applyPreset(PRESETS.find(p => p.id === 'earth')); else setScale(S.scale);
+  }
+  function apply() {
+    const F = J.e < 2.4 ? 1e5 : Math.pow(10, Math.max(J.e, 3)); // while the drawn scenes cover the screen, the 3D camera waits high up, where it costs little
+    if (!V3.ok) return;
+    S.follow = 'earth'; S.pan = [0, 0, 0];
+    // aim straight down at the place once the 3D Earth has been drawn at this moment (its turn depends on the time)
+    if (J.aimIn > 0 && --J.aimIn === 0) { const v = V3.placeView('earth', S.sky.lat, S.sky.lon); if (v) { J.y0 = v.yaw; J.q0 = v.pitch; } J.aim = true; }
+    S.jField = F / 2000; setScale(F / 1000 / Math.max(1, S.h));
+    // straight down at the place, then easing out to a three-quarter view of the planets
+    if (J.playing || J.aim) { const b = ss(7.4, 10.8, J.e), yaw = J.y0 + 0.5 * b, pitch = J.q0 + (0.62 - J.q0) * b; V3.cam.yaw = yaw; V3.cam.pitch = Math.max(-1.5, Math.min(1.5, pitch)); J.aim = false; }
+  }
+  $j('jPlay').addEventListener('click', () => { if (J.e >= J.E1 - 1e-3) J.e = J.E0; setPlay(!J.playing); });
+  $j('jRestart').addEventListener('click', () => { J.e = J.E0; lastCap = -1; setPlay(true); });
+  $j('jExit').addEventListener('click', exit);
+  $j('jPos').addEventListener('input', ev => { J.e = +ev.target.value; J.aim = true; setPlay(false); });
+  $j('jSpeed').addEventListener('change', ev => { J.speed = +ev.target.value; });
+  document.addEventListener('keydown', ev => { if (!J.on) return; if (ev.key === 'Escape') { exit(); ev.preventDefault(); } else if (ev.code === 'Space' && !(ev.target.closest && ev.target.closest('input,select,textarea,button'))) { setPlay(!J.playing); ev.preventDefault(); ev.stopImmediatePropagation(); } }, true);
+  return {
+    start, exit, get on() { return J.on; }, get opaque() { return J.on && J.e < 3.0; },
+    step(dt) { if (!J.on) return; if (J.playing) { const slow = 1 - 0.45 * Math.exp(-Math.pow((J.e - 3.6) / 0.5, 2)); J.e = Math.min(J.E1, J.e + dt * J.base * J.speed * slow); if (J.e >= J.E1) setPlay(false); } apply(); },
+    draw(now) {
+      if (!J.on) return;
+      const W = S.w, H = S.h, dpr = S.dpr; if (jv.width !== Math.round(W * dpr) || jv.height !== Math.round(H * dpr)) { jv.width = Math.round(W * dpr); jv.height = Math.round(H * dpr); }
+      const op = 1 - ss(3.05, 3.85, J.e); jv.style.opacity = String(op); jv.style.display = op > 0.003 ? 'block' : 'none';
+      if (op > 0.003) draw(now);
+      caption();
+    },
+    userTook() { if (J.on && J.playing) setPlay(false); },
+    wheel(dy) { if (!J.on) return false; J.e = Math.max(J.E0, Math.min(J.E1, J.e + dy * 0.0025)); setPlay(false); return true; }
+  };
+})();
 
 /* ====================== pointer input ====================== */
 const ptrs = new Map();
@@ -5241,6 +5468,7 @@ function stepInput(dt) {
   } else if (!ptrs.size) { MOM.vx = MOM.vy = 0; }
 }
 cv.addEventListener('pointerdown', e => {
+  JR.userTook();
   cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, localXY(e)); moved = 0; FLY.on = false; S.zoomGoal = null; MOM.vx = MOM.vy = 0; lastMove = performance.now();
   if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinchD = Math.hypot(a[0] - b[0], a[1] - b[1]); }
   cv.classList.add('drag');
@@ -5287,6 +5515,7 @@ cv.addEventListener('pointerup', endPtr);
 cv.addEventListener('pointercancel', endPtr);
 cv.addEventListener('wheel', e => {
   e.preventDefault(); FLY.on = false;
+  if (JR.wheel(e.deltaY * (e.deltaMode === 1 ? 16 : 1))) return; // during the journey, scrolling moves through the scales
   if (S.sky.on) { S.sky.fov = Math.min(110, Math.max(0.6, S.sky.fov * Math.exp(e.deltaY * (e.deltaMode === 1 ? 16 : 1) * 0.0016))); return; }
   const p = localXY(e), k = e.deltaMode === 1 ? 16 : 1, base = S.zoomGoal ? S.zoomGoal.s : S.scale;
   S.zoomGoal = { s: Math.min(SMAX, Math.max(sminF(), base * Math.exp(e.deltaY * k * 0.0016))), px: p[0], py: p[1] };
