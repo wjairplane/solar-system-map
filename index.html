@@ -463,6 +463,7 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
     <details class="more about"><summary>About this model</summary>
       <p class="fine">Nearby clusters: distances from Gaia-era studies, and their member stars in the Hipparcos catalogue are moved to that distance (Hipparcos put the Pleiades about 10% too close); sizes and ages approximate. The ball of stars around the Sun is every Hipparcos star within about 1,000 light years; it fades at the edge because that is where the catalogue stops, not where stars stop.</p>
       <p class="fine">Beyond the stars: the Milky Way is a model built from measured sizes (bar, arms, Orion Spur; Sun 26,670 light years from the centre, GRAVITY 2019). Other galaxies: measured distances (Updated Nearby Galaxy Catalog, Karachentsev et al. 2013, via HEASARC; orientations from RC3). Large-scale structure: the 6dF Galaxy Survey (Jones et al. 2009) and the SDSS main galaxy sample (DR7, via MPA-JHU) for the nearer universe and SDSS-III BOSS DR12 for the far, with redshifts turned into distances for a flat universe with H₀ = 70 and Ωm = 0.3. The edge of the observable universe is drawn at 46.5 billion light years, wearing the WMAP map of the cosmic microwave background.</p>
+      <p class="fine">Photographs in the scale journey, from Wikimedia Commons, cropped and with soft edges: a person lying on leaves by alexisnyal (CC BY 2.0); a palm by Jiajitan (CC0); a thumb's fingerprint by BioMicroV 002 JL (CC0); cheek cells under a light microscope by Bondarev.gal (CC BY 4.0); a lung macrophage under the electron microscope by Louisa Howard, Dartmouth Electron Microscope Facility (public domain). Each is drawn at its true size. Smaller scales are illustrations.</p>
       <p class="fine">Stars: HYG database v4.1 (Hipparcos, Yale, Gliese; CC BY-SA 4.0). Radii are estimates from brightness and colour. Satellites: current element sets from CelesTrak (celestrak.org), copied daily to this project's tle-data branch on GitHub, propagated with SGP4 by satellite.js; for dates far from the download, or offline, real orbit sizes and tilts with illustrative positions. The Oort cloud is drawn as theory describes it; none of its bodies has been seen there. Sky maps: Haslam 408 MHz (Remazeilles 2015), WMAP 9-year ILC, IRAS/IRIS 100 µm, Finkbeiner 2003 H-alpha (all via NASA LAMBDA), ROSAT All-Sky Survey (Snowden 1997) and Fermi LAT (both via NASA SkyView).</p>
       <p class="fine">Years run from −3000 to 3000. Year 0 is 1 BC, and −43 is 44 BC. Dates use the Gregorian calendar and UT. Positions are most exact from 1800 to 2050.</p>
       <p class="fine">Planet positions use the VSOP87 theory (about 0.1 arcsecond for the planets across the whole date range), and the Moon uses the full main series of lunar theory. The 46 moons use JPL mean orbital elements. Eclipses come from the shadow cones of the Sun, Moon and Earth. Planet maps are real imagery. Zoom close in 3D and Earth, the Moon, Mars and Mercury load sharper map tiles for the area in view: NASA Blue Marble and Black Marble for Earth (to about 0.6 km per pixel), the NASA LRO camera mosaic with LOLA terrain for the Moon, the USGS Viking color mosaic for Mars and the MESSENGER mosaic for Mercury. The Sun and the other planets use maps from Solar System Scope (NASA and USGS data, CC BY 4.0), with Pluto from New Horizons. Saturn's rings are drawn from their measured structure. Moon maps for the larger moons come from the Stellarium project. Spacecraft paths are NASA JPL Horizons state vectors, and the dark spots on Jupiter are the real shadows of its moons. Constellation lines, names and Messier objects come from the d3-celestial data set (Olaf Frohn, BSD-3), and the place names are placed by hand from the IAU and USGS gazetteers. Stars are the HYG catalogue (Hipparcos, Yale and Gliese), about 83,000 down to magnitude 9, with their real colours; the Milky Way is NASA's all-sky star map. The Galilean moons use USGS Voyager and Galileo mosaics. In 3D each planet turns at its real rate on its real tilt, and Earth shows the correct day and night for the date. Dwarf planets and large asteroids use JPL Small-Body Database elements advanced as two-body orbits, so they are most exact within a few centuries of today. Small moons without a measured size are not drawn.</p>
@@ -5313,6 +5314,12 @@ const JR = (function () {
   const CYTO = (() => { const r = rnd(29), a = []; for (let i = 0; i < 44; i++) a.push([r() * 6.2832, (r() - 0.5) * 0.5]); return a; })();
   const VES = (() => { const r = rnd(13), a = []; while (a.length < 34) { const t = r() * 6.283, d = (0.4 + r() * 0.52) * 1e-5, x = 1.8e-6 + Math.cos(t) * d, y = -1.2e-6 + Math.sin(t) * d; if (Math.hypot(x, y) < 3.8e-6) continue; a.push([x, y, (0.12 + r() * 0.22) * 1e-6, r() < 0.4 ? '170,120,220' : r() < 0.6 ? '120,200,170' : '236,196,120']); } return a; })();
   const CELL_C = [1.8e-6, -1.2e-6], CELL_R = 1e-5;
+  // real photographs and micrographs (journey/*.webp, edges feathered), each drawn at true scale with its anchor on the origin
+  const PH = [
+    ['person', 1280, 1460, 1.235e-3, 1188, 296], ['palm', 1080, 1080, 1.4e-4, 565, 580], ['ridges', 1280, 1280, 1.5e-5, 640, 640],
+    ['tissue', 860, 860, 2.0e-7, 430, 428], ['cell', 632, 452, 9.8e-9, 387, 225]
+  ].map(([key, w, h, m, ax, ay]) => { const im = new Image(), o = { key, w, h, m, ax, ay, im, ok: false }; im.onload = () => { o.ok = true; }; im.decoding = 'async'; im.src = 'journey/' + key + '.webp'; return o; });
+  const photoOK = key => PH.some(o => o.key === key && o.ok);
   const MITO = (() => { const r = rnd(5), a = []; while (a.length < 14) { const t = r() * 6.283, d = (0.42 + r() * 0.48) * CELL_R; a.push([CELL_C[0] + Math.cos(t) * d, CELL_C[1] + Math.sin(t) * d, r() * 3.14, 0.7e-6 + r() * 0.6e-6]); } return a; })();
   const TISSUE = (() => { const a = [], r = rnd(9), s = 2.1e-5; for (let i = -22; i <= 22; i++) for (let j = -22; j <= 22; j++) { const x = CELL_C[0] + (i + (j % 2) * 0.5) * s + (r() - 0.5) * 4e-6, y = CELL_C[1] + j * s * 0.87 + (r() - 0.5) * 4e-6; if ((i || j) && Math.hypot(x, y) < 4.6e-4) a.push([x, y, 0.8 + r() * 0.35, r() * 6.28]); } return a; })();
   const PARK = (() => { const r = rnd(33), trees = [], blobs = []; for (let i = 0; i < 140; i++) { const x = (r() - 0.5) * 900, y = (r() - 0.5) * 900; if (Math.hypot(x, y) > 14 && Math.hypot(x - 90, y + 70) > 45 && Math.abs(y - 0.18 * x - 12) > 6) trees.push([x, y, 3 + r() * 4]); } for (let i = 0; i < 60; i++) blobs.push([(r() - 0.5) * 900, (r() - 0.5) * 900, 10 + r() * 60, r() < 0.5]); return { trees, blobs }; })();
@@ -5323,7 +5330,9 @@ const JR = (function () {
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     // background: the colour of whatever surrounds the centre at this scale
     const BG = [[-16, [5, 5, 12]], [-11, [5, 5, 12]], [-9.4, [10, 14, 30]], [-8.2, [24, 18, 48]], [-6.6, [62, 46, 104]], [-5.6, [62, 46, 104]], [-5.0, [236, 208, 212]], [-4.2, [222, 182, 168]], [-3.4, [214, 166, 140]], [-0.9, [214, 166, 140]], [-0.35, [86, 128, 62]], [9, [86, 128, 62]]];
-    let bg = BG[0][1]; for (let i = 1; i < BG.length; i++) if (e <= BG[i][0]) { const a = BG[i - 1], b = BG[i], u = ss(a[0], b[0], e); bg = a[1].map((v, j) => Math.round(v + (b[1][j] - v) * u)); break; }
+    // with the photographs loaded, the cell scale sits on electron-micrograph grey and the tissue on the pale slide
+    const BGP = photoOK('cell') ? [...BG.slice(0, 5), [-6.1, [104, 104, 104]], [-5.1, [104, 104, 104]], [-4.7, [234, 222, 214]], [-3.8, [234, 222, 214]], ...BG.slice(8)] : BG;
+    let bg = BGP[0][1]; for (let i = 1; i < BGP.length; i++) if (e <= BGP[i][0]) { const a = BGP[i - 1], b = BGP[i], u = ss(a[0], b[0], e); bg = a[1].map((v, j) => Math.round(v + (b[1][j] - v) * u)); break; }
     g.fillStyle = 'rgb(' + bg + ')'; g.fillRect(0, 0, W, H);
     const lighter = f => { g.globalCompositeOperation = 'lighter'; f(); g.globalCompositeOperation = 'source-over'; };
     const glowAt = (x, y, r, c, al) => { if (r < 0.4 || al <= 0) return; if (r > 4 * (W + H)) { const d = Math.min(1, Math.hypot(x - cx, y - cy) / r); g.fillStyle = 'rgba(' + c + ',' + (al * (1 - d) * (1 - d)) + ')'; g.fillRect(0, 0, W, H); return; }
@@ -5345,7 +5354,7 @@ const JR = (function () {
           g.beginPath(); g.moveTo(px, py); g.quadraticCurveTo(px + Math.cos(an) * lp * 0.5, py + Math.sin(an) * lp * 0.5 - lp * 0.15, px + Math.cos(an + 0.3) * lp, py + Math.sin(an + 0.3) * lp); g.stroke(); });
         g.globalAlpha = 1; } }
     // the person, lying on the grass, palm up (the origin is the middle of the right palm)
-    { const a = on(1.8 * k, 3, 200 * H); if (a > 0.01) { g.globalAlpha = a; const SK = [226, 178, 150], SH = [196, 68, 62], JE = [52, 66, 104], lw = w => Math.max(1, w * k), rgb = (c, f) => 'rgb(' + c.map(v => Math.min(255, Math.round(v * f))).join(',') + ')';
+    { const a = on(1.8 * k, 3, 200 * H); if (a > 0.01 && !photoOK('person')) { g.globalAlpha = a; const SK = [226, 178, 150], SH = [196, 68, 62], JE = [52, 66, 104], lw = w => Math.max(1, w * k), rgb = (c, f) => 'rgb(' + c.map(v => Math.min(255, Math.round(v * f))).join(',') + ')';
         const limb = (pts, w, c) => { g.lineCap = 'round'; g.lineJoin = 'round'; [[1, 0.62], [0.55, 1.12], [0.18, 1.32]].forEach(([wf, f], i) => { g.strokeStyle = rgb(c, f); g.lineWidth = lw(w * wf); g.beginPath(); pts.forEach((p, j) => { const ox = i ? -w * 0.12 * i : 0, oy = i ? w * 0.12 * i : 0; j ? g.lineTo(X(p[0] + ox), Y(p[1] + oy)) : g.moveTo(X(p[0] + ox), Y(p[1] + oy)); }); g.stroke(); }); };
         const ARMR = [[-0.62, 0.33], [-0.33, 0.2]], FORR = [[-0.33, 0.2], [-0.07, 0.04]], ARML = [[-1.08, 0.33], [-1.3, 0.12]], FORL = [[-1.3, 0.12], [-1.38, -0.12]], LEGR = [[-0.75, -0.12], [-0.7, -0.55], [-0.62, -0.9]], LEGL = [[-0.95, -0.12], [-1.0, -0.55], [-1.05, -0.9]];
         // a soft shadow on the grass
@@ -5392,7 +5401,7 @@ const JR = (function () {
           [[0.0016, 'rgba(120,70,60,0.55)'], [0.0006, 'rgba(90,45,40,0.6)']].forEach(([w, col]) => { g.strokeStyle = col; g.lineWidth = Math.max(1, w * k); g.beginPath(); g.moveTo(X(P[0][0]), Y(P[0][1])); g.quadraticCurveTo(X(P[1][0]), Y(P[1][1]), X(P[2][0]), Y(P[2][1])); g.stroke(); }); });
         g.globalAlpha = 1; } }
     // tissue: the neighbouring cells, each shaded and a little different
-    { const a = on(4.6e-4 * k, 6, 200 * H); if (a > 0.01) { TISSUE.forEach(([x, y, s, ph]) => { const R = CELL_R * s, rp = R * k; if (X(x) < -rp || X(x) > W + rp || Y(y) < -rp || Y(y) > H + rp) return; const fade = a * (1 - ss(3.2e-4, 4.6e-4, Math.hypot(x, y)));
+    { const a = on(4.6e-4 * k, 6, 200 * H); if (a > 0.01 && !photoOK('tissue')) { TISSUE.forEach(([x, y, s, ph]) => { const R = CELL_R * s, rp = R * k; if (X(x) < -rp || X(x) > W + rp || Y(y) < -rp || Y(y) > H + rp) return; const fade = a * (1 - ss(3.2e-4, 4.6e-4, Math.hypot(x, y)));
         g.globalAlpha = fade; const px = X(x), py = Y(y), tone = 0.92 + 0.12 * Math.sin(ph * 3);
         if (rp < 4) { g.fillStyle = 'rgba(176,120,150,0.6)'; g.beginPath(); g.arc(px, py, Math.max(0.6, rp * 0.4), 0, 6.2832); g.fill(); return; }
         blob(px, py, R, k, Math.floor(ph * 1000), 28);
@@ -5401,7 +5410,7 @@ const JR = (function () {
         const nr = 3.1e-6 * s * k, nx = X(x + Math.cos(ph) * 1.5e-6), ny = Y(y + Math.sin(ph) * 1.5e-6); g.drawImage(sphere('110,80,170'), nx - nr, ny - nr, 2 * nr, 2 * nr);
         if (rp > 30) { g.fillStyle = 'rgba(232,140,104,0.8)'; for (let q = 0; q < 6; q++) { const aa = ph * 7 + q * 1.05, d = R * (0.55 + 0.25 * Math.sin(q + ph)); g.beginPath(); g.ellipse(X(x + Math.cos(aa) * d), Y(y + Math.sin(aa) * d), 0.7e-6 * k, 0.28e-6 * k, aa, 0, 6.2832); g.fill(); } } }); g.globalAlpha = 1; } }
     // our cell: membrane, cytoplasm, rough ER with ribosomes, the Golgi, mitochondria, vesicles, the cytoskeleton, and the nucleus with its pores
-    { const a = on(2 * CELL_R * k, 4, 100 * H); if (a > 0.01) { g.globalAlpha = a; const ccx = X(CELL_C[0]), ccy = Y(CELL_C[1]), cr = CELL_R * k;
+    { const a = on(2 * CELL_R * k, 4, 100 * H); if (a > 0.01 && !photoOK('cell')) { g.globalAlpha = a; const ccx = X(CELL_C[0]), ccy = Y(CELL_C[1]), cr = CELL_R * k;
         blob(ccx, ccy, CELL_R, k, 77); { const gr = g.createRadialGradient(ccx - cr * 0.3, ccy - cr * 0.35, cr * 0.1, ccx, ccy, cr * 1.05); gr.addColorStop(0, 'rgb(250,232,234)'); gr.addColorStop(0.7, 'rgb(240,210,216)'); gr.addColorStop(1, 'rgb(222,174,188)'); g.fillStyle = gr; g.fill(); }
         g.strokeStyle = 'rgb(132,74,98)'; g.lineWidth = Math.max(1.2, 0.3e-6 * k); g.stroke();
         if (cr > 80) { g.save(); g.translate(ccx, ccy); g.scale(0.985, 0.985); blob(0, 0, CELL_R, k, 77); g.restore(); g.strokeStyle = 'rgba(255,240,245,0.75)'; g.lineWidth = Math.max(0.8, 0.12e-6 * k); g.stroke(); }
@@ -5428,12 +5437,21 @@ const JR = (function () {
           if (nr > 40) { g.fillStyle = 'rgba(250,236,244,0.95)'; const np = Math.min(160, Math.floor(nr * 6.28 / 10)); for (let i = 0; i < np; i++) { const th = i / np * 6.2832; g.beginPath(); g.arc(X(0) + Math.cos(th) * nr * 1.017, Y(0) + Math.sin(th) * nr * 1.017, Math.max(0.7, 0.045e-6 * k), 0, 6.2832); g.fill(); } }
           const ox = X(1.3e-6), oy = Y(1.0e-6), orr = 0.9e-6 * k, g2 = g.createRadialGradient(ox, oy, 0, ox, oy, orr); g2.addColorStop(0, 'rgba(20,12,40,0.95)'); g2.addColorStop(0.7, 'rgba(34,22,64,0.9)'); g2.addColorStop(1, 'rgba(60,44,104,0)'); g.fillStyle = g2; g.beginPath(); g.arc(ox, oy, orr, 0, 6.2832); g.fill(); }
         g.globalAlpha = 1; } }
+    // the photographs, largest first: each fades in once it fills a good part of the view and out once it is magnified past its own pixels
+    let cellA = 0;
+    PH.forEach(o => { if (!o.ok) return; const s = o.m * k, sz = Math.min(o.w, o.h) * s, P = { person: [0.15, 0.45, 6, 20], palm: [0.15, 0.45, 12, 45], ridges: [0.45, 1.0, 20, 80], tissue: [0.3, 0.8, 12, 45], cell: [0.15, 0.45, 5, 16] }[o.key],
+        a = ss(P[0] * H, P[1] * H, sz) * (1 - ss(P[2], P[3], s)); if (o.key === 'cell') cellA = a;
+      if (a < 0.01) return; const x0 = X(0) - o.ax * s, y0 = Y(0) - o.ay * s;
+      // only the part of the image that is on screen (a huge destination rectangle stalls some canvases)
+      const sx0 = Math.max(0, Math.floor(-x0 / s)), sy0 = Math.max(0, Math.floor(-y0 / s)), sx1 = Math.min(o.w, Math.ceil((W - x0) / s) + 1), sy1 = Math.min(o.h, Math.ceil((H - y0) / s) + 1);
+      if (sx1 <= sx0 || sy1 <= sy0) return; g.globalAlpha = a; g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+      g.drawImage(o.im, sx0, sy0, sx1 - sx0, sy1 - sy0, x0 + sx0 * s, y0 + sy0 * s, (sx1 - sx0) * s, (sy1 - sy0) * s); g.globalAlpha = 1; });
     // ---- the opening scales, drawn with more care: quantum foam, quarks and gluons, the nucleus, the atom's cloud, DNA, chromatin, a chromosome ----
     // quantum foam: a faint, drifting shimmer behind everything smaller than the atom
     { const a = 1 - ss(-14.2, -12.8, e); if (a > 0.01) { const f = foam(), s = 640 * (1 + 0.2 * Math.sin(t * 0.21)), ox = (t * 9) % s, oy = (t * 6) % s; g.globalAlpha = 0.07 * a; lighter(() => { for (let x = -s; x < W + s; x += s) for (let y = -s; y < H + s; y += s) g.drawImage(f, x - ox, y - oy, s, s); }); g.globalAlpha = 1; } }
 
     // a chromosome: two sister chromatids joined at the waist where our DNA lies, each a rod of tightly coiled fibre
-    { const a = on(2.4e-6 * k, 4, 5 * H); if (a > 0.01) { g.globalAlpha = a;
+    { const a = on(2.4e-6 * k, 4, 5 * H) * (1 - 0.85 * cellA); if (a > 0.01) { g.globalAlpha = a;
         const L = 1.25e-6, w = 0.24e-6; lighter(() => glowAt(X(0), Y(0), 2.0e-6 * k, '150,110,255', 0.22));
         [0.45, -0.45].forEach((an, side) => { g.save(); g.translate(X(0), Y(0)); g.rotate(-an); const Lp = L * k, wp = w * k;
           const path = () => { g.beginPath(); if (g.roundRect) g.roundRect(-wp, -Lp, 2 * wp, 2 * Lp, wp); else g.rect(-wp, -Lp, 2 * wp, 2 * Lp); };
