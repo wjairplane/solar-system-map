@@ -46,18 +46,3 @@ Data credits
   Energy Office of Science. http://www.sdss.org/ and http://www.sdss3.org/
 - Redshifts become distances for a flat universe with H0 = 70 km/s/Mpc and Omega_m = 0.3 (comoving distance).
 
-The scale journey (button "Quark to universe", or View > Go to)
-- Zooms out one power of ten at a time from 10^-16 m, around a quark, to 10^27 m, the whole observable universe.
-- Below a few kilometres the scenes are nested in each other: quarks, a proton, a carbon nucleus, a carbon atom, DNA,
-  a chromosome (drawn illustrations), then a cell, cheek tissue, a fingerprint, a palm and a person (real photographs
-  drawn at true size, with the illustrations underneath as a fallback), then a park. From there the real 3D view
-  takes over, directly above the place set for the sky view (Seoul unless you change it), at local noon.
-- Journey photographs (journey/*.webp, from Wikimedia Commons; cropped, edges feathered, palm background removed):
-  person: "Woman making leaf 'angel' (Originally 8-4-10)" by alexisnyal, CC BY 2.0
-  palm: "Boys palm" by Jiajitan, CC0 1.0
-  fingerprint: "HK asian human thumb fingerprint September 2024 R12S 01" by BioMicroV 002 JL, CC0 1.0
-  cheek cells: "Buccal Epithelium Cells" by Bondarev.gal, CC BY 4.0
-  cell: "Macrophage in the alveolus Lung - TEM" by Louisa Howard, Dartmouth Electron Microscope Facility, public domain
-  Source pages and how each scale was measured are in journey/journey.json.
-- Pause, scrub, change the speed or exit with the controls; scrolling moves through the scales; Esc exits and puts
-  the date back.
