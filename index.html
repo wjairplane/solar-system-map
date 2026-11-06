@@ -41,21 +41,6 @@ button, input, select { font: inherit; color: inherit; }
 #cv.drag { cursor: grabbing; }
 
 .readout { position: absolute; top: 14px; left: 16px; pointer-events: none; }
-/* the scale journey */
-#jv { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
-#jcap { position: absolute; top: 14px; left: 16px; max-width: min(30rem, calc(100% - 32px)); padding: 12px 16px 14px; background: rgba(7,10,18,0.78); border: 1px solid var(--line); border-radius: 12px; backdrop-filter: blur(6px); pointer-events: none; }
-#jcap[hidden], #jctl[hidden] { display: none; }
-#jcap .jpow { font: 400 clamp(2rem, 4.4vw, 3.2rem)/1 var(--display); color: var(--sun); }
-#jcap .jpow sup { font-size: 0.5em; vertical-align: 0.9em; margin-left: 1px; }
-#jcap .jlen { margin-top: 4px; font: 400 0.75rem var(--mono); color: var(--muted); }
-#jcap .jtitle { margin-top: 10px; font: 600 1.05rem var(--ui); }
-#jcap .jtext { margin-top: 4px; font-size: 0.86rem; color: var(--text); opacity: 0.88; }
-#jctl { position: absolute; left: 50%; transform: translateX(-50%); bottom: 84px; display: flex; gap: 8px; align-items: center; padding: 8px 10px; width: min(40rem, calc(100% - 24px)); background: var(--glass); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(6px); }
-#jctl input[type="range"] { flex: 1; margin: 0; }
-#jctl select { background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px; padding: 0.35rem 0.4rem; }
-body.journey-on .readout, body.journey-on .note { display: none; }
-.jstart { margin-left: 6px; }
-@media (max-width: 860px) { .jstart { font-size: 0.78rem; padding: 0.35rem 0.5rem; } #jctl { bottom: 96px; } #jcap { padding: 8px 12px 10px; } }
 .date { font: 400 clamp(1.7rem, 3.4vw, 2.7rem)/1 var(--display); letter-spacing: 0.005em; }
 .date em { font-style: italic; color: var(--muted); font-size: 0.6em; }
 .sub { margin-top: 6px; font: 400 0.72rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -257,7 +242,7 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
       <div class="sub" id="timeOut"></div>
       <div class="banner" id="banner" aria-live="polite"></div>
     </div>
-    <div class="seg viewseg" role="group" aria-label="Dimensions"><button class="btn" type="button" data-view="2d" aria-pressed="true">2D top-down</button><button class="btn" type="button" data-view="3d" aria-pressed="false">3D</button><button class="btn" type="button" data-view="sky" aria-pressed="false">From Earth</button><button class="btn primary jstart" type="button" id="jStart" title="Zoom out from a quark to the edge of the observable universe, one power of ten at a time">▶ Quark to universe</button></div>
+    <div class="seg viewseg" role="group" aria-label="Dimensions"><button class="btn" type="button" data-view="2d" aria-pressed="true">2D top-down</button><button class="btn" type="button" data-view="3d" aria-pressed="false">3D</button><button class="btn" type="button" data-view="sky" aria-pressed="false">From Earth</button></div>
     <button class="btn sidebtn" id="sideOpen" type="button" aria-label="Show the menu" title="Show the menu">☰</button>
     <div class="note" id="note">Sizes and distances share one scale. A ring around a speck marks a body smaller than 2 px.</div>
     <div class="transport">
@@ -463,7 +448,6 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
     <details class="more about"><summary>About this model</summary>
       <p class="fine">Nearby clusters: distances from Gaia-era studies, and their member stars in the Hipparcos catalogue are moved to that distance (Hipparcos put the Pleiades about 10% too close); sizes and ages approximate. The ball of stars around the Sun is every Hipparcos star within about 1,000 light years; it fades at the edge because that is where the catalogue stops, not where stars stop.</p>
       <p class="fine">Beyond the stars: the Milky Way is a model built from measured sizes (bar, arms, Orion Spur; Sun 26,670 light years from the centre, GRAVITY 2019). Other galaxies: measured distances (Updated Nearby Galaxy Catalog, Karachentsev et al. 2013, via HEASARC; orientations from RC3). Large-scale structure: the 6dF Galaxy Survey (Jones et al. 2009) and the SDSS main galaxy sample (DR7, via MPA-JHU) for the nearer universe and SDSS-III BOSS DR12 for the far, with redshifts turned into distances for a flat universe with H₀ = 70 and Ωm = 0.3. The edge of the observable universe is drawn at 46.5 billion light years, wearing the WMAP map of the cosmic microwave background.</p>
-      <p class="fine">Photographs in the scale journey, from Wikimedia Commons, cropped and with soft edges: a person lying on leaves by alexisnyal (CC BY 2.0); a palm by Jiajitan (CC0); a thumb's fingerprint by BioMicroV 002 JL (CC0); cheek cells under a light microscope by Bondarev.gal (CC BY 4.0); a lung macrophage under the electron microscope by Louisa Howard, Dartmouth Electron Microscope Facility (public domain). Each is drawn at its true size. Smaller scales are illustrations.</p>
       <p class="fine">Stars: HYG database v4.1 (Hipparcos, Yale, Gliese; CC BY-SA 4.0). Radii are estimates from brightness and colour. Satellites: current element sets from CelesTrak (celestrak.org), copied daily to this project's tle-data branch on GitHub, propagated with SGP4 by satellite.js; for dates far from the download, or offline, real orbit sizes and tilts with illustrative positions. The Oort cloud is drawn as theory describes it; none of its bodies has been seen there. Sky maps: Haslam 408 MHz (Remazeilles 2015), WMAP 9-year ILC, IRAS/IRIS 100 µm, Finkbeiner 2003 H-alpha (all via NASA LAMBDA), ROSAT All-Sky Survey (Snowden 1997) and Fermi LAT (both via NASA SkyView).</p>
       <p class="fine">Years run from −3000 to 3000. Year 0 is 1 BC, and −43 is 44 BC. Dates use the Gregorian calendar and UT. Positions are most exact from 1800 to 2050.</p>
       <p class="fine">Planet positions use the VSOP87 theory (about 0.1 arcsecond for the planets across the whole date range), and the Moon uses the full main series of lunar theory. The 46 moons use JPL mean orbital elements. Eclipses come from the shadow cones of the Sun, Moon and Earth. Planet maps are real imagery. Zoom close in 3D and Earth, the Moon, Mars and Mercury load sharper map tiles for the area in view: NASA Blue Marble and Black Marble for Earth (to about 0.6 km per pixel), the NASA LRO camera mosaic with LOLA terrain for the Moon, the USGS Viking color mosaic for Mars and the MESSENGER mosaic for Mercury. The Sun and the other planets use maps from Solar System Scope (NASA and USGS data, CC BY 4.0), with Pluto from New Horizons. Saturn's rings are drawn from their measured structure. Moon maps for the larger moons come from the Stellarium project. Spacecraft paths are NASA JPL Horizons state vectors, and the dark spots on Jupiter are the real shadows of its moons. Constellation lines, names and Messier objects come from the d3-celestial data set (Olaf Frohn, BSD-3), and the place names are placed by hand from the IAU and USGS gazetteers. Stars are the HYG catalogue (Hipparcos, Yale and Gliese), about 83,000 down to magnitude 9, with their real colours; the Milky Way is NASA's all-sky star map. The Galilean moons use USGS Voyager and Galileo mosaics. In 3D each planet turns at its real rate on its real tilt, and Earth shows the correct day and night for the date. Dwarf planets and large asteroids use JPL Small-Body Database elements advanced as two-body orbits, so they are most exact within a few centuries of today. Small moons without a measured size are not drawn.</p>
@@ -1477,7 +1461,7 @@ const S = {
   show: { moons: true, belt: true, comets: true, craft: true, stars: true, clines: true, cnames: true, dso: true, places: true, landing: true, sats: true, oort: true, cosmos: true, wind: false, aur: true, lagr: false, roche: false, eclpath: true, term: false, agrid: false, egrid: false, ecl: false, mer: false, ground: true, refr: true }, band: 'visible', bandMsg: '', scrub: 0, scrubbing: false,
   sky: { on: false, lat: 37.57, lon: 126.98, name: 'Seoul', az: Math.PI, alt: 0.55, fov: 70, bortle: 3 }
 };
-const sminF = () => { if (S.jField) return 1e-30; const b = E.BY_ID[S.follow]; return b && (b.kind === 'craft' || b.kind === 'sat') && S.view !== '2d' ? 2e-6 : SMIN; };
+const sminF = () => { const b = E.BY_ID[S.follow]; return b && (b.kind === 'craft' || b.kind === 'sat') && S.view !== '2d' ? 2e-6 : SMIN; };
 const SMIN = 0.5, SMAX = 4e21, SMAX2D = 4e7, LMIN = Math.log(SMIN), LMAX = Math.log(SMAX);
 const scaleToT = s => Math.round((Math.log(s) - LMIN) / (LMAX - LMIN) * 1000);
 const tToScale = t => Math.exp(LMIN + t / 1000 * (LMAX - LMIN));
@@ -1890,8 +1874,6 @@ function buildUI() {
   const endScrub = () => { S.scrubbing = false; };
   $('scrub').addEventListener('change', endScrub); $('scrub').addEventListener('pointerup', endScrub); $('scrub').addEventListener('pointercancel', endScrub); $('scrub').addEventListener('blur', endScrub);
   PRESETS.forEach(p => chip(p.id, p.label, null, $('presets'), () => applyPreset(p)));
-  chip('journey', '▶ From a quark to the universe', '#f3c35a', $('presets'), () => JR.start());
-  $('jStart').addEventListener('click', () => JR.start());
   PLAN.concat([E.SUN, E.MOON]).forEach(p => chip(p.id, p.name, p.color, $('track'), () => {
     S.tracked.has(p.id) ? S.tracked.delete(p.id) : S.tracked.add(p.id); markTrack();
   }));
@@ -3650,7 +3632,6 @@ void main(){ vec2 p=(gl_PointCoord-0.5)*2.0; float r=length(p); if(r>1.0) discar
 
   /* ---------- camera ---------- */
   function camDistance() {
-    if (S.jField && S.follow === 'earth') return S.jField / TANH + E.BY_ID.earth.radius; // the scale journey: the view's height is set above the ground
     const f = E.BY_ID[S.follow], rr = f.rings ? f.rings[f.rings.length - 1][1] : f.radius;
     return Math.max(S.scale * (S.h / 2) / TANH, rr * (DEEP[f.id] ? 1.035 : 1.15));
   }
@@ -4487,7 +4468,7 @@ void main(){
     const pan = S.pan, d = sky ? 1e5 : camDistance();
     const cp = Math.cos(cam.pitch), tgt = v3([pan[0], pan[1], pan[2] || 0]).multiplyScalar(1 / KU);
     camera.fov = FOV; starCam.fov = FOV;
-    camera.aspect = ASP(); camera.near = sky ? 1e-6 : Math.max(S.jField && S.follow === 'earth' ? Math.max(d - E.BY_ID.earth.radius, 1e-4) * 0.05 : d * 8e-4, 1e-5) / KU; camera.far = Math.max(1e5, d / KU * 40); camera.updateProjectionMatrix();
+    camera.aspect = ASP(); camera.near = sky ? 1e-6 : Math.max(d * 8e-4, 1e-5) / KU; camera.far = Math.max(1e5, d / KU * 40); camera.updateProjectionMatrix();
     let skyFr = null;
     if (sky) {
       skyFr = skyFrame(S.jd); skyUp.copy(skyFr.up);
@@ -4611,7 +4592,7 @@ void main(){
     // trails, relative to the followed body (so following Earth shows Mars looping)
     updateTrails();
     // shadow cones
-    const near = !sky && !S.jField && camDistance() < 4e6;
+    const near = !sky && camDistance() < 4e6;
     if (near) {
       const sh = E.shadows(st);
       [['earth', 1.6e6], ['moon', 1.0e6]].forEach(([k, L]) => {
@@ -4747,11 +4728,10 @@ void main(){
 
     // alignment lines and flashes
     const act = new Set(), lines = []; let any = false;
-    if (!sky && !S.jField) an.groups.forEach(g => { any = true; g.ids.forEach(i => act.add(i)); lines.push({ ids: [origin].concat(g.ids), dash: false }); });
-    if (!S.jField) an.opps.forEach(o => { any = true; o.ids.forEach(i => act.add(i)); lines.push({ ids: [o.ids[0], origin, o.ids[1]], dash: true }); });
+    if (!sky) an.groups.forEach(g => { any = true; g.ids.forEach(i => act.add(i)); lines.push({ ids: [origin].concat(g.ids), dash: false }); });
+    an.opps.forEach(o => { any = true; o.ids.forEach(i => act.add(i)); lines.push({ ids: [o.ids[0], origin, o.ids[1]], dash: true }); });
     if (any) act.add(origin);
-    if (S.jField) { /* no alignment or eclipse markers during the scale journey */ }
-    else if (eclp.solar) { act.add('sun'); act.add('moon'); act.add('earth'); lines.push({ ids: ['sun', 'moon', 'earth'], dash: false }); }
+    if (eclp.solar) { act.add('sun'); act.add('moon'); act.add('earth'); lines.push({ ids: ['sun', 'moon', 'earth'], dash: false }); }
     else if (eclp.lunar) { act.add('sun'); act.add('moon'); act.add('earth'); lines.push({ ids: ['sun', 'earth', 'moon'], dash: false }); }
     const nearZ = -camera.near;
     if (sky) { lines.length = 0; act.clear(); }
@@ -5192,7 +5172,7 @@ function frame(now) {
     if (S.jd > E.JD_MAX || S.jd < E.JD_MIN) { S.jd = clampJd(S.jd); setPlaying(false); }
   }
   if (jog) S.jd = clampJd(S.jd + jog * dt);
-  stepFly(now); stepInput(dt); JR.step(dt);
+  stepFly(now); stepInput(dt);
   const st = Ext.augment(E.state(S.jd)), f = st.pos[S.follow], origin = S.origin;
   lastSt = st;
   V.cx = f[0] + S.pan[0]; V.cy = f[1] + S.pan[1];
@@ -5222,377 +5202,11 @@ function frame(now) {
       draw(st, an, ecl, now);
     }
   } else draw(st, an, ecl, now);
-  JR.draw(now);
   updateReadout();
   if (now - lastSlow > 130) { lastSlow = now; renderInfo(st); renderActive(an); renderEclipse(ecl); }
   S.silent = false;
   requestAnimationFrame(frame);
 }
-
-/* ====================== the scale journey: from a quark to the edge of the observable universe ======================
-   One power of ten after another. Below a few kilometres the scenes are drawn here, each nested inside the next so the zoom never cuts:
-   quark, proton, carbon nucleus, carbon atom, DNA, chromosome, cell, skin, a person, a park. Above that the real 3D view takes over,
-   straight above the place chosen for the sky view, and keeps zooming out to the observable universe. */
-const JR = (function () {
-  const J = { on: false, playing: false, e: -16, E0: -16, E1: 27.3, speed: 1, base: 0.55, y0: 0, q0: 0, hold: 0 };
-  const jv = document.createElement('canvas'); jv.id = 'jv'; jv.setAttribute('aria-hidden', 'true'); stage.appendChild(jv);
-  const g = jv.getContext('2d');
-  const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-  const rnd = seed => { let s = seed >>> 0 || 1; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; };
-  const SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
-  const sup = n => String(n).split('').map(c => SUP[c] || c).join('');
-  function fmtLen(m) {
-    const f = (x, u) => (x >= 100 ? Math.round(x).toLocaleString('en-US') : x >= 10 ? x.toFixed(0) : x.toFixed(1)) + ' ' + u;
-    if (m < 1e-12) return f(m / 1e-15, 'femtometres'); if (m < 1e-9) return f(m / 1e-12, 'picometres'); if (m < 1e-6) return f(m / 1e-9, 'nanometres');
-    if (m < 1e-3) return f(m / 1e-6, 'micrometres'); if (m < 1e-2) return f(m * 1000, 'millimetres'); if (m < 1) return f(m * 100, 'centimetres');
-    if (m < 1e3) return f(m, 'metres'); if (m < 1e10) return f(m / 1e3, 'kilometres'); if (m < 1e15) return f(m / 1.495978707e11, 'AU (Earth–Sun distances)');
-    const ly = m / 9.4607304725808e15; if (ly < 1e6) return f(ly, 'light years'); if (ly < 1e9) return f(ly / 1e6, 'million light years'); return f(ly / 1e9, 'billion light years');
-  }
-  // [power of ten where it starts, title, text]
-  const CAP = () => [
-    [-16, 'Quarks', 'The smallest things known. No experiment has found any size to them: they are smaller than 10⁻¹⁸ m.'],
-    [-15.25, 'A proton', 'Two up quarks and a down quark, held by gluons. Most of the proton’s mass is the energy of that binding, not the quarks.'],
-    [-14.5, 'A carbon nucleus', 'Six protons and six neutrons. Nearly all the mass of the atom is packed in here.'],
-    [-13.3, 'Empty space', 'An atom is almost all emptiness: its electron cloud is about 10,000 times wider than its nucleus.'],
-    [-10.4, 'A carbon atom', 'Six electrons as a fuzzy cloud: you can only say where an electron is likely to be, never exactly where.'],
-    [-9.3, 'DNA', 'The double helix, 2 nanometres wide. Our carbon atom is one link in its sugar–phosphate backbone.'],
-    [-7.2, 'Chromatin', 'DNA wound around protein spools, then coiled again and again.'],
-    [-5.95, 'A chromosome', 'About 2 metres of DNA is packed into 46 of these in every cell of your body.'],
-    [-5.05, 'A cell', 'About 20 micrometres across: the nucleus, mitochondria and the folded membranes around them.'],
-    [-3.9, 'Tissue', 'Cells side by side. A fingertip holds hundreds of millions of them.'],
-    [-2.3, 'Skin', 'The palm of a hand, with its creases.'],
-    [-0.5, 'A person', 'About 1.7 metres tall, lying on the grass.'],
-    [1.4, 'A park', 'Paths, trees and a pond.'],
-    [3.4, 'Above ' + (S.sky.name || 'here'), 'From here on, everything is the real 3D view at true scale.'],
-    [5.2, 'A region', 'Rivers, coasts and mountains.'],
-    [6.4, 'Earth from orbit', 'The International Space Station circles about 400 km up. The dots are thousands of satellites.'],
-    [7.25, 'Earth', '12,742 km across.'],
-    [8.7, 'Earth and the Moon', 'The Moon is 384,400 km away. Its light takes 1.3 seconds to reach us.'],
-    [10.6, 'The inner solar system', 'Mercury, Venus, Earth and Mars around the Sun.'],
-    [12.4, 'The solar system', 'Neptune’s orbit is 9 billion km across: sunlight takes 4 hours to reach it.'],
-    [14.1, 'The edge of the Sun’s wind', 'The Kuiper belt of icy worlds, and the heliosphere, where the solar wind gives way to interstellar space.'],
-    [15.6, 'The Oort cloud', 'Perhaps a trillion icy bodies, reaching a good part of the way to the nearest stars.'],
-    [16.9, 'The nearest stars', 'Proxima Centauri is 4.2 light years away: 40 trillion km.'],
-    [18.6, 'The Sun’s neighbourhood', 'Every star within about 1,000 light years, and the nearest star clusters.'],
-    [20.4, 'The Milky Way', 'A barred spiral of 100 to 400 billion stars, about 100,000 light years across.'],
-    [22.4, 'The Local Group', 'The Milky Way, Andromeda, Triangulum and about 80 smaller galaxies.'],
-    [23.6, 'Nearby galaxies', 'The Virgo Cluster lies about 54 million light years away.'],
-    [24.7, 'Laniakea', 'Our supercluster: about 100,000 galaxies spread over 520 million light years.'],
-    [25.7, 'The cosmic web', 'Galaxies gather in filaments and walls around vast empty voids.'],
-    [26.7, 'The observable universe', 'Light has had 13.8 billion years to reach us, while the space it crossed stretched to 46.5 billion light years.']
-  ];
-  let CAPS = CAP();
-
-  /* ---------- the drawn scales: world units are metres, the screen centre is the quark at the origin ---------- */
-  const qPos = [[0, 0, '255,90,90', 'up'], [-0.62e-15, 0.18e-15, '90,230,120', 'up'], [-0.35e-15, -0.52e-15, '100,150,255', 'down']], PC = [-0.323e-15, -0.113e-15], RN = 0.84e-15;
-  const NUC = (() => { const r = rnd(12), a = [[0, 0, 0, 1]]; for (let i = 0; i < 11; i++) { const y = 1 - (i + 0.5) / 11 * 2, rr = Math.sqrt(1 - y * y), t = i * 2.39996; a.push([Math.cos(t) * rr * 1.55 * RN, y * 1.55 * RN, Math.sin(t) * rr, i < 5 ? 1 : 0]); } return a.sort((p, q) => p[2] - q[2]); })();
-  const gaussR = r => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(6.2832 * r());
-  const BASES = ['255,120,110', '110,200,255', '255,210,90', '140,230,140'];
-  // a shaded sphere, drawn once per colour and reused as a sprite
-  const SPH = {};
-  function sphere(col) {
-    if (SPH[col]) return SPH[col];
-    const c = document.createElement('canvas'); c.width = c.height = 96; const x = c.getContext('2d'), v = col.split(',').map(Number), m = f => v.map(q => Math.min(255, Math.round(q * f))).join(',');
-    const gr = x.createRadialGradient(36, 32, 3, 48, 48, 48); gr.addColorStop(0, 'rgb(' + m(1.55) + ')'); gr.addColorStop(0.25, 'rgb(' + m(1.1) + ')'); gr.addColorStop(0.75, 'rgb(' + m(0.6) + ')'); gr.addColorStop(1, 'rgb(' + m(0.28) + ')');
-    x.fillStyle = gr; x.beginPath(); x.arc(48, 48, 47, 0, 6.2832); x.fill();
-    const sp = x.createRadialGradient(33, 29, 0, 33, 29, 16); sp.addColorStop(0, 'rgba(255,255,255,0.75)'); sp.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = sp; x.beginPath(); x.arc(33, 29, 16, 0, 6.2832); x.fill();
-    const rim = x.createRadialGradient(48, 48, 38, 48, 48, 48); rim.addColorStop(0, 'rgba(255,255,255,0)'); rim.addColorStop(1, 'rgba(' + m(1.3) + ',0.35)'); x.fillStyle = rim; x.beginPath(); x.arc(48, 48, 47, 0, 6.2832); x.fill();
-    return (SPH[col] = c);
-  }
-  // quantum foam: soft blobs on a tile that wraps seamlessly
-  let FOAM = null;
-  function foam() {
-    if (FOAM) return FOAM; const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'), r = rnd(3);
-    for (let i = 0; i < 90; i++) { const px = r() * 256, py = r() * 256, rr = 6 + r() * 30, col = r() < 0.5 ? '120,140,255' : r() < 0.5 ? '255,140,200' : '140,230,255';
-      for (const dx of [-256, 0, 256]) for (const dy of [-256, 0, 256]) { const gr = x.createRadialGradient(px + dx, py + dy, 0, px + dx, py + dy, rr); gr.addColorStop(0, 'rgba(' + col + ',0.35)'); gr.addColorStop(1, 'rgba(' + col + ',0)'); x.fillStyle = gr; x.beginPath(); x.arc(px + dx, py + dy, rr, 0, 6.2832); x.fill(); } }
-    return (FOAM = c);
-  }
-  // a chromosome's coiled fibre: [position along (-1..1), across (-1..1), loop radius m, shade], alternating between the two chromatids
-  const CHROMO = (() => { const r = rnd(17), a = []; for (let i = 0; i < 1800; i++) a.push([2 * r() - 1, gaussR(r) * 0.45, (0.05 + r() * 0.08) * 1e-6, r()]); return a; })();
-  // grass round the person: [x, y, screen angle, length m, shade, kind: 0 blade, 1 clover, 2 flower]
-  const GRASS = (() => { const r = rnd(71), a = []; for (let i = 0; i < 5200; i++) { const x = -2.6 + r() * 3.8, y = -1.7 + r() * 3.0, q = r(); a.push([x, y, -1.2 - r() * 0.8, 0.03 + r() * 0.06, r(), q < 0.04 ? 1 : q < 0.055 ? 2 : 0]); } return a; })();
-  const CYTO = (() => { const r = rnd(29), a = []; for (let i = 0; i < 44; i++) a.push([r() * 6.2832, (r() - 0.5) * 0.5]); return a; })();
-  const VES = (() => { const r = rnd(13), a = []; while (a.length < 34) { const t = r() * 6.283, d = (0.4 + r() * 0.52) * 1e-5, x = 1.8e-6 + Math.cos(t) * d, y = -1.2e-6 + Math.sin(t) * d; if (Math.hypot(x, y) < 3.8e-6) continue; a.push([x, y, (0.12 + r() * 0.22) * 1e-6, r() < 0.4 ? '170,120,220' : r() < 0.6 ? '120,200,170' : '236,196,120']); } return a; })();
-  const CELL_C = [1.8e-6, -1.2e-6], CELL_R = 1e-5;
-  // real photographs and micrographs (journey/*.webp, edges feathered), each drawn at true scale with its anchor on the origin
-  const PH = [
-    ['person', 1280, 1460, 1.235e-3, 1188, 296], ['palm', 1080, 1080, 1.4e-4, 565, 580], ['ridges', 1280, 1280, 1.5e-5, 640, 640],
-    ['tissue', 860, 860, 2.0e-7, 430, 428], ['cell', 632, 452, 9.8e-9, 387, 225]
-  ].map(([key, w, h, m, ax, ay]) => { const im = new Image(), o = { key, w, h, m, ax, ay, im, ok: false }; im.onload = () => { o.ok = true; }; im.decoding = 'async'; im.src = 'journey/' + key + '.webp'; return o; });
-  const photoOK = key => PH.some(o => o.key === key && o.ok);
-  const MITO = (() => { const r = rnd(5), a = []; while (a.length < 14) { const t = r() * 6.283, d = (0.42 + r() * 0.48) * CELL_R; a.push([CELL_C[0] + Math.cos(t) * d, CELL_C[1] + Math.sin(t) * d, r() * 3.14, 0.7e-6 + r() * 0.6e-6]); } return a; })();
-  const TISSUE = (() => { const a = [], r = rnd(9), s = 2.1e-5; for (let i = -22; i <= 22; i++) for (let j = -22; j <= 22; j++) { const x = CELL_C[0] + (i + (j % 2) * 0.5) * s + (r() - 0.5) * 4e-6, y = CELL_C[1] + j * s * 0.87 + (r() - 0.5) * 4e-6; if ((i || j) && Math.hypot(x, y) < 4.6e-4) a.push([x, y, 0.8 + r() * 0.35, r() * 6.28]); } return a; })();
-  const PARK = (() => { const r = rnd(33), trees = [], blobs = []; for (let i = 0; i < 140; i++) { const x = (r() - 0.5) * 900, y = (r() - 0.5) * 900; if (Math.hypot(x, y) > 14 && Math.hypot(x - 90, y + 70) > 45 && Math.abs(y - 0.18 * x - 12) > 6) trees.push([x, y, 3 + r() * 4]); } for (let i = 0; i < 60; i++) blobs.push([(r() - 0.5) * 900, (r() - 0.5) * 900, 10 + r() * 60, r() < 0.5]); return { trees, blobs }; })();
-  function blob(cx, cy, R, k, seed, n) { const r = rnd(seed); g.beginPath(); const N = n || 48, ph = [r() * 6, r() * 6, r() * 6]; for (let i = 0; i <= N; i++) { const t = i / N * 6.2832, w = 1 + 0.06 * Math.sin(3 * t + ph[0]) + 0.04 * Math.sin(5 * t + ph[1]) + 0.03 * Math.sin(7 * t + ph[2]), x = cx + Math.cos(t) * R * w * k, y = cy + Math.sin(t) * R * w * k; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath(); }
-  function draw(now) {
-    const W = S.w, H = S.h, dpr = S.dpr, e = J.e, F = Math.pow(10, e), k = H / F, cx = W / 2, cy = H / 2, t = now / 1000;
-    const X = x => cx + x * k, Y = y => cy - y * k, on = (sz, lo, hi) => ss(lo * 0.5, lo, sz) * (hi ? 1 - ss(hi, hi * 2.5, sz) : 1);
-    g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    // background: the colour of whatever surrounds the centre at this scale
-    const BG = [[-16, [5, 5, 12]], [-11, [5, 5, 12]], [-9.4, [10, 14, 30]], [-8.2, [24, 18, 48]], [-6.6, [62, 46, 104]], [-5.6, [62, 46, 104]], [-5.0, [236, 208, 212]], [-4.2, [222, 182, 168]], [-3.4, [214, 166, 140]], [-0.9, [214, 166, 140]], [-0.35, [86, 128, 62]], [9, [86, 128, 62]]];
-    // with the photographs loaded, the cell scale sits on electron-micrograph grey and the tissue on the pale slide
-    const BGP = photoOK('cell') ? [...BG.slice(0, 5), [-6.1, [104, 104, 104]], [-5.1, [104, 104, 104]], [-4.7, [234, 222, 214]], [-3.8, [234, 222, 214]], ...BG.slice(8)] : BG;
-    let bg = BGP[0][1]; for (let i = 1; i < BGP.length; i++) if (e <= BGP[i][0]) { const a = BGP[i - 1], b = BGP[i], u = ss(a[0], b[0], e); bg = a[1].map((v, j) => Math.round(v + (b[1][j] - v) * u)); break; }
-    g.fillStyle = 'rgb(' + bg + ')'; g.fillRect(0, 0, W, H);
-    const lighter = f => { g.globalCompositeOperation = 'lighter'; f(); g.globalCompositeOperation = 'source-over'; };
-    const glowAt = (x, y, r, c, al) => { if (r < 0.4 || al <= 0) return; if (r > 4 * (W + H)) { const d = Math.min(1, Math.hypot(x - cx, y - cy) / r); g.fillStyle = 'rgba(' + c + ',' + (al * (1 - d) * (1 - d)) + ')'; g.fillRect(0, 0, W, H); return; }
-      const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(' + c + ',' + al + ')'); gr.addColorStop(0.35, 'rgba(' + c + ',' + (al * 0.45) + ')'); gr.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); };
-    // the park, and the person lying in it (origin: the palm of the right hand)
-    { const a = on(900 * k, 3, 60 * H); if (a > 0.01) { g.globalAlpha = a;
-        PARK.blobs.forEach(([x, y, r, light]) => { g.fillStyle = light ? 'rgba(120,160,80,0.35)' : 'rgba(60,96,44,0.35)'; g.beginPath(); g.arc(X(x), Y(y), r * k, 0, 6.2832); g.fill(); });
-        g.strokeStyle = 'rgb(206,190,150)'; g.lineWidth = Math.max(1, 3 * k); g.beginPath(); for (let x = -460; x <= 460; x += 10) { const y = 0.18 * x + 12 + 18 * Math.sin(x / 70); x === -460 ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke();
-        g.beginPath(); for (let y = -460; y <= 460; y += 10) { const x = -120 + 25 * Math.sin(y / 90); y === -460 ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke();
-        blob(X(90), Y(-70), 38, k, 4); g.fillStyle = 'rgb(70,120,150)'; g.fill(); g.strokeStyle = 'rgba(200,220,230,0.5)'; g.lineWidth = Math.max(1, 1.2 * k); g.stroke();
-        PARK.trees.forEach(([x, y, r]) => { g.fillStyle = 'rgba(20,40,16,0.45)'; g.beginPath(); g.arc(X(x + r * 0.35), Y(y - r * 0.35), r * k, 0, 6.2832); g.fill(); const gr = g.createRadialGradient(X(x - r * 0.3), Y(y + r * 0.3), 0, X(x), Y(y), Math.max(1, r * k)); gr.addColorStop(0, 'rgb(84,140,60)'); gr.addColorStop(1, 'rgb(36,78,34)'); g.fillStyle = gr; g.beginPath(); g.arc(X(x), Y(y), Math.max(0.8, r * k), 0, 6.2832); g.fill(); });
-        g.globalAlpha = 1; } }
-    // grass at the person's scale: blades, clover and a few small flowers (they only show while each blade is a few pixels long)
-    { const a = on(0.06 * k, 1.5) * (1 - ss(1.2, 1.9, e)); if (a > 0.01) { g.globalAlpha = a; const x0 = (-cx - 20) / k, x1 = (W - cx + 20) / k, y0 = (cy - H - 20) / k, y1 = (cy + 20) / k;
-        GRASS.forEach(([x, y, an, L, sh, kind]) => { if (x < x0 || x > x1 || y < y0 || y > y1) return; const px = X(x), py = Y(y), lp = L * k;
-          if (kind === 1) { if (lp < 2) return; g.fillStyle = 'rgba(70,128,54,0.9)'; for (let q = 0; q < 3; q++) { const aa = an + q * 2.09; g.beginPath(); g.arc(px + Math.cos(aa) * lp * 0.3, py + Math.sin(aa) * lp * 0.3, lp * 0.3, 0, 6.2832); g.fill(); } return; }
-          if (kind === 2) { const r = Math.max(1, lp * 0.18); g.fillStyle = sh > 0.5 ? 'rgba(255,255,245,0.95)' : 'rgba(250,215,80,0.95)'; g.beginPath(); g.arc(px, py, r, 0, 6.2832); g.fill(); if (r > 2) { g.fillStyle = 'rgba(240,190,60,1)'; g.beginPath(); g.arc(px, py, r * 0.35, 0, 6.2832); g.fill(); } return; }
-          if (lp < 1.2) return; const c = Math.round(60 + 70 * sh); g.strokeStyle = 'rgb(' + Math.round(c * 0.65) + ',' + (c + 40) + ',' + Math.round(c * 0.45) + ')'; g.lineWidth = Math.max(0.6, 0.004 * k); g.lineCap = 'round';
-          g.beginPath(); g.moveTo(px, py); g.quadraticCurveTo(px + Math.cos(an) * lp * 0.5, py + Math.sin(an) * lp * 0.5 - lp * 0.15, px + Math.cos(an + 0.3) * lp, py + Math.sin(an + 0.3) * lp); g.stroke(); });
-        g.globalAlpha = 1; } }
-    // the person, lying on the grass, palm up (the origin is the middle of the right palm)
-    { const a = on(1.8 * k, 3, 200 * H); if (a > 0.01 && !photoOK('person')) { g.globalAlpha = a; const SK = [226, 178, 150], SH = [196, 68, 62], JE = [52, 66, 104], lw = w => Math.max(1, w * k), rgb = (c, f) => 'rgb(' + c.map(v => Math.min(255, Math.round(v * f))).join(',') + ')';
-        const limb = (pts, w, c) => { g.lineCap = 'round'; g.lineJoin = 'round'; [[1, 0.62], [0.55, 1.12], [0.18, 1.32]].forEach(([wf, f], i) => { g.strokeStyle = rgb(c, f); g.lineWidth = lw(w * wf); g.beginPath(); pts.forEach((p, j) => { const ox = i ? -w * 0.12 * i : 0, oy = i ? w * 0.12 * i : 0; j ? g.lineTo(X(p[0] + ox), Y(p[1] + oy)) : g.moveTo(X(p[0] + ox), Y(p[1] + oy)); }); g.stroke(); }); };
-        const ARMR = [[-0.62, 0.33], [-0.33, 0.2]], FORR = [[-0.33, 0.2], [-0.07, 0.04]], ARML = [[-1.08, 0.33], [-1.3, 0.12]], FORL = [[-1.3, 0.12], [-1.38, -0.12]], LEGR = [[-0.75, -0.12], [-0.7, -0.55], [-0.62, -0.9]], LEGL = [[-0.95, -0.12], [-1.0, -0.55], [-1.05, -0.9]];
-        // a soft shadow on the grass
-        g.save(); try { g.filter = 'blur(' + Math.min(30, Math.max(1, 0.035 * k)).toFixed(1) + 'px)'; } catch (e) {} g.globalAlpha = a * 0.3; g.translate(0.05 * k, 0.05 * k); g.strokeStyle = '#0d1a08'; g.lineCap = 'round'; g.lineJoin = 'round';
-        [[ARMR.concat(FORR, [[0.03, -0.02]]), 0.13], [ARML.concat(FORL, [[-1.4, -0.22]]), 0.13], [LEGR, 0.17], [LEGL, 0.17], [[[-0.85, 0.32], [-0.85, -0.12]], 0.5], [[[-0.85, 0.56], [-0.85, 0.57]], 0.24]].forEach(([p, w]) => { g.lineWidth = lw(w); g.beginPath(); p.forEach((q, i) => i ? g.lineTo(X(q[0]), Y(q[1])) : g.moveTo(X(q[0]), Y(q[1]))); g.stroke(); });
-        g.restore(); g.globalAlpha = a;
-        // legs and shoes
-        limb(LEGL, 0.16, JE); limb(LEGR, 0.16, JE);
-        if (k > 60) { g.strokeStyle = 'rgba(200,170,90,0.6)'; g.lineWidth = lw(0.004); [LEGL, LEGR].forEach(L => { g.beginPath(); L.forEach((p, i) => i ? g.lineTo(X(p[0] + 0.05), Y(p[1])) : g.moveTo(X(p[0] + 0.05), Y(p[1]))); g.stroke(); }); }
-        [[-1.05, -0.92, -0.08], [-0.62, -0.92, 0.12]].forEach(([x, y, tilt]) => { g.save(); g.translate(X(x), Y(y)); g.rotate(tilt); const gr = g.createLinearGradient(-0.06 * k, 0, 0.06 * k, 0); gr.addColorStop(0, '#d8d8d8'); gr.addColorStop(0.5, '#ffffff'); gr.addColorStop(1, '#c4c4c4'); g.fillStyle = gr; g.beginPath(); g.ellipse(0, 0.06 * k, 0.055 * k, 0.11 * k, 0, 0, 6.2832); g.fill(); g.fillStyle = 'rgba(60,60,70,0.7)'; g.beginPath(); g.ellipse(0, 0.12 * k, 0.05 * k, 0.03 * k, 0, 0, 6.2832); g.fill(); g.restore(); });
-        // torso: a T-shirt with soft folds
-        { const x0 = X(-1.09), y0 = Y(0.4), w = 0.48 * k, h = 0.58 * k, gr = g.createLinearGradient(x0, 0, x0 + w, 0); gr.addColorStop(0, rgb(SH, 0.7)); gr.addColorStop(0.45, rgb(SH, 1.12)); gr.addColorStop(1, rgb(SH, 0.68)); g.fillStyle = gr; g.beginPath(); if (g.roundRect) g.roundRect(x0, y0, w, h, 0.14 * k); else g.rect(x0, y0, w, h); g.fill();
-          if (k > 40) { g.strokeStyle = rgb(SH, 0.62); g.lineWidth = lw(0.006); g.lineCap = 'round'; [[-1.0, 0.25, -0.93, 0.05], [-0.72, 0.28, -0.78, 0.02], [-0.9, -0.05, -0.8, -0.1]].forEach(([a1, b1, a2, b2]) => { g.beginPath(); g.moveTo(X(a1), Y(b1)); g.quadraticCurveTo(X((a1 + a2) / 2 + 0.03), Y((b1 + b2) / 2), X(a2), Y(b2)); g.stroke(); }); } }
-        // arms: sleeves, then skin
-        limb(ARMR, 0.13, SH); limb(ARML, 0.13, SH); limb(FORR, 0.085, SK); limb(FORL, 0.085, SK);
-        // hands; the right one palm up, with fingers
-        const hand = (cx0, cy0, dir, palmUp) => { const ux = Math.cos(dir), uy = Math.sin(dir), vx = -uy, vy = ux;
-          [-1.5, -0.5, 0.5, 1.5].forEach((q, i) => { const bx = cx0 + ux * 0.035 + vx * q * 0.018, by = cy0 + uy * 0.035 + vy * q * 0.018, L = [0.065, 0.078, 0.075, 0.06][i]; limb([[bx, by], [bx + ux * L, by + uy * L]], 0.018, SK); });
-          limb([[cx0 + vx * 0.04 - ux * 0.01, cy0 + vy * 0.04 - uy * 0.01], [cx0 + vx * 0.07 + ux * 0.03, cy0 + vy * 0.07 + uy * 0.03]], 0.022, SK);
-          const gr = g.createRadialGradient(X(cx0 - ux * 0.01), Y(cy0 - uy * 0.01), 0.01 * k, X(cx0), Y(cy0), 0.07 * k); gr.addColorStop(0, palmUp ? 'rgb(238,192,168)' : rgb(SK, 1.04)); gr.addColorStop(1, palmUp ? 'rgb(214,160,138)' : rgb(SK, 0.88)); g.fillStyle = gr; g.beginPath(); g.ellipse(X(cx0), Y(cy0), 0.06 * k, 0.045 * k, -dir, 0, 6.2832); g.fill();
-          if (palmUp && 0.06 * k > 12 && 0.05 * k < 0.95 * H) { g.save(); g.beginPath(); g.ellipse(X(cx0), Y(cy0), 0.06 * k, 0.045 * k, -dir, 0, 6.2832); g.clip(); g.strokeStyle = 'rgba(150,90,76,0.6)'; g.lineWidth = Math.max(0.8, 0.0012 * k); g.lineCap = 'round';
-            [[[-0.04, 0.025], [0.0, 0.01], [0.045, 0.02]], [[-0.045, -0.002], [0.0, -0.015], [0.045, -0.01]], [[-0.025, 0.04], [-0.02, 0.0], [-0.008, -0.045]]].forEach(P => { const T = q => [cx0 + q[0] * ux - q[1] * uy, cy0 + q[0] * uy + q[1] * ux]; const p0 = T(P[0]), p1 = T(P[1]), p2 = T(P[2]); g.beginPath(); g.moveTo(X(p0[0]), Y(p0[1])); g.quadraticCurveTo(X(p1[0]), Y(p1[1]), X(p2[0]), Y(p2[1])); g.stroke(); }); g.restore(); } };
-        hand(0, 0, -0.52, true); hand(-1.39, -0.19, -1.75, false);
-        // head: hair, face, closed eyes
-        { const hx = X(-0.85), hy = Y(0.56), r = 0.105 * k; g.fillStyle = 'rgb(48,32,24)'; g.beginPath(); g.ellipse(hx, hy - r * 0.18, r * 1.08, r * 1.1, 0, 0, 6.2832); g.fill();
-          const gr = g.createRadialGradient(hx - r * 0.3, hy - r * 0.1, r * 0.1, hx, hy + r * 0.1, r * 1.05); gr.addColorStop(0, rgb(SK, 1.12)); gr.addColorStop(1, rgb(SK, 0.8)); g.fillStyle = gr; g.beginPath(); g.ellipse(hx, hy + r * 0.12, r * 0.86, r * 0.98, 0, 0, 6.2832); g.fill();
-          g.fillStyle = 'rgb(48,32,24)'; g.beginPath(); g.ellipse(hx, hy - r * 0.62, r * 0.92, r * 0.42, 0, Math.PI, 2 * Math.PI); g.fill();
-          if (r > 14) { g.strokeStyle = 'rgba(90,50,40,0.8)'; g.lineWidth = Math.max(1, r * 0.04); g.lineCap = 'round'; [-1, 1].forEach(s => { g.beginPath(); g.arc(hx + s * r * 0.33, hy + r * 0.02, r * 0.16, 0.2, Math.PI - 0.2); g.stroke(); });
-            g.fillStyle = 'rgba(150,90,70,0.35)'; g.beginPath(); g.ellipse(hx + r * 0.05, hy + r * 0.3, r * 0.1, r * 0.17, 0, 0, 6.2832); g.fill(); g.strokeStyle = 'rgba(170,80,80,0.8)'; g.beginPath(); g.arc(hx, hy + r * 0.48, r * 0.2, 0.3, Math.PI - 0.3); g.stroke(); } }
-        g.globalAlpha = 1; } }
-    // skin: the palm's friction ridges, their sweat pores, and the deep creases
-    { const a = on(0.05 * k, 3, 40 * H); if (a > 0.01) { g.globalAlpha = a;
-        // soft mottling
-        lighter(() => { const r = rnd(5); for (let i = 0; i < 18; i++) { const x = (r() - 0.5) * 0.08, y = (r() - 0.5) * 0.08; glowAt(X(x), Y(y), (0.006 + r() * 0.015) * k, r() < 0.5 ? '40,20,10' : '30,10,20', 0.05); } });
-        const sp = 0.45e-3, spx = sp * k, ra = ss(2.2, 6, spx) * (1 - 0.75 * ss(60, 220, spx));
-        if (ra > 0.01) { const ylo = (cy - H - 20) / k, yhi = (cy + 20) / k, xlo = (-cx - 20) / k, xhi = (W - cx + 20) / k, ridge = (c, x) => c + 0.0016 * Math.sin(x / 0.006 + c * 140) + 0.0008 * Math.sin(x / 0.0021 + c * 37);
-          const n0 = Math.floor((ylo - 0.003) / sp), n1 = Math.ceil((yhi + 0.003) / sp), step = Math.max(sp * 0.3, 3 / k);
-          for (let n = n0; n <= n1; n++) { const c = n * sp; g.globalAlpha = a * ra;
-            g.strokeStyle = 'rgba(150,96,80,0.55)'; g.lineWidth = Math.min(16, Math.max(0.7, spx * 0.32)); g.beginPath(); for (let x = xlo; x <= xhi; x += step) { const y = ridge(c + sp * 0.5, x); x === xlo ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke();
-            g.strokeStyle = 'rgba(246,206,184,0.5)'; g.lineWidth = Math.min(10, Math.max(0.6, spx * 0.22)); g.beginPath(); for (let x = xlo; x <= xhi; x += step) { const y = ridge(c, x) + sp * 0.06; x === xlo ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke();
-            if (spx > 9) { g.fillStyle = 'rgba(110,64,56,' + (0.7 * (1 - 0.7 * ss(40, 160, spx))) + ')'; const pr = rnd(n * 13 + 7); for (let x = Math.ceil(xlo / 0.0005) * 0.0005; x <= xhi; x += 0.0005) { const jx = x + (pr() - 0.5) * 0.0002; g.beginPath(); g.arc(X(jx), Y(ridge(c, jx)), Math.max(0.8, 0.045e-3 * k), 0, 6.2832); g.fill(); } } } }
-        g.globalAlpha = a * ss(0.55 * H, 0.95 * H, 0.05 * k); g.lineCap = 'round';
-        [[[-0.05, 0.03], [0.0, 0.012], [0.05, 0.022]], [[-0.05, -0.005], [0.0, -0.018], [0.05, -0.012]], [[-0.03, 0.05], [-0.022, 0.0], [-0.01, -0.06]]].forEach(P => {
-          [[0.0016, 'rgba(120,70,60,0.55)'], [0.0006, 'rgba(90,45,40,0.6)']].forEach(([w, col]) => { g.strokeStyle = col; g.lineWidth = Math.max(1, w * k); g.beginPath(); g.moveTo(X(P[0][0]), Y(P[0][1])); g.quadraticCurveTo(X(P[1][0]), Y(P[1][1]), X(P[2][0]), Y(P[2][1])); g.stroke(); }); });
-        g.globalAlpha = 1; } }
-    // tissue: the neighbouring cells, each shaded and a little different
-    { const a = on(4.6e-4 * k, 6, 200 * H); if (a > 0.01 && !photoOK('tissue')) { TISSUE.forEach(([x, y, s, ph]) => { const R = CELL_R * s, rp = R * k; if (X(x) < -rp || X(x) > W + rp || Y(y) < -rp || Y(y) > H + rp) return; const fade = a * (1 - ss(3.2e-4, 4.6e-4, Math.hypot(x, y)));
-        g.globalAlpha = fade; const px = X(x), py = Y(y), tone = 0.92 + 0.12 * Math.sin(ph * 3);
-        if (rp < 4) { g.fillStyle = 'rgba(176,120,150,0.6)'; g.beginPath(); g.arc(px, py, Math.max(0.6, rp * 0.4), 0, 6.2832); g.fill(); return; }
-        blob(px, py, R, k, Math.floor(ph * 1000), 28);
-        if (rp > 10) { const gr = g.createRadialGradient(px - rp * 0.3, py - rp * 0.3, rp * 0.1, px, py, rp); gr.addColorStop(0, 'rgb(' + [250, 228, 230].map(v => Math.min(255, Math.round(v * tone))) + ')'); gr.addColorStop(1, 'rgb(' + [224, 180, 192].map(v => Math.round(v * tone)) + ')'); g.fillStyle = gr; } else g.fillStyle = 'rgba(240,212,214,0.95)';
-        g.fill(); g.strokeStyle = 'rgba(140,80,104,0.85)'; g.lineWidth = Math.max(0.8, 0.28e-6 * k); g.stroke();
-        const nr = 3.1e-6 * s * k, nx = X(x + Math.cos(ph) * 1.5e-6), ny = Y(y + Math.sin(ph) * 1.5e-6); g.drawImage(sphere('110,80,170'), nx - nr, ny - nr, 2 * nr, 2 * nr);
-        if (rp > 30) { g.fillStyle = 'rgba(232,140,104,0.8)'; for (let q = 0; q < 6; q++) { const aa = ph * 7 + q * 1.05, d = R * (0.55 + 0.25 * Math.sin(q + ph)); g.beginPath(); g.ellipse(X(x + Math.cos(aa) * d), Y(y + Math.sin(aa) * d), 0.7e-6 * k, 0.28e-6 * k, aa, 0, 6.2832); g.fill(); } } }); g.globalAlpha = 1; } }
-    // our cell: membrane, cytoplasm, rough ER with ribosomes, the Golgi, mitochondria, vesicles, the cytoskeleton, and the nucleus with its pores
-    { const a = on(2 * CELL_R * k, 4, 100 * H); if (a > 0.01 && !photoOK('cell')) { g.globalAlpha = a; const ccx = X(CELL_C[0]), ccy = Y(CELL_C[1]), cr = CELL_R * k;
-        blob(ccx, ccy, CELL_R, k, 77); { const gr = g.createRadialGradient(ccx - cr * 0.3, ccy - cr * 0.35, cr * 0.1, ccx, ccy, cr * 1.05); gr.addColorStop(0, 'rgb(250,232,234)'); gr.addColorStop(0.7, 'rgb(240,210,216)'); gr.addColorStop(1, 'rgb(222,174,188)'); g.fillStyle = gr; g.fill(); }
-        g.strokeStyle = 'rgb(132,74,98)'; g.lineWidth = Math.max(1.2, 0.3e-6 * k); g.stroke();
-        if (cr > 80) { g.save(); g.translate(ccx, ccy); g.scale(0.985, 0.985); blob(0, 0, CELL_R, k, 77); g.restore(); g.strokeStyle = 'rgba(255,240,245,0.75)'; g.lineWidth = Math.max(0.8, 0.12e-6 * k); g.stroke(); }
-        // cytoskeleton
-        g.strokeStyle = 'rgba(170,120,150,0.18)'; g.lineWidth = Math.max(0.5, 0.03e-6 * k); CYTO.forEach(([an, bend]) => { g.beginPath(); g.moveTo(X(Math.cos(an) * 3.4e-6), Y(Math.sin(an) * 3.4e-6)); g.quadraticCurveTo(X(Math.cos(an + bend) * 7e-6), Y(Math.sin(an + bend) * 7e-6), X(CELL_C[0] + Math.cos(an) * CELL_R * 0.95), Y(CELL_C[1] + Math.sin(an) * CELL_R * 0.95)); g.stroke(); });
-        // rough endoplasmic reticulum: folded ribbons studded with ribosomes
-        for (let i = 0; i < 5; i++) { const pts = []; for (let j = 0; j <= 70; j++) { const tt = j / 70 * 4.6 + i * 0.45 - 0.6, rr = (4.1e-6 + i * 0.55e-6) * (1 + 0.06 * Math.sin(tt * 9 + i)); pts.push([Math.cos(tt) * rr, Math.sin(tt) * rr]); }
-          g.lineCap = 'round'; g.lineJoin = 'round'; [[0.28e-6, 'rgba(206,140,170,0.7)'], [0.14e-6, 'rgba(246,214,226,0.9)']].forEach(([w, col]) => { g.strokeStyle = col; g.lineWidth = Math.max(0.8, w * k); g.beginPath(); pts.forEach((p, j) => j ? g.lineTo(X(p[0]), Y(p[1])) : g.moveTo(X(p[0]), Y(p[1]))); g.stroke(); });
-          if (0.14e-6 * k > 1.5) { g.fillStyle = 'rgba(110,50,90,0.85)'; pts.forEach((p, j) => { if (j % 2) return; const d = Math.hypot(p[0], p[1]), o = 0.16e-6; g.beginPath(); g.arc(X(p[0] * (1 + o / d)), Y(p[1] * (1 + o / d)), Math.max(0.6, 0.04e-6 * k), 0, 6.2832); g.fill(); }); } }
-        // the Golgi apparatus: a stack of curved sacs, budding vesicles
-        { const gx = 6.4e-6, gy = 2.6e-6; for (let i = 0; i < 6; i++) { const r0 = (1.3 + i * 0.22) * 1e-6; g.strokeStyle = i % 2 ? 'rgba(232,170,90,0.85)' : 'rgba(214,140,70,0.85)'; g.lineWidth = Math.max(1, 0.13e-6 * k); g.lineCap = 'round'; g.beginPath(); g.arc(X(gx - r0 * 0.9), Y(gy), r0 * k, -0.7, 0.7); g.stroke(); }
-          const vr = rnd(4); for (let i = 0; i < 9; i++) { const rr = 0.18e-6 + vr() * 0.12e-6, x = gx + 0.6e-6 + vr() * 1.4e-6, y = gy + (vr() - 0.5) * 2.4e-6, p = rr * k; g.drawImage(sphere('236,180,110'), X(x) - p, Y(y) - p, 2 * p, 2 * p); } }
-        // mitochondria
-        MITO.forEach(([x, y, an, L]) => { g.save(); g.translate(X(x), Y(y)); g.rotate(-an); const w = 0.34e-6 * k + 0.5, l = L * k; const gr = g.createLinearGradient(0, -w, 0, w); gr.addColorStop(0, 'rgb(246,170,128)'); gr.addColorStop(0.5, 'rgb(232,128,96)'); gr.addColorStop(1, 'rgb(186,86,66)'); g.fillStyle = gr; g.beginPath(); g.ellipse(0, 0, l, w, 0, 0, 6.2832); g.fill();
-          g.strokeStyle = 'rgba(140,50,40,0.85)'; g.lineWidth = Math.max(0.6, 0.05e-6 * k); g.stroke(); if (l > 8) { g.strokeStyle = 'rgba(255,214,190,0.75)'; g.lineWidth = Math.max(0.6, 0.06e-6 * k); g.beginPath(); for (let q = 0; q <= 40; q++) { const u = q / 40 * 2 - 1, xx = u * l * 0.85, yy = Math.sin(q * 1.2) * w * 0.6 * Math.sqrt(1 - u * u); q ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke(); } g.restore(); });
-        // lysosomes and vesicles
-        VES.forEach(([x, y, r, c]) => { const p = Math.max(0.8, r * k); g.drawImage(sphere(c), X(x) - p, Y(y) - p, 2 * p, 2 * p); });
-        // free ribosomes
-        { const r = rnd(8); g.fillStyle = 'rgba(120,60,90,0.6)'; for (let i = 0; i < 260; i++) { const tt = r() * 6.283, d = (0.36 + r() * 0.6) * CELL_R; g.beginPath(); g.arc(X(CELL_C[0] + Math.cos(tt) * d), Y(CELL_C[1] + Math.sin(tt) * d), Math.max(0.6, 0.05e-6 * k), 0, 6.2832); g.fill(); } }
-        // the nucleus: chromatin speckle, a double envelope with pores, a nucleolus
-        { const nr = 3.2e-6 * k, gr = g.createRadialGradient(X(-0.8e-6), Y(0.9e-6), nr * 0.1, X(0), Y(0), nr); gr.addColorStop(0, 'rgb(96,74,150)'); gr.addColorStop(0.75, 'rgb(66,48,110)'); gr.addColorStop(1, 'rgb(48,34,84)'); g.fillStyle = gr; g.beginPath(); g.arc(X(0), Y(0), nr, 0, 6.2832); g.fill();
-          if (nr > 30) { const r = rnd(66); g.fillStyle = 'rgba(150,120,210,0.35)'; for (let i = 0; i < 240; i++) { const rr = Math.sqrt(r()) * 3.0e-6, th = r() * 6.283; g.beginPath(); g.arc(X(Math.cos(th) * rr), Y(Math.sin(th) * rr), Math.max(0.6, (0.06 + r() * 0.1) * 1e-6 * k), 0, 6.2832); g.fill(); } }
-          g.strokeStyle = 'rgba(36,24,66,0.95)'; g.lineWidth = Math.max(1, 0.12e-6 * k); g.beginPath(); g.arc(X(0), Y(0), nr, 0, 6.2832); g.stroke(); g.strokeStyle = 'rgba(150,120,210,0.6)'; g.lineWidth = Math.max(0.6, 0.05e-6 * k); g.beginPath(); g.arc(X(0), Y(0), nr * 1.035, 0, 6.2832); g.stroke();
-          if (nr > 40) { g.fillStyle = 'rgba(250,236,244,0.95)'; const np = Math.min(160, Math.floor(nr * 6.28 / 10)); for (let i = 0; i < np; i++) { const th = i / np * 6.2832; g.beginPath(); g.arc(X(0) + Math.cos(th) * nr * 1.017, Y(0) + Math.sin(th) * nr * 1.017, Math.max(0.7, 0.045e-6 * k), 0, 6.2832); g.fill(); } }
-          const ox = X(1.3e-6), oy = Y(1.0e-6), orr = 0.9e-6 * k, g2 = g.createRadialGradient(ox, oy, 0, ox, oy, orr); g2.addColorStop(0, 'rgba(20,12,40,0.95)'); g2.addColorStop(0.7, 'rgba(34,22,64,0.9)'); g2.addColorStop(1, 'rgba(60,44,104,0)'); g.fillStyle = g2; g.beginPath(); g.arc(ox, oy, orr, 0, 6.2832); g.fill(); }
-        g.globalAlpha = 1; } }
-    // the photographs, largest first: each fades in once it fills a good part of the view and out once it is magnified past its own pixels
-    let cellA = 0;
-    PH.forEach(o => { if (!o.ok) return; const s = o.m * k, sz = Math.min(o.w, o.h) * s, P = { person: [0.15, 0.45, 6, 20], palm: [0.15, 0.45, 12, 45], ridges: [0.45, 1.0, 20, 80], tissue: [0.3, 0.8, 12, 45], cell: [0.15, 0.45, 5, 16] }[o.key],
-        a = ss(P[0] * H, P[1] * H, sz) * (1 - ss(P[2], P[3], s)); if (o.key === 'cell') cellA = a;
-      if (a < 0.01) return; const x0 = X(0) - o.ax * s, y0 = Y(0) - o.ay * s;
-      // only the part of the image that is on screen (a huge destination rectangle stalls some canvases)
-      const sx0 = Math.max(0, Math.floor(-x0 / s)), sy0 = Math.max(0, Math.floor(-y0 / s)), sx1 = Math.min(o.w, Math.ceil((W - x0) / s) + 1), sy1 = Math.min(o.h, Math.ceil((H - y0) / s) + 1);
-      if (sx1 <= sx0 || sy1 <= sy0) return; g.globalAlpha = a; g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
-      g.drawImage(o.im, sx0, sy0, sx1 - sx0, sy1 - sy0, x0 + sx0 * s, y0 + sy0 * s, (sx1 - sx0) * s, (sy1 - sy0) * s); g.globalAlpha = 1; });
-    // ---- the opening scales, drawn with more care: quantum foam, quarks and gluons, the nucleus, the atom's cloud, DNA, chromatin, a chromosome ----
-    // quantum foam: a faint, drifting shimmer behind everything smaller than the atom
-    { const a = 1 - ss(-14.2, -12.8, e); if (a > 0.01) { const f = foam(), s = 640 * (1 + 0.2 * Math.sin(t * 0.21)), ox = (t * 9) % s, oy = (t * 6) % s; g.globalAlpha = 0.07 * a; lighter(() => { for (let x = -s; x < W + s; x += s) for (let y = -s; y < H + s; y += s) g.drawImage(f, x - ox, y - oy, s, s); }); g.globalAlpha = 1; } }
-
-    // a chromosome: two sister chromatids joined at the waist where our DNA lies, each a rod of tightly coiled fibre
-    { const a = on(2.4e-6 * k, 4, 5 * H) * (1 - 0.85 * cellA); if (a > 0.01) { g.globalAlpha = a;
-        const L = 1.25e-6, w = 0.24e-6; lighter(() => glowAt(X(0), Y(0), 2.0e-6 * k, '150,110,255', 0.22));
-        [0.45, -0.45].forEach((an, side) => { g.save(); g.translate(X(0), Y(0)); g.rotate(-an); const Lp = L * k, wp = w * k;
-          const path = () => { g.beginPath(); if (g.roundRect) g.roundRect(-wp, -Lp, 2 * wp, 2 * Lp, wp); else g.rect(-wp, -Lp, 2 * wp, 2 * Lp); };
-          const gr = g.createLinearGradient(-wp, 0, wp, 0); gr.addColorStop(0, 'rgb(84,52,150)'); gr.addColorStop(0.45, 'rgb(170,130,240)'); gr.addColorStop(1, 'rgb(70,40,130)'); path(); g.fillStyle = gr; g.fill();
-          g.save(); path(); g.clip();
-          CHROMO.forEach(([u, v, r, sh], i) => { if ((i & 1) !== side) return; const x = Math.max(-1, Math.min(1, v * 1.6)) * wp * 0.9, y = u * Lp, rp = Math.max(0.6, r * 0.3 * k), b = 0.6 + 0.4 * sh;
-            g.strokeStyle = 'rgba(' + Math.round(215 * b) + ',' + Math.round(190 * b) + ',255,0.22)'; g.lineWidth = Math.max(0.5, rp * 0.35); g.beginPath(); g.arc(x, y, rp, sh * 6, sh * 6 + 4.2); g.stroke(); });
-          for (let b = -6; b <= 6; b++) if (b) { g.fillStyle = 'rgba(40,20,90,' + (0.18 + 0.12 * (Math.abs(b) % 2)) + ')'; g.fillRect(-wp, b * Lp / 7 - 0.035e-6 * k, 2 * wp, 0.07e-6 * k + 0.5); }
-          g.restore(); path(); g.strokeStyle = 'rgba(220,200,255,0.5)'; g.lineWidth = 1; g.stroke(); g.restore(); });
-        g.globalAlpha = 1; } }
-    // chromatin: DNA wrapped twice around histone spools (nucleosomes), like beads on a string; our stretch of DNA is the linker at the origin
-    { const a = on(11e-9 * k, 3, 0.7 * H) * ss(1.2, 2.6, 2.4e-6 * k / H); if (a > 0.01) { g.globalAlpha = a;
-        const pathY = x => 18e-9 * Math.sin(x / 55e-9) + 7e-9 * Math.sin(x / 17e-9 + 1);
-        g.strokeStyle = 'rgba(150,190,255,0.85)'; g.lineWidth = Math.min(4, Math.max(1, 2e-9 * k)); g.beginPath(); for (let x = -900e-9; x <= 900e-9; x += 3e-9) { const y = pathY(x) - pathY(0); x === -900e-9 ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke();
-        for (let n = -45; n <= 45; n++) { const x = (n + 0.5) * 20e-9, y = pathY(x) - pathY(0) + (n % 2 ? 4e-9 : -4e-9), R = 5.5e-9, px = X(x), py = Y(y), rp = Math.max(1, R * k);
-          if (px < -rp || px > W + rp || py < -rp || py > H + rp) continue; g.drawImage(sphere('214,150,120'), px - rp, py - rp, 2 * rp, 2 * rp);
-          if (rp > 6) { g.strokeStyle = 'rgba(150,190,255,0.9)'; g.lineWidth = Math.max(1, 2e-9 * k); g.beginPath(); g.ellipse(px, py, rp * 1.05, rp * 0.55, 0.3, 0, 6.2832); g.stroke(); g.beginPath(); g.ellipse(px, py, rp * 1.05, rp * 0.55, -0.25, 0, 6.2832); g.stroke(); } }
-        g.globalAlpha = 1; } }
-    // DNA: shaded atoms, sorted by depth. Sugar–phosphate backbones outside, base pairs inside; our carbon atom sits on a backbone at the origin.
-    { const a = on(2e-9 * k, 2, 4 * H); if (a > 0.01) { g.globalAlpha = a; const P = 3.4e-9, R = 1e-9, ar = 0.075e-9 * k, x0 = Math.max(-18e-9, (-cx - 40) / k), x1 = Math.min(18e-9, (W - cx + 40) / k), w = 2 * Math.PI / P;
-        if (ar < 1.6) { // far: two ribbons and the rungs
-          const rib = (ph, col) => { g.strokeStyle = 'rgb(' + col + ')'; g.lineWidth = Math.max(1.2, 0.35e-9 * k); g.lineCap = 'round'; g.beginPath(); for (let x = x0; x <= x1; x += 0.08e-9) { const y = R * Math.sin(w * x + ph); x === x0 ? g.moveTo(X(x), Y(y)) : g.lineTo(X(x), Y(y)); } g.stroke(); };
-          for (let x = Math.ceil(x0 / 0.34e-9) * 0.34e-9; x <= x1; x += 0.34e-9) { const i = Math.round(x / 0.34e-9) & 3; g.strokeStyle = 'rgba(' + BASES[i] + ',0.8)'; g.lineWidth = Math.max(1, 0.12e-9 * k); g.beginPath(); g.moveTo(X(x), Y(R * Math.sin(w * x))); g.lineTo(X(x), Y(R * Math.sin(w * x + 2.3))); g.stroke(); }
-          rib(2.3, '110,160,240'); rib(0, '236,190,120');
-        } else { // near: every atom
-          const A = []; const push = (x, y, z, col, s) => A.push([x, y, z, col, s]);
-          for (let x = Math.ceil(x0 / 0.13e-9) * 0.13e-9; x <= x1; x += 0.13e-9) { const n = Math.round(x / 0.13e-9), c1 = n % 3 === 0 ? '235,150,80' : '245,215,160', c2 = n % 3 === 0 ? '235,150,80' : '170,200,255';
-            push(x, R * Math.sin(w * x), Math.cos(w * x), c1, 1); push(x, R * Math.sin(w * x + 2.3), Math.cos(w * x + 2.3), c2, 1); }
-          for (let x = Math.ceil(x0 / 0.34e-9) * 0.34e-9; x <= x1; x += 0.34e-9) { const i = Math.round(x / 0.34e-9) & 3, ya = R * Math.sin(w * x), yb = R * Math.sin(w * x + 2.3), za = Math.cos(w * x), zb = Math.cos(w * x + 2.3);
-            for (let s = 1; s <= 5; s++) { const u = s / 6; push(x + 0.04e-9 * Math.sin(s), ya + (yb - ya) * u, za + (zb - za) * u, s < 3 ? BASES[i] : s > 3 ? BASES[i ^ 1] : '230,230,240', 0.82); } }
-          A.sort((p, q) => p[2] - q[2]);
-          A.forEach(([x, y, z, col, s]) => { const rp = ar * s * (0.85 + 0.15 * z), px = X(x), py = Y(y); if (px < -rp || px > W + rp || py < -rp || py > H + rp) return; g.globalAlpha = a * (0.45 + 0.55 * (z + 1) / 2); g.drawImage(sphere(col), px - rp, py - rp, 2 * rp, 2 * rp); });
-          g.globalAlpha = a; lighter(() => glowAt(X(0), Y(0), ar * 2.2, '255,230,170', 0.35));
-        }
-        g.globalAlpha = 1; } }
-    // the carbon atom: 1s, 2s and 2p orbitals as glowing clouds, with electrons caught as flickers
-    { const R = 0.7e-10, a = on(R * k, 3); if (a > 0.01) { const px = X(PC[0]), py = Y(PC[1]), rp = R * k, A = a * (1 - 0.93 * ss(1.5 * H, 10 * H, rp));
-        lighter(() => {
-          glowAt(px, py, rp * 1.25, '70,110,230', 0.16 * A); glowAt(px, py, rp * 0.62, '90,190,220', 0.14 * A); glowAt(px, py, rp * 0.16, '210,230,255', 0.75 * A);
-          if (rp < 4 * (W + H)) [[0, 1.0], [Math.PI / 2, 1.0], [0.6, 0.55]].forEach(([an, sc], i) => { g.save(); g.translate(px, py); g.rotate(an + t * 0.05); g.scale(1, 0.55);
-            [1, -1].forEach(sg => { const lx = sg * rp * 0.5 * sc, gr = g.createRadialGradient(lx, 0, 0, lx, 0, rp * 0.5); gr.addColorStop(0, 'rgba(' + (i === 2 ? '170,140,255' : '120,170,255') + ',' + (0.24 * A) + ')'); gr.addColorStop(1, 'rgba(110,150,255,0)'); g.fillStyle = gr; g.beginPath(); g.arc(lx, 0, rp * 0.5, 0, 6.2832); g.fill(); }); g.restore(); });
-          const r = Math.random; for (let i = 0; i < 160; i++) { let x, y; const which = r(); if (which < 0.25) { const rr = Math.abs(gaussR(r)) * rp * 0.08, th = r() * 6.283; x = Math.cos(th) * rr; y = Math.sin(th) * rr; } else { const an = which < 0.5 ? 0 : which < 0.75 ? Math.PI / 2 : 0.6 + t * 0.05, sg = r() < 0.5 ? 1 : -1, d = rp * (0.5 + gaussR(r) * 0.17), q = gaussR(r) * rp * 0.14; x = Math.cos(an) * sg * d - Math.sin(an) * q * 0.55; y = Math.sin(an) * sg * d + Math.cos(an) * q * 0.55; }
-            const sx = px + x, sy = py + y; if (sx < -4 || sx > W + 4 || sy < -4 || sy > H + 4) continue; g.fillStyle = 'rgba(210,230,255,' + (0.55 * A * r()) + ')'; g.fillRect(sx - 0.9, sy - 0.9, 1.8, 1.8); } });
-        const nr = 2.6 * RN * k; if (nr < 3) { lighter(() => glowAt(px, py, 7, '255,200,150', 0.9 * a)); g.fillStyle = 'rgba(255,235,210,' + a + ')'; g.beginPath(); g.arc(px, py, 1.4, 0, 6.2832); g.fill(); }
-        // pointers that make the emptiness visible
-        const lab = ss(-13.6, -13.1, e) * (1 - ss(-10.9, -10.4, e)); if (lab > 0.02) { g.globalAlpha = lab; g.font = '500 12px ' + FONT; g.fillStyle = 'rgba(255,225,190,0.95)'; g.strokeStyle = 'rgba(255,225,190,0.6)'; g.lineWidth = 1;
-          g.beginPath(); g.moveTo(px + 6, py - 6); g.lineTo(px + 48, py - 48); g.stroke(); g.fillText('the nucleus: almost all the mass, in a speck', px + 52, py - 52);
-          if (rp < 0.45 * H) { g.setLineDash([3, 5]); g.strokeStyle = 'rgba(160,190,255,0.5)'; g.beginPath(); g.arc(px, py, rp, 0, 6.2832); g.stroke(); g.setLineDash([]); g.fillStyle = 'rgba(170,200,255,0.9)'; g.fillText('the electron cloud', px + rp * 0.72 + 6, py + rp * 0.72 + 14); }
-          g.globalAlpha = 1; } } }
-    // the carbon nucleus: six protons and six neutrons, quivering; our proton at its centre
-    { const a = on(2.6 * RN * k, 1.5, 40 * H); if (a > 0.01) { const pd = ss(8, 40, RN * k);
-        lighter(() => glowAt(X(PC[0]), Y(PC[1]), 3.4 * RN * k, '255,170,120', 0.22 * a * (1 - 0.8 * pd)));
-        NUC.forEach(([x, y, z, prot], i) => { const isC = x === 0 && y === 0, jx = isC ? 0 : 0.05 * RN * Math.sin(t * 3.1 + i * 1.7), jy = isC ? 0 : 0.05 * RN * Math.cos(t * 2.7 + i * 2.3), rp = Math.max(0.8, RN * k * (0.94 + 0.06 * z)), px = X(PC[0] + x + jx), py = Y(PC[1] + y + jy);
-          g.globalAlpha = a * (isC ? 1 - pd : 1 - 0.92 * ss(250, 900, RN * k)) * (0.7 + 0.3 * (z + 1) / 2); g.drawImage(sphere(prot ? '236,104,82' : '140,160,200'), px - rp, py - rp, 2 * rp, 2 * rp); });
-        g.globalAlpha = 1; } }
-    // inside the proton: three valence quarks in a sea of gluons and fleeting quark–antiquark pairs
-    { const a = ss(8, 40, RN * k); if (a > 0.01) { g.globalAlpha = a;
-        const pcx = X(PC[0]), pcy = Y(PC[1]), prp = RN * k;
-        lighter(() => { glowAt(pcx, pcy, prp * 1.2, '200,60,90', 0.13); glowAt(pcx, pcy, prp * 0.55, '255,170,120', 0.07); });
-        const P = qPos.map(([x, y, c, n], i) => [X(x + 0.04e-15 * Math.sin(t * 1.3 + i * 2)), Y(y + 0.04e-15 * Math.cos(t * 1.1 + i)), c, n]);
-        lighter(() => {
-          // gluon flux tubes: a few twisted strands per pair, coloured from one quark's charge to the other's
-          [[0, 1], [1, 2], [2, 0]].forEach(([i, j]) => { const A = P[i], B = P[j], dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
-            const gr = g.createLinearGradient(A[0], A[1], B[0], B[1]); gr.addColorStop(0, 'rgba(' + A[2] + ',0.55)'); gr.addColorStop(0.5, 'rgba(255,240,210,0.65)'); gr.addColorStop(1, 'rgba(' + B[2] + ',0.55)');
-            for (let s = 0; s < 3; s++) { const amp = Math.min(18, Math.max(1.5, 0.022e-15 * k)) * (0.6 + 0.4 * s), ph = s * 2.1; g.strokeStyle = gr; g.lineWidth = Math.min(3.2, Math.max(0.8, 0.006e-15 * k)) * (s ? 0.7 : 1.3); g.beginPath();
-              for (let q = 0; q <= 90; q++) { const u = q / 90, wv = Math.sin(u * 30 - t * 7 + ph) * amp * Math.sin(u * Math.PI), x = A[0] + dx * u + nx * wv, y = A[1] + dy * u + ny * wv; q ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); } });
-          // the sea: quark–antiquark pairs that appear and vanish
-          for (let i = 0; i < 14; i++) { const life = 1.6, ph = (t / life + i * 0.37) % 1, cyc = Math.floor(t / life + i * 0.37), r = rnd(cyc * 31 + i * 7), rr = Math.sqrt(r()) * 0.8 * RN, th = r() * 6.283, x0 = PC[0] + Math.cos(th) * rr, y0 = PC[1] + Math.sin(th) * rr, sep = 0.08e-15 * Math.sin(ph * Math.PI), dir = r() * 6.283, al = Math.sin(ph * Math.PI) * 0.8;
-            const cc = ['255,110,110', '110,240,140', '120,160,255'][i % 3]; [1, -1].forEach(sg => { const x = X(x0 + Math.cos(dir) * sep * sg), y = Y(y0 + Math.sin(dir) * sep * sg); glowAt(x, y, Math.max(2, 0.025e-15 * k), sg > 0 ? cc : '230,230,255', al * 0.6); }); }
-          // the valence quarks themselves
-          P.forEach(([x, y, c], i) => { const rq = Math.min(H * 0.16, Math.max(5, 0.09e-15 * k)) * (1 + 0.06 * Math.sin(t * 4 + i)); glowAt(x, y, rq * 2.2, c, 0.35); const gr = g.createRadialGradient(x, y, 0, x, y, rq); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.18, 'rgba(255,255,255,0.9)'); gr.addColorStop(0.4, 'rgba(' + c + ',0.85)'); gr.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, rq, 0, 6.2832); g.fill(); });
-        });
-        if (RN * k > 150) { g.font = '600 13px ' + FONT; g.textAlign = 'center'; g.shadowColor = 'rgba(0,0,0,0.9)'; g.shadowBlur = 6; P.forEach(([x, y, c, n]) => { const rq = Math.min(H * 0.16, Math.max(5, 0.09e-15 * k)); if (x > -50 && x < W + 50 && y > -50 && y < H + 50) { g.fillStyle = 'rgba(' + c + ',1)'; g.fillText(n + ' quark', x, y + rq * 0.45 + 18); } }); g.shadowBlur = 0; g.textAlign = 'left'; }
-        g.globalAlpha = 1; } }
-    // a soft vignette, so the drawn scenes sit in the frame like the 3D view does
-    { const gr = g.createRadialGradient(cx, cy, Math.min(W, H) * 0.45, cx, cy, Math.hypot(W, H) * 0.62); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,' + (0.42 - 0.3 * ss(-4.5, -3, e)) + ')'); g.fillStyle = gr; g.fillRect(0, 0, W, H); }
-  }
-
-  /* ---------- controls and captions ---------- */
-  const cap = document.createElement('div'); cap.id = 'jcap'; cap.hidden = true; cap.setAttribute('aria-live', 'polite');
-  cap.innerHTML = '<div class="jpow"></div><div class="jlen"></div><div class="jtitle"></div><div class="jtext"></div>'; stage.appendChild(cap);
-  const ctl = document.createElement('div'); ctl.id = 'jctl'; ctl.hidden = true;
-  ctl.innerHTML = '<button class="btn primary" type="button" id="jPlay">Pause</button><button class="btn" type="button" id="jRestart" title="Start again">⟲</button>'
-    + '<input type="range" id="jPos" min="-16" max="27.3" step="0.01" aria-label="Scale, as a power of ten in metres"><select id="jSpeed" aria-label="Speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select>'
-    + '<button class="btn" type="button" id="jExit">✕ Exit</button>';
-  stage.appendChild(ctl);
-  const $j = id => document.getElementById(id), qs = s => cap.querySelector(s);
-  let lastCap = -1;
-  function caption() {
-    const e = J.e, i = CAPS.reduce((b, c, k) => (e >= c[0] - 0.05 ? k : b), 0), F = Math.pow(10, e);
-    const n = Math.round(e); qs('.jpow').innerHTML = '10<sup>' + (n < 0 ? '−' : '') + Math.abs(n) + '</sup> m';
-    qs('.jlen').textContent = 'The view is ' + fmtLen(F) + ' tall';
-    if (i !== lastCap) { lastCap = i; qs('.jtitle').textContent = CAPS[i][1]; qs('.jtext').textContent = CAPS[i][2]; }
-    const p = $j('jPos'); if (document.activeElement !== p) p.value = e.toFixed(2);
-  }
-  function setPlay(p) { J.playing = p; $j('jPlay').textContent = p ? 'Pause' : J.e >= J.E1 - 1e-3 ? 'Replay' : 'Play'; }
-  function start() {
-    if (V3.ok) setView('3d');
-    setPlaying(false); S.show.cosmos = true; S.show.stars = true; if ($('shCosmos')) $('shCosmos').checked = true;
-    S.follow = 'earth'; S.sel = 'earth'; S.pan = [0, 0, 0]; S.preset = null; FLY.on = false; S.zoomGoal = null; MOM.vx = MOM.vy = 0; setTrail(0);
-    CAPS = CAP(); lastCap = -1; J.on = true; J.e = J.E0; J.hold = 0;
-    // local noon at the chosen place, so the ground is in daylight when the real view takes over (the date and time come back on exit)
-    J.jdBack = S.jd; { const day = Math.floor(S.jd + 0.5) - 0.5; jump(day + (12 - S.sky.lon / 15) / 24); }
-    J.aimIn = 3; J.y0 = V3.cam ? V3.cam.yaw : 0; J.q0 = 0.6;
-    document.body.classList.add('journey-on'); jv.hidden = false; cap.hidden = false; ctl.hidden = false; setPlay(true); markChips(); markPresets(); phoneClose();
-  }
-  function exit() {
-    J.on = false; J.playing = false; S.jField = null; document.body.classList.remove('journey-on'); { const glc = document.getElementById('gl'); if (glc) glc.style.visibility = ''; } jv.hidden = true; cap.hidden = true; ctl.hidden = true;
-    if (J.jdBack) { jump(J.jdBack); J.jdBack = null; }
-    if (J.e < 6.6) applyPreset(PRESETS.find(p => p.id === 'earth')); else setScale(S.scale);
-  }
-  function apply() {
-    const F = J.e < 2.4 ? 1e5 : Math.pow(10, Math.max(J.e, 3)); // while the drawn scenes cover the screen, the 3D camera waits high up, where it costs little
-    if (!V3.ok) return;
-    S.follow = 'earth'; S.pan = [0, 0, 0];
-    // aim straight down at the place once the 3D Earth has been drawn at this moment (its turn depends on the time)
-    if (J.aimIn > 0 && --J.aimIn === 0) { const v = V3.placeView('earth', S.sky.lat, S.sky.lon); if (v) { J.y0 = v.yaw; J.q0 = v.pitch; } J.aim = true; }
-    S.jField = F / 2000; setScale(F / 1000 / Math.max(1, S.h));
-    // straight down at the place, then easing out to a three-quarter view of the planets
-    if (J.playing || J.aim) { const b = ss(7.4, 10.8, J.e), yaw = J.y0 + 0.5 * b, pitch = J.q0 + (0.62 - J.q0) * b; V3.cam.yaw = yaw; V3.cam.pitch = Math.max(-1.5, Math.min(1.5, pitch)); J.aim = false; }
-  }
-  $j('jPlay').addEventListener('click', () => { if (J.e >= J.E1 - 1e-3) J.e = J.E0; setPlay(!J.playing); });
-  $j('jRestart').addEventListener('click', () => { J.e = J.E0; lastCap = -1; setPlay(true); });
-  $j('jExit').addEventListener('click', exit);
-  $j('jPos').addEventListener('input', ev => { J.e = +ev.target.value; J.aim = true; setPlay(false); });
-  $j('jSpeed').addEventListener('change', ev => { J.speed = +ev.target.value; });
-  document.addEventListener('keydown', ev => { if (!J.on) return; if (ev.key === 'Escape') { exit(); ev.preventDefault(); } else if (ev.code === 'Space' && !(ev.target.closest && ev.target.closest('input,select,textarea,button'))) { setPlay(!J.playing); ev.preventDefault(); ev.stopImmediatePropagation(); } }, true);
-  return {
-    start, exit, get on() { return J.on; }, get opaque() { return J.on && J.e < 3.0; },
-    step(dt) { if (!J.on) return; if (J.playing) { const slow = 1 - 0.45 * Math.exp(-Math.pow((J.e - 3.6) / 0.5, 2)); J.e = Math.min(J.E1, J.e + dt * J.base * J.speed * slow); if (J.e >= J.E1) setPlay(false); } apply(); },
-    draw(now) {
-      if (!J.on) return;
-      const W = S.w, H = S.h, dpr = S.dpr; if (jv.width !== Math.round(W * dpr) || jv.height !== Math.round(H * dpr)) { jv.width = Math.round(W * dpr); jv.height = Math.round(H * dpr); }
-      const op = 1 - ss(3.05, 3.85, J.e); jv.style.opacity = String(op); jv.style.display = op > 0.003 ? 'block' : 'none';
-      if (op > 0.003) draw(now);
-      caption();
-    },
-    userTook() { if (J.on && J.playing) setPlay(false); },
-    wheel(dy) { if (!J.on) return false; J.e = Math.max(J.E0, Math.min(J.E1, J.e + dy * 0.0025)); setPlay(false); return true; }
-  };
-})();
 
 /* ====================== pointer input ====================== */
 const ptrs = new Map();
@@ -5627,7 +5241,6 @@ function stepInput(dt) {
   } else if (!ptrs.size) { MOM.vx = MOM.vy = 0; }
 }
 cv.addEventListener('pointerdown', e => {
-  JR.userTook();
   cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, localXY(e)); moved = 0; FLY.on = false; S.zoomGoal = null; MOM.vx = MOM.vy = 0; lastMove = performance.now();
   if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinchD = Math.hypot(a[0] - b[0], a[1] - b[1]); }
   cv.classList.add('drag');
@@ -5674,7 +5287,6 @@ cv.addEventListener('pointerup', endPtr);
 cv.addEventListener('pointercancel', endPtr);
 cv.addEventListener('wheel', e => {
   e.preventDefault(); FLY.on = false;
-  if (JR.wheel(e.deltaY * (e.deltaMode === 1 ? 16 : 1))) return; // during the journey, scrolling moves through the scales
   if (S.sky.on) { S.sky.fov = Math.min(110, Math.max(0.6, S.sky.fov * Math.exp(e.deltaY * (e.deltaMode === 1 ? 16 : 1) * 0.0016))); return; }
   const p = localXY(e), k = e.deltaMode === 1 ? 16 : 1, base = S.zoomGoal ? S.zoomGoal.s : S.scale;
   S.zoomGoal = { s: Math.min(SMAX, Math.max(sminF(), base * Math.exp(e.deltaY * k * 0.0016))), px: p[0], py: p[1] };
