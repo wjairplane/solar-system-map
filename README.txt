@@ -46,3 +46,8 @@ Data credits
   Energy Office of Science. http://www.sdss.org/ and http://www.sdss3.org/
 - Redshifts become distances for a flat universe with H0 = 70 km/s/Mpc and Omega_m = 0.3 (comoving distance).
 
+Earth to universe (button "Earth to universe")
+- One continuous zoom-out in the 3D view, from Earth to the observable universe, slowing and pausing at each stage:
+  Earth, Earth and the Moon, the inner planets, the Solar System, the Oort cloud, the nearest stars, our
+  neighbourhood, the Milky Way, the Local Group, superclusters, the cosmic web, the observable universe.
+- Press the button again, drag, scroll or press Esc to stop and explore from wherever you are.
