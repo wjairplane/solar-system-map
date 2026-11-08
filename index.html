@@ -39,6 +39,13 @@ button, input, select { font: inherit; color: inherit; }
 #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
 #cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
 #cv.drag { cursor: grabbing; }
+/* Earth to universe: an eased zoom-out from Earth to the observable universe */
+#ezcap { position: absolute; left: 50%; transform: translateX(-50%); bottom: 96px; text-align: center; pointer-events: none; max-width: min(34rem, calc(100% - 32px)); padding: 10px 18px 12px; background: rgba(7,10,18,0.72); border: 1px solid var(--line); border-radius: 12px; transition: opacity 0.6s; }
+#ezcap[hidden] { display: none; }
+#ezcap .ezw { font: 400 0.75rem var(--mono); color: var(--muted); }
+#ezcap .ezt { margin-top: 4px; font: 400 clamp(1.3rem, 2.6vw, 1.9rem)/1.1 var(--display); color: var(--sun); }
+#ezcap .ezx { margin-top: 4px; font-size: 0.86rem; opacity: 0.88; }
+.ezstart { margin-left: 6px; }
 
 .readout { position: absolute; top: 14px; left: 16px; pointer-events: none; }
 .date { font: 400 clamp(1.7rem, 3.4vw, 2.7rem)/1 var(--display); letter-spacing: 0.005em; }
@@ -242,7 +249,7 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
       <div class="sub" id="timeOut"></div>
       <div class="banner" id="banner" aria-live="polite"></div>
     </div>
-    <div class="seg viewseg" role="group" aria-label="Dimensions"><button class="btn" type="button" data-view="2d" aria-pressed="true">2D top-down</button><button class="btn" type="button" data-view="3d" aria-pressed="false">3D</button><button class="btn" type="button" data-view="sky" aria-pressed="false">From Earth</button></div>
+    <div class="seg viewseg" role="group" aria-label="Dimensions"><button class="btn" type="button" data-view="2d" aria-pressed="true">2D top-down</button><button class="btn" type="button" data-view="3d" aria-pressed="false">3D</button><button class="btn" type="button" data-view="sky" aria-pressed="false">From Earth</button><button class="btn primary ezstart" type="button" id="ezStart" title="Zoom out from Earth to the edge of the observable universe">▶ Earth to universe</button></div>
     <button class="btn sidebtn" id="sideOpen" type="button" aria-label="Show the menu" title="Show the menu">☰</button>
     <div class="note" id="note">Sizes and distances share one scale. A ring around a speck marks a body smaller than 2 px.</div>
     <div class="transport">
@@ -5172,7 +5179,7 @@ function frame(now) {
     if (S.jd > E.JD_MAX || S.jd < E.JD_MIN) { S.jd = clampJd(S.jd); setPlaying(false); }
   }
   if (jog) S.jd = clampJd(S.jd + jog * dt);
-  stepFly(now); stepInput(dt);
+  stepFly(now); stepInput(dt); EZ.step(dt);
   const st = Ext.augment(E.state(S.jd)), f = st.pos[S.follow], origin = S.origin;
   lastSt = st;
   V.cx = f[0] + S.pan[0]; V.cy = f[1] + S.pan[1];
@@ -5208,6 +5215,58 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
+/* ====================== Earth to universe: one continuous zoom-out in the 3D view, slowing at each stage ====================== */
+const EZ = window.EZ = (function () {
+  const LY = 9.4607304725808e12, AUK = 149597870.7;
+  // [field of view width in km, title, text]
+  const ST = [
+    [3.2e4, 'Earth', 'Our planet, 12,742 km across.'],
+    [1.1e6, 'Earth and the Moon', 'The Moon circles us 384,400 km away. Light takes 1.3 seconds to cross.'],
+    [5 * AUK, 'The inner planets', 'Mercury, Venus, Earth and Mars. Sunlight takes about 8 minutes to reach us.'],
+    [90 * AUK, 'The Solar System', 'Out to Neptune, 30 times farther from the Sun than Earth.'],
+    [2.5e5 * AUK, 'The Oort cloud', 'A shell of icy bodies up to a light year or more from the Sun.'],
+    [30 * LY, 'The nearest stars', 'Alpha Centauri is 4.2 light years away. Space between stars is vast and empty.'],
+    [2500 * LY, 'Our neighbourhood', 'Thousands of stars and the nearby star clusters, in one spiral arm.'],
+    [2.2e5 * LY, 'The Milky Way', 'A barred spiral of some 200 billion stars, 100,000 light years across.'],
+    [1.2e7 * LY, 'The Local Group', 'The Milky Way, Andromeda and dozens of smaller galaxies.'],
+    [6e8 * LY, 'Superclusters', 'Galaxy groups and clusters gather into Laniakea and its neighbours.'],
+    [5e9 * LY, 'The cosmic web', 'Filaments and walls of galaxies around enormous voids.'],
+    [1.2e11 * LY, 'The observable universe', 'About 93 billion light years across: everything whose light has had time to reach us.']
+  ];
+  const Z = { on: false, l: 0, l1: 0, hold: 0, idx: -1 };
+  const cap = document.createElement('div'); cap.id = 'ezcap'; cap.hidden = true; cap.setAttribute('aria-live', 'polite');
+  cap.innerHTML = '<div class="ezw"></div><div class="ezt"></div><div class="ezx"></div>'; stage.appendChild(cap);
+  const btn = $('ezStart'), LS = ST.map(t => Math.log(t[0]));
+  const fmtW = km => km < 1e7 ? fmtN(Math.round(km)) + ' km' : km < 0.05 * LY ? fmtN(km / AUK) + ' AU' : fmtLy(km / LY);
+  function width() { return S.scale * S.w; }
+  function start() {
+    if (!V3.ok) return;
+    if (S.view !== '3d' || S.sky.on) setView('3d');
+    S.follow = 'earth'; S.sel = 'earth'; S.pan = [0, 0, 0]; S.preset = null; markPresets(); FLY.on = false; S.zoomGoal = null; MOM.vx = MOM.vy = 0;
+    V3.cam.pitch = 0.45; setScale(ST[0][0] / S.w);
+    Z.on = true; Z.l = Math.log(ST[0][0]); Z.l1 = LS[LS.length - 1]; Z.hold = 2.2; Z.idx = -1; cap.hidden = false; btn.textContent = '■ Stop'; btn.setAttribute('aria-pressed', 'true');
+  }
+  function stop() { if (!Z.on) return; Z.on = false; cap.hidden = true; btn.textContent = '▶ Earth to universe'; btn.setAttribute('aria-pressed', 'false'); }
+  function step(dt) {
+    if (!Z.on) return; dt = Math.min(dt, 0.1);
+    // nearest stage: slow down around it, pause briefly at it
+    let i = 0; for (let j = 1; j < LS.length; j++) if (Math.abs(LS[j] - Z.l) < Math.abs(LS[i] - Z.l)) i = j;
+    if (i !== Z.idx && Math.abs(LS[i] - Z.l) < 0.9) { Z.idx = i; cap.querySelector('.ezt').textContent = ST[i][1]; cap.querySelector('.ezx').textContent = ST[i][2]; }
+    if (Z.hold > 0) Z.hold -= dt;
+    else {
+      const d = Math.abs(LS[i] - Z.l), v = (RM ? 6 : 1.25) * (0.22 + 0.78 * (1 - Math.exp(-d * d / 0.35)));
+      const prev = Z.l; Z.l = Math.min(Z.l1, Z.l + v * dt);
+      if (prev < LS[i] && Z.l >= LS[i] && i > 0) Z.hold = i === LS.length - 1 ? 1e9 : 1.4;
+    }
+    V3.cam.yaw += dt * 0.035 * (1 - Z.l / Z.l1 * 0.6);
+    setScale(Math.exp(Z.l) / S.w);
+    cap.querySelector('.ezw').textContent = 'View ' + fmtW(width()) + ' wide';
+  }
+  btn.addEventListener('click', () => Z.on ? stop() : start());
+  addEventListener('keydown', e => { if (e.key === 'Escape') stop(); });
+  return { start, stop, step, seek(km) { Z.l = Math.log(km); Z.hold = 0.5; Z.idx = -1; }, get on() { return Z.on; } };
+})();
+
 /* ====================== pointer input ====================== */
 const ptrs = new Map();
 let moved = 0, pinchD = 0, pinchMid = null;
@@ -5241,7 +5300,7 @@ function stepInput(dt) {
   } else if (!ptrs.size) { MOM.vx = MOM.vy = 0; }
 }
 cv.addEventListener('pointerdown', e => {
-  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, localXY(e)); moved = 0; FLY.on = false; S.zoomGoal = null; MOM.vx = MOM.vy = 0; lastMove = performance.now();
+  EZ.stop(); cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, localXY(e)); moved = 0; FLY.on = false; S.zoomGoal = null; MOM.vx = MOM.vy = 0; lastMove = performance.now();
   if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinchD = Math.hypot(a[0] - b[0], a[1] - b[1]); }
   cv.classList.add('drag');
 });
@@ -5286,7 +5345,7 @@ cv.addEventListener('contextmenu', e => { if (S.view === '3d') e.preventDefault(
 cv.addEventListener('pointerup', endPtr);
 cv.addEventListener('pointercancel', endPtr);
 cv.addEventListener('wheel', e => {
-  e.preventDefault(); FLY.on = false;
+  e.preventDefault(); FLY.on = false; EZ.stop();
   if (S.sky.on) { S.sky.fov = Math.min(110, Math.max(0.6, S.sky.fov * Math.exp(e.deltaY * (e.deltaMode === 1 ? 16 : 1) * 0.0016))); return; }
   const p = localXY(e), k = e.deltaMode === 1 ? 16 : 1, base = S.zoomGoal ? S.zoomGoal.s : S.scale;
   S.zoomGoal = { s: Math.min(SMAX, Math.max(sminF(), base * Math.exp(e.deltaY * k * 0.0016))), px: p[0], py: p[1] };
