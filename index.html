@@ -4466,8 +4466,14 @@ void main(){
     if (!built) build(hooks.gl);
     // adaptive resolution: if frames run slow for a couple of seconds, render fewer pixels (the canvas is scaled up by CSS); recover when fast
     if (RSt.last) { const dt = now - RSt.last; if (dt > 0 && dt < 250 && tileLoads === 0 && !tileQueue.length) { RSt.ema = RSt.ema ? RSt.ema * 0.93 + dt * 0.07 : dt; if (now - RSt.chk > 1800) { RSt.chk = now; if (RSt.ema > 52 && RSt.k > 0.7) RSt.k = Math.max(0.7, RSt.k * 0.88); else if (RSt.ema < 26 && RSt.k < 1) RSt.k = Math.min(1, RSt.k / 0.88); } } } else RSt.chk = now; RSt.last = now;
-    const W = S.w, H = S.h, dpr = S.dpr * RSt.k;
-    if (glCanvas.width !== Math.round(W * dpr) || glCanvas.height !== Math.round(H * dpr)) { renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); }
+    // very large screens (4K at 2x, 8K): keep the drawing buffer within what the GPU and the browser will give us, or only part of the frame is drawn
+    if (!RSt.max) { const gl = renderer.getContext(), vp = gl.getParameter(gl.MAX_VIEWPORT_DIMS); RSt.max = Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE), vp[0], vp[1], 8192); RSt.cap = 1; }
+    const W = S.w, H = S.h, fit = Math.min(RSt.max / Math.max(W, H), Math.sqrt(PXBUDGET / (W * H))), dpr = Math.min(S.dpr, fit) * RSt.k * RSt.cap;
+    if (glCanvas.width !== Math.round(W * dpr) || glCanvas.height !== Math.round(H * dpr)) {
+      renderer.setPixelRatio(dpr); renderer.setSize(W, H, false);
+      const gl = renderer.getContext(), fx = gl.drawingBufferWidth / glCanvas.width, fy = gl.drawingBufferHeight / glCanvas.height;
+      if (fx < 0.999 || fy < 0.999) { RSt.cap *= Math.min(fx, fy) * 0.98; renderer.setPixelRatio(Math.min(S.dpr, fit) * RSt.k * RSt.cap); renderer.setSize(W, H, false); }
+    }
     lastSt = st;
     const sky = S.sky.on, fv = sky ? S.sky.fov : 42;
     if (fv !== FOV) { FOV = fv; TANH = Math.tan(FOV * Math.PI / 360); }
@@ -4874,10 +4880,12 @@ const RING = (function () {
   return { nz: Math.abs(n[2]), rot: -Math.atan2(n[0] / m, -n[1] / m) };
 })();
 
+// the most pixels any canvas is drawn at (about 4K); bigger screens are scaled up by the browser, which keeps 8K screens smooth and within GPU limits
+const PXBUDGET = 3840 * 2400;
 function resize() {
   const r = stage.getBoundingClientRect();
-  S.dpr = Math.min(window.devicePixelRatio || 1, PHONE ? 1.5 : LITE ? 1.25 : 2);
   S.w = Math.max(1, r.width); S.h = Math.max(1, r.height);
+  S.dpr = Math.min(window.devicePixelRatio || 1, PHONE ? 1.5 : LITE ? 1.25 : 2, Math.sqrt(PXBUDGET * 2 / (S.w * S.h)), 8192 / Math.max(S.w, S.h));
   cv.width = Math.round(S.w * S.dpr); cv.height = Math.round(S.h * S.dpr);
   buildStars();
 }
