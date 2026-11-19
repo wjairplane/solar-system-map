@@ -1,0 +1,35 @@
+# When main changes, rebuild wjairplane.com so /apps/solar-system-map/ serves the new version.
+# The website (repo wjairplane/homepage) copies this repo in at build time; this workflow just
+# tells Cloudflare to run that build, through a Workers Builds deploy hook.
+#
+# Setup (once): in Cloudflare, Workers & Pages > homepage > Settings > Builds > Deploy Hooks,
+# create a hook for branch main, then save its URL in this repo as the Actions secret
+# HOMEPAGE_DEPLOY_HOOK (Settings > Secrets and variables > Actions).
+name: Redeploy wjairplane.com
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: redeploy-website
+  cancel-in-progress: true
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger the website build
+        env:
+          HOOK: ${{ secrets.HOMEPAGE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::HOMEPAGE_DEPLOY_HOOK secret is not set, so wjairplane.com was not rebuilt."
+            exit 0
+          fi
+          curl -fsS -X POST --retry 3 --retry-all-errors "$HOOK" | head -c 600
+          echo
